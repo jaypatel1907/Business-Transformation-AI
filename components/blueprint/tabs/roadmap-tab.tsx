@@ -1,6 +1,6 @@
 "use client"
 
-import { Route, Clock, Cloud, TriangleAlert, CheckCircle2, Calendar } from "lucide-react"
+import { Route, Clock, Cloud, TriangleAlert, CheckCircle2, Calendar, Kanban, DollarSign } from "lucide-react"
 
 export function RoadmapTab({ generated, data }: { generated: boolean; data?: any }) {
   if (!generated) {
@@ -12,10 +12,20 @@ export function RoadmapTab({ generated, data }: { generated: boolean; data?: any
   }
 
   const timeline = data?.timeline || "6 Weeks"
-  const milestones = data?.roadmap_milestones || [
-    { phase: "Phase 1 (Week 1-2)", title: "Architecture & Data Model", task: "Setup Database schemas, auth providers, and API routing" },
-    { phase: "Phase 2 (Week 3-4)", title: "Core Business Logic & AI", task: "Implement processing pipeline and external integrations" },
-    { phase: "Phase 3 (Week 5+)", title: "Testing & Launch", task: "End-to-end security audits, performance tuning, and launch" }
+  const finEst = data?.financial_estimation || {
+    min_budget: "$18,000",
+    max_budget: "$32,000",
+    total_hours: "240 Hours",
+    hourly_rate: "$75/hr"
+  }
+
+  const sprintPlan = data?.sprint_plan || [
+    { sprint: "Sprint 1 (Week 1)", title: "Architecture & Data Modeling", focus: "Supabase DB Schemas, RLS Policies & Auth Setup" },
+    { sprint: "Sprint 2 (Week 2)", title: "API Gateway & Middleware", focus: "REST Endpoints, Validation Rules & Error Handling" },
+    { sprint: "Sprint 3 (Week 3)", title: "AI Core & Pipeline Integration", focus: "Gemini API binding, Prompt Engineering & Triage Engine" },
+    { sprint: "Sprint 4 (Week 4)", title: "Frontend Component Suite", focus: "Tailwind UI, Dashboard Metrics & Interactive Wireframes" },
+    { sprint: "Sprint 5 (Week 5)", title: "Security & Load Testing", focus: "Penetration testing, Redis Caching & Latency Optimization" },
+    { sprint: "Sprint 6 (Week 6+)", title: "Production Launch & Handoff", focus: "Vercel Deployment, CI/CD pipeline & Documentation" }
   ]
 
   const planning = data?.planning || {
@@ -31,35 +41,36 @@ export function RoadmapTab({ generated, data }: { generated: boolean; data?: any
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-      {/* Implementation Roadmap */}
+      {/* Implementation Sprint Plan */}
       <div className="lg:col-span-2 rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm">
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <Route className="h-4 w-4 text-indigo-600" />
-              Implementation Roadmap (Transformation Planner)
+              <Kanban className="h-4 w-4 text-indigo-600" />
+              Sprint & Milestone Release Roadmap (Sprint 1 - 6)
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">Structured execution timeline for your MVP delivery</p>
+            <p className="text-xs text-slate-500 mt-0.5">Agile release breakdown and milestone targets</p>
           </div>
           <span className="rounded-full bg-indigo-50 px-3 py-1 text-[11px] font-semibold text-indigo-700 border border-indigo-200">
-            {timeline} Timeline
+            {timeline} Duration
           </span>
         </div>
 
-        <div className="space-y-4">
-          {milestones.map((ms: any, idx: number) => (
+        <div className="space-y-3.5">
+          {sprintPlan.map((sprint: any, idx: number) => (
             <div key={idx} className="rounded-xl border border-slate-200 bg-slate-50/60 p-4 shadow-2xs">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-slate-900">{ms.title || `Phase ${idx + 1}`}</span>
-                <span className="flex items-center gap-1 font-mono text-[10px] text-slate-600 font-semibold bg-white px-2 py-0.5 rounded border border-slate-200">
-                  <Calendar className="h-3 w-3 text-indigo-600" /> {ms.phase}
+                <span className="text-xs font-bold text-slate-900 flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-indigo-600" />
+                  {sprint.title}
+                </span>
+                <span className="flex items-center gap-1 font-mono text-[10px] text-indigo-700 font-bold bg-white px-2.5 py-0.5 rounded border border-slate-200">
+                  <Calendar className="h-3 w-3 text-indigo-600" /> {sprint.sprint}
                 </span>
               </div>
-              <div className="h-2 w-full rounded-full bg-slate-200 overflow-hidden mb-3">
-                <div className="h-full bg-indigo-600 rounded-full" style={{ width: `${Math.min(100, (idx + 1) * 35)}%` }} />
-              </div>
-              <p className="text-xs text-slate-700 flex items-center gap-1.5 font-medium">
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> {ms.task || ms.desc}
+              <p className="text-xs text-slate-600 flex items-center gap-2 mt-1">
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 flex-shrink-0" />
+                <span><strong className="text-slate-800">Deliverables:</strong> {sprint.focus}</span>
               </p>
             </div>
           ))}
@@ -69,26 +80,36 @@ export function RoadmapTab({ generated, data }: { generated: boolean; data?: any
       {/* Effort, Cost & Risk */}
       <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm space-y-4">
         <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-          <TriangleAlert className="h-4 w-4 text-amber-500" />
-          Effort & Risk Analytics
+          <DollarSign className="h-4 w-4 text-emerald-600" />
+          Financial & Risk Analytics
         </h3>
 
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
           <div className="flex items-center justify-between">
             <span className="flex items-center gap-1.5 text-xs text-slate-600 font-medium">
-              <Clock className="h-4 w-4 text-emerald-600" /> Total Engineering Effort
+              <DollarSign className="h-4 w-4 text-emerald-600" /> Financial Budget Range
             </span>
-            <span className="text-xl font-bold text-slate-900">{planning.effortHours || "240"} Hours</span>
+            <span className="text-base font-extrabold text-slate-900">{finEst.min_budget} - {finEst.max_budget}</span>
           </div>
-          <p className="text-[10px] text-slate-500 mt-1">Calculated by AI Solution Architect</p>
+          <p className="text-[10px] text-slate-500 mt-1">Calculated @ {finEst.hourly_rate} ({finEst.total_hours})</p>
         </div>
 
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
           <div className="flex items-center justify-between">
             <span className="flex items-center gap-1.5 text-xs text-slate-600 font-medium">
-              <Cloud className="h-4 w-4 text-cyan-600" /> Estimated Cloud Infrastructure
+              <Clock className="h-4 w-4 text-indigo-600" /> Total Engineering Effort
             </span>
-            <span className="text-xl font-bold text-slate-900">{planning.cloudCost || "$120/mo"}</span>
+            <span className="text-lg font-bold text-slate-900">{finEst.total_hours}</span>
+          </div>
+          <p className="text-[10px] text-slate-500 mt-1">AI Calculated Scope & Capacity</p>
+        </div>
+
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <div className="flex items-center justify-between">
+            <span className="flex items-center gap-1.5 text-xs text-slate-600 font-medium">
+              <Cloud className="h-4 w-4 text-cyan-600" /> Infrastructure Cloud Cost
+            </span>
+            <span className="text-lg font-bold text-slate-900">{planning.cloudCost || "$120/mo"}</span>
           </div>
           <p className="text-[10px] text-slate-500 mt-1">{planning.cloudDetail || "PostgreSQL + Edge Compute"}</p>
         </div>

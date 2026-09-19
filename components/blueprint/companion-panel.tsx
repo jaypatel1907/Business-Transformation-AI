@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { Bot, Send, Paperclip, Lightbulb } from "lucide-react"
+import { Bot, Send, Paperclip, Lightbulb, FileText, X, UploadCloud, CheckCircle2 } from "lucide-react"
 import { quickPrompts } from "@/lib/blueprint-data"
 
 export type ChatMessage = {
@@ -19,10 +19,12 @@ export function CompanionPanel({
 }: {
   messages: ChatMessage[]
   generating: boolean
-  onSubmit: (text: string) => void
+  onSubmit: (text: string, documentText?: string) => void
   onUpload: (fileName: string) => void
 }) {
   const [value, setValue] = useState("")
+  const [isDragging, setIsDragging] = useState(false)
+  const [attachedFile, setAttachedFile] = useState<{ name: string; text: string; size: string } | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -30,40 +32,64 @@ export function CompanionPanel({
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" })
   }, [messages, generating])
 
+  const handleFileSelect = (file: File) => {
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const text = e.target?.result as string || ""
+      setAttachedFile({
+        name: file.name,
+        text,
+        size: `${(file.size / 1024).toFixed(1)} KB`
+      })
+      onUpload(file.name)
+    }
+    reader.readAsText(file)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFileSelect(e.dataTransfer.files[0])
+    }
+  }
+
   const send = () => {
     const text = value.trim()
-    if (!text || generating) return
-    onSubmit(text)
+    if ((!text && !attachedFile) || generating) return
+    onSubmit(text || `Analyze uploaded document: ${attachedFile?.name}`, attachedFile?.text)
     setValue("")
+    setAttachedFile(null)
   }
 
   return (
     <section className="flex h-full min-h-0 flex-col border-slate-200 bg-slate-50 p-4 md:w-[35%] md:border-r md:p-6">
-      <div className="flex h-full min-h-0 flex-col rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="flex h-full min-h-0 flex-col rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
         {/* Header */}
-        <div className="flex items-center gap-2.5 border-b border-slate-100 px-5 py-4">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
-            <Bot className="h-4 w-4" />
+        <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-4 bg-slate-50/50">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-sm">
+            <Bot className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="text-sm font-semibold text-slate-900">AI Architect</h2>
-            <p className="text-[11px] text-slate-500">Understands goals · recommends stacks</p>
+            <h2 className="text-sm font-bold text-slate-900">AI Architect Assistant</h2>
+            <p className="text-[11px] text-slate-500">Document Parser & Architecture Builder</p>
           </div>
         </div>
 
         {/* Messages */}
         <div ref={scrollRef} className="thin-scrollbar min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-5">
           {messages.map((m) => (
-            <div key={m.id} className={`bp-fade-up flex ${m.role === "user" ? "justify-end" : ""}`}>
+            <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : ""}`}>
               <div
-                className={`max-w-[88%] rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed ${
+                className={`max-w-[88%] rounded-2xl px-4 py-3 text-[13px] leading-relaxed shadow-2xs ${
                   m.role === "ai"
-                    ? "rounded-tl-sm border border-slate-200 bg-white text-slate-700"
-                    : "rounded-tr-sm bg-indigo-600 text-white"
+                    ? "rounded-tl-xs border border-slate-200 bg-white text-slate-800"
+                    : "rounded-tr-xs bg-indigo-600 text-white font-medium"
                 }`}
               >
                 <p
-                  className={`mb-1 text-[11px] font-semibold ${
+                  className={`mb-1 text-[11px] font-bold ${
                     m.role === "ai" ? "text-indigo-600" : "text-indigo-100"
                   }`}
                 >
@@ -75,71 +101,102 @@ export function CompanionPanel({
           ))}
 
           {generating ? (
-            <div className="flex items-center gap-2 text-xs text-slate-400">
+            <div className="flex items-center gap-2 text-xs text-indigo-600 bg-indigo-50/60 p-3 rounded-xl border border-indigo-100">
               <span className="flex gap-1">
-                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-indigo-500 [animation-delay:0.1s]" />
-                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-indigo-500 [animation-delay:0.2s]" />
-                <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-indigo-500 [animation-delay:0.3s]" />
+                <span className="h-2 w-2 animate-bounce rounded-full bg-indigo-600 [animation-delay:0.1s]" />
+                <span className="h-2 w-2 animate-bounce rounded-full bg-indigo-600 [animation-delay:0.2s]" />
+                <span className="h-2 w-2 animate-bounce rounded-full bg-indigo-600 [animation-delay:0.3s]" />
               </span>
-              <span>Designing your blueprint…</span>
+              <span className="font-semibold">Analyzing requirements & generating solution blueprint...</span>
             </div>
           ) : null}
         </div>
 
-        {/* Suggestion pills */}
-        <div className="flex flex-wrap gap-2 px-5 pb-3">
-          {quickPrompts.map((p) => (
+        {/* Quick Suggestion Pills */}
+        <div className="flex flex-wrap gap-1.5 px-4 pb-2">
+          {quickPrompts.slice(0, 3).map((p) => (
             <button
               key={p}
               onClick={() => onSubmit(p)}
               disabled={generating}
-              className="flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-medium text-slate-600 transition hover:border-indigo-300 hover:text-indigo-600 disabled:opacity-50"
+              className="flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold text-slate-600 transition hover:border-indigo-300 hover:text-indigo-600 disabled:opacity-50 cursor-pointer"
             >
-              <Lightbulb className="h-3 w-3 text-indigo-500" />
+              <Lightbulb className="h-3 w-3 text-amber-500" />
               {p}
             </button>
           ))}
         </div>
 
-        {/* Input */}
-        <div className="border-t border-slate-100 p-4">
+        {/* Attached Document Preview Badge */}
+        {attachedFile && (
+          <div className="mx-4 mb-2 flex items-center justify-between rounded-xl border border-indigo-200 bg-indigo-50/80 px-3 py-2 text-xs text-indigo-900">
+            <div className="flex items-center gap-2 overflow-hidden">
+              <FileText className="h-4 w-4 text-indigo-600 flex-shrink-0" />
+              <span className="truncate font-semibold">{attachedFile.name}</span>
+              <span className="text-[10px] text-indigo-600 font-mono">({attachedFile.size})</span>
+            </div>
+            <button
+              onClick={() => setAttachedFile(null)}
+              className="text-indigo-400 hover:text-indigo-700 cursor-pointer"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+
+        {/* Input & Drag Dropzone Box */}
+        <div
+          onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
+          onDragLeave={() => setIsDragging(false)}
+          onDrop={handleDrop}
+          className={`border-t border-slate-200 p-3 bg-white transition ${
+            isDragging ? "bg-indigo-50/80 border-indigo-400" : ""
+          }`}
+        >
           <input
-            ref={fileRef}
             type="file"
+            ref={fileRef}
+            onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
+            accept=".pdf,.docx,.txt,.md,.json,.csv"
             className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0]
-              if (f) onUpload(f.name)
-              e.target.value = ""
-            }}
           />
-          <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-2 py-1.5 transition focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100">
+
+          <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 p-2 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500">
             <button
               onClick={() => fileRef.current?.click()}
-              disabled={generating}
-              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 disabled:opacity-50"
-              aria-label="Attach a document"
+              type="button"
+              title="Upload PDF, DOCX, TXT, BRD, SOP Document"
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-200 transition cursor-pointer"
             >
               <Paperclip className="h-4 w-4" />
             </button>
-            <input
-              type="text"
+
+            <textarea
+              rows={2}
               value={value}
               onChange={(e) => setValue(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.nativeEvent.isComposing && e.keyCode !== 229) send()
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault()
+                  send()
+                }
               }}
-              placeholder="Describe your idea…"
-              className="min-w-0 flex-1 bg-transparent py-1.5 text-sm text-slate-900 placeholder-slate-400 focus:outline-none"
+              placeholder="Describe your business idea or drag & drop SOP/BRD document here..."
+              className="flex-1 resize-none bg-transparent text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none"
             />
+
             <button
               onClick={send}
-              disabled={generating}
-              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-white transition hover:bg-indigo-500 disabled:opacity-50"
-              aria-label="Send prompt"
+              disabled={(!value.trim() && !attachedFile) || generating}
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white transition hover:bg-indigo-700 disabled:opacity-40 cursor-pointer"
             >
-              <Send className="h-3.5 w-3.5" />
+              <Send className="h-4 w-4" />
             </button>
+          </div>
+          
+          <div className="mt-2 flex items-center justify-between px-1 text-[10px] text-slate-400">
+            <span>Supports .pdf, .docx, .txt, .md, .brd</span>
+            <span>Press Enter to Submit</span>
           </div>
         </div>
       </div>
