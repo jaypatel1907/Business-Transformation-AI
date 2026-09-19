@@ -27,18 +27,18 @@ export default function Page() {
   const [generated, setGenerated] = useState(false)
   const [activeTab, setActiveTab] = useState<TabId>("dashboard")
   const [blueprintData, setBlueprintData] = useState<any>(null)
-  const [targetLanguage, setTargetLanguage] = useState("en")
+  const [targetLanguage, setTargetLanguage] = useState("gu") // Defaulting to Gujarati / active lang
+  const [lastPrompt, setLastPrompt] = useState<string>("")
+  const [lastDocText, setLastDocText] = useState<string | undefined>(undefined)
   
-  // Share Modal & Version History Drawer states
+  // Share Modal states
   const [showShareModal, setShowShareModal] = useState(false)
   const [shareUrl, setShareUrl] = useState("")
   const [copied, setCopied] = useState(false)
-  const [history, setHistory] = useState<any[]>([])
 
   // Restore saved blueprint if URL has blueprintId parameter
   useEffect(() => {
     if (typeof window !== "undefined") {
-      setHistory(getLocalBlueprints())
       const params = new URLSearchParams(window.location.search)
       const bpId = params.get("blueprintId")
       if (bpId) {
@@ -52,13 +52,27 @@ export default function Page() {
     }
   }, [])
 
-  const runGeneration = useCallback(async (userMessage: ChatMessage, rawPromptText?: string, documentText?: string) => {
-    setMessages((prev) => [...prev, userMessage])
+  const runGeneration = useCallback(async (
+    userMessage?: ChatMessage,
+    rawPromptText?: string,
+    documentText?: string,
+    langToUse?: string
+  ) => {
+    if (userMessage) {
+      setMessages((prev) => [...prev, userMessage])
+    }
     setGenerating(true)
 
+    const currentLang = langToUse || targetLanguage || "gu"
     const promptToSend =
       rawPromptText ||
-      (typeof userMessage.content === "string" ? userMessage.content : "Analyze this business requirement");
+      lastPrompt ||
+      "Analyze this business requirement and build architecture blueprint";
+
+    const docToSend = documentText !== undefined ? documentText : lastDocText;
+
+    if (rawPromptText) setLastPrompt(rawPromptText);
+    if (documentText) setLastDocText(documentText);
 
     try {
       const res = await fetch("/api/generate", {
@@ -66,8 +80,9 @@ export default function Page() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           prompt: promptToSend,
-          documentText,
-          targetLanguage,
+          documentText: docToSend,
+          language: currentLang,
+          targetLanguage: currentLang,
           selectedModel: "gemini-1.5-flash"
         }),
       })
@@ -78,9 +93,8 @@ export default function Page() {
         const data = result.data
         setBlueprintData(data)
 
-        // Save automatically to history
-        const savedRecord = saveBlueprintLocally(data)
-        setHistory(getLocalBlueprints())
+        // Save record to local storage
+        saveBlueprintLocally(data)
 
         setMessages((prev) => [
           ...prev,
@@ -105,9 +119,6 @@ export default function Page() {
                   </li>
                   <li>
                     <strong className="text-slate-900">Database &amp; APIs:</strong> {data.database_tables?.map((t: any) => t.table_name).join(", ")} generated.
-                  </li>
-                  <li>
-                    <strong className="text-slate-900">Resource Allocation:</strong> {data.financial_estimation?.team_roles?.length || 4} engineering roles assigned.
                   </li>
                 </ul>
               </div>
@@ -138,7 +149,15 @@ export default function Page() {
     } finally {
       setGenerating(false)
     }
-  }, [targetLanguage])
+  }, [targetLanguage, lastPrompt, lastDocText])
+
+  const handleLanguageChange = useCallback((newLang: string) => {
+    setTargetLanguage(newLang)
+    // Automatically re-generate/translate the current blueprint into the newly selected language!
+    if (generated || lastPrompt) {
+      runGeneration(undefined, lastPrompt || samplePrompt, lastDocText, newLang)
+    }
+  }, [generated, lastPrompt, lastDocText, runGeneration])
 
   const handleSubmit = useCallback(
     (text: string, documentText?: string) => {
@@ -195,6 +214,7 @@ export default function Page() {
 
 ## Executive Summary
 - **Requirement**: "${blueprintData.user_problem || "Business Solution"}"
+- **Target Language**: ${blueprintData.target_language || targetLanguage}
 - **Digital Maturity Score**: ${blueprintData.digital_maturity}%
 - **AI Adoption Readiness**: ${blueprintData.ai_adoption}%
 - **MVP Timeline**: ${blueprintData.timeline}
@@ -211,9 +231,6 @@ ${blueprintData.database_tables?.map((t: any) => `### Table: ${t.table_name}\n${
 
 ## API Endpoints
 ${blueprintData.api_endpoints?.map((e: any) => `- \`${e.method} ${e.path}\`: ${e.desc}`).join("\n")}
-
-## Sprint Release Plan
-${blueprintData.sprint_plan?.map((s: any) => `### ${s.sprint}: ${s.title}\n- **Deliverables**: ${s.focus}`).join("\n\n")}
 `
 
     const mdBlob = `data:text/markdown;charset=utf-8,${encodeURIComponent(mdContent)}`
@@ -223,7 +240,7 @@ ${blueprintData.sprint_plan?.map((s: any) => `### ${s.sprint}: ${s.title}\n- **D
     document.body.appendChild(downloadAnchor)
     downloadAnchor.click()
     downloadAnchor.remove()
-  }, [blueprintData])
+  }, [blueprintData, targetLanguage])
 
   // Save & Share Handler
   const handleSaveAndShare = useCallback(() => {
@@ -249,7 +266,7 @@ ${blueprintData.sprint_plan?.map((s: any) => `### ${s.sprint}: ${s.title}\n- **D
         onExportJSON={handleExportJSON}
         onSaveAndShare={handleSaveAndShare}
         targetLanguage={targetLanguage}
-        onLanguageChange={setTargetLanguage}
+        onLanguageChange={handleLanguageChange}
         generating={generating}
         hasBlueprintData={!!blueprintData}
       />
