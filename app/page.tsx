@@ -27,7 +27,7 @@ export default function Page() {
   const [generated, setGenerated] = useState(false)
   const [activeTab, setActiveTab] = useState<TabId>("dashboard")
   const [blueprintData, setBlueprintData] = useState<any>(null)
-  const [targetLanguage, setTargetLanguage] = useState("gu") // Defaulting to Gujarati / active lang
+  const [targetLanguage, setTargetLanguage] = useState("English") // Defaulting to English
   const [lastPrompt, setLastPrompt] = useState<string>("")
   const [lastDocText, setLastDocText] = useState<string | undefined>(undefined)
   
@@ -63,7 +63,7 @@ export default function Page() {
     }
     setGenerating(true)
 
-    const currentLang = langToUse || targetLanguage || "gu"
+    const currentLang = langToUse || targetLanguage || "English"
     const promptToSend =
       rawPromptText ||
       lastPrompt ||
@@ -153,7 +153,6 @@ export default function Page() {
 
   const handleLanguageChange = useCallback((newLang: string) => {
     setTargetLanguage(newLang)
-    // Automatically re-generate/translate the current blueprint into the newly selected language!
     if (generated || lastPrompt) {
       runGeneration(undefined, lastPrompt || samplePrompt, lastDocText, newLang)
     }
