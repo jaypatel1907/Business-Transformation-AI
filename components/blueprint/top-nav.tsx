@@ -29,15 +29,17 @@ export function TopNav({
   const [showLangMenu, setShowLangMenu] = useState(false)
 
   const languages = [
-    { code: "en", label: "English", flag: "🇬🇧" },
-    { code: "gu", label: "ગુજરાતી", flag: "🇮🇳" },
-    { code: "hi", label: "हिन्दी", flag: "🇮🇳" },
-    { code: "es", label: "Español", flag: "🇪🇸" },
-    { code: "fr", label: "Français", flag: "🇫🇷" },
-    { code: "de", label: "Deutsch", flag: "🇩🇪" },
+    { code: "English", label: "English", flag: "🇬🇧" },
+    { code: "Gujarati", label: "ગુજરાતી", flag: "🇮🇳" },
+    { code: "Hindi", label: "हिन्दी", flag: "🇮🇳" },
+    { code: "Spanish", label: "Español", flag: "🇪🇸" },
+    { code: "French", label: "Français", flag: "🇫🇷" },
+    { code: "German", label: "Deutsch", flag: "🇩🇪" },
   ]
 
-  const activeLang = languages.find((l) => l.code === targetLanguage) || languages[0]
+  const activeLang = languages.find(
+    (l) => l.code.toLowerCase() === targetLanguage.toLowerCase()
+  ) || languages[0]
 
   return (
     <header className="z-20 flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-2.5 sm:px-6 shadow-2xs">
@@ -84,7 +86,7 @@ export function TopNav({
                     <span>{lang.flag}</span>
                     <span>{lang.label}</span>
                   </span>
-                  {targetLanguage === lang.code && <Check className="h-3.5 w-3.5 text-indigo-600" />}
+                  {activeLang.code === lang.code && <Check className="h-3.5 w-3.5 text-indigo-600" />}
                 </button>
               ))}
             </div>

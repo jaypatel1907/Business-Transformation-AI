@@ -10,14 +10,45 @@ function stringHash(str: string): number {
   return Math.abs(hash);
 }
 
-// Full translation dictionary for smart domain fallback engine
-const translations: Record<string, any> = {
+// 1-to-1 Multilingual Translation Dictionary for Domain Fallback Engine
+const languageDict: Record<string, any> = {
+  en: {
+    langName: "English",
+    defaultTitle: "Custom Enterprise Solution Architecture",
+    initiatives: [
+      { title: "Core Process Automation Suite", impact: "High Impact", desc: "Automates key bottleneck workflows and manual steps." },
+      { title: "AI Decision Intelligence Engine", impact: "High Impact", desc: "Provides real-time decision support, automated anomaly detection, and workload forecasting." }
+    ],
+    steps: [
+      { id: 1, title: "1. Intake & Validation", desc: "System captures initial request and verifies user input payload" },
+      { id: 2, title: "2. Business Logic Engine", desc: "Evaluates business constraints, permissions, and workflow state" },
+      { id: 3, title: "3. Service Execution", desc: "Processes database transactions and executes background queues" },
+      { id: 4, title: "4. Notification & Audit Sync", desc: "Syncs real-time user UI and appends cryptographic audit record" }
+    ],
+    endpoints: [
+      { method: "POST", path: "/api/v1/records/create", desc: "Create new record & trigger workflow pipeline" },
+      { method: "GET", path: "/api/v1/records/{id}", desc: "Query real-time execution status and data payload" },
+      { method: "PUT", path: "/api/v1/records/update", desc: "Update record attributes and state transition" }
+    ],
+    wireframeSections: [
+      { title: "Navigation Header Bar", components: ["App Logo", "Global Search Input", "User Profile Avatar", "Notification Bell"] },
+      { title: "Main Workspace Canvas", components: ["Requirement Input Form", "Real-time Metrics Dashboard", "Action Trigger Panel"] },
+      { title: "Audit Drawer", components: ["Activity Stream Log", "Export Controls", "Status Indicator"] }
+    ],
+    sprintPlan: [
+      { sprint: "Sprint 1 (Week 1)", title: "Architecture & Data Model", focus: "Supabase DB Schemas, RLS Policies & Auth Integration" },
+      { sprint: "Sprint 2 (Week 2)", title: "API Gateway & Middleware", focus: "REST Endpoints, Validation Rules & Error Handling" },
+      { sprint: "Sprint 3 (Week 3)", title: "AI Core & Pipeline Binding", focus: "Gemini API integration, Prompt Engineering & Triage Engine" },
+      { sprint: "Sprint 4 (Week 4)", title: "Frontend Component Suite", focus: "Tailwind UI, Dashboard Metrics & Interactive Wireframes" },
+      { sprint: "Sprint 5 (Week 5)", title: "Security & Load Testing", focus: "Penetration testing, Redis Caching & Latency Optimization" },
+      { sprint: "Sprint 6 (Week 6+)", title: "Production Launch & Handoff", focus: "Vercel Deployment, CI/CD pipeline & Documentation" }
+    ],
+    riskTitle: "Data Isolation & High Concurrency",
+    riskMitigation: "Implement Row Level Security (RLS) policies and Redis caching for hot endpoints."
+  },
   gu: {
     langName: "Gujarati (ગુજરાતી)",
     defaultTitle: "કસ્ટમ એન્ટરપ્રાઇઝ સોલ્યુશન આર્કિટેક્ચર",
-    bookingTitle: "સ્માર્ટ બુકિંગ અને શિડ્યુલિંગ પ્લેટફોર્મ",
-    healthTitle: "હેલ્થકેર દર્દી વ્યવસ્થાપન અને સંભાળ પ્લેટફોર્મ",
-    foodTitle: "ફૂડ ઓર્ડરિંગ અને લાઇવ લોજિસ્ટિક્સ નેટવર્ક",
     initiatives: [
       { title: "મુખ્ય પ્રક્રિયા ઓટોમેશન શ્રૃંખલા", impact: "ઉચ્ચ અસર (High Impact)", desc: "મુખ્ય કાર્યપ્રવાહની અડચણો અને પ્રક્રિયાઓને સ્વચાલિત કરે છે." },
       { title: "AI ડિસિઝન ઇન્ટેલિજન્સ એન્જિન", impact: "ઉચ્ચ અસર (High Impact)", desc: "રીયલ-ટાઇમ નિર્ણય સપોર્ટ, સ્વચાલિત વિસંગતતા શોધ અને વર્કલોડ આગાહી પૂરી પાડે છે." }
@@ -52,9 +83,6 @@ const translations: Record<string, any> = {
   hi: {
     langName: "Hindi (हिन्दी)",
     defaultTitle: "कस्टम एंटरप्राइज समाधान आर्किटेक्चर",
-    bookingTitle: "स्मार्ट बुकिंग एवं शेड्यूलिंग प्लेटफॉर्म",
-    healthTitle: "हेल्थकेयर मरीज प्रबंधन प्रणाली",
-    foodTitle: "फूड ऑर्डरिंग एवं लाइव लॉजिस्टिक्स नेटवर्क",
     initiatives: [
       { title: "मुख्य प्रक्रिया स्वचालन प्रणाली", impact: "उच्च प्रभाव (High Impact)", desc: "मुख्य कार्यप्रवाह की बाधाओं और प्रक्रियाओं को स्वचालित करता है।" },
       { title: "AI निर्णय इंटेलिजेंस इंजन", impact: "उच्च प्रभाव (High Impact)", desc: "रियल-टाइम निर्णय सहायता और कार्यभार पूर्वानुमान प्रदान करता है।" }
@@ -67,11 +95,13 @@ const translations: Record<string, any> = {
     ],
     endpoints: [
       { method: "POST", path: "/api/v1/records/create", desc: "नया रिकॉर्ड बनाएं और वर्कफ़्लो प्रारंभ करें" },
-      { method: "GET", path: "/api/v1/records/{id}", desc: "रियल-टाइम स्थिति प्राप्त करें" }
+      { method: "GET", path: "/api/v1/records/{id}", desc: "रियल-टाइम स्थिति और विवरण प्राप्त करें" },
+      { method: "PUT", path: "/api/v1/records/update", desc: "रिकॉर्ड स्थिति अपडेट करें" }
     ],
     wireframeSections: [
       { title: "नेविगेशन एवं हेडर बार", components: ["ऐप लोगो", "ग्लोबल खोज", "उपयोगकर्ता प्रोफ़ाइल", "अधिसूचना"] },
-      { title: "मुख्य कार्यस्थल", components: ["इनपुट फ़ॉर्म", "डैशबोर्ड", "एक्शन पैनल"] }
+      { title: "मुख्य कार्यस्थल", components: ["इनपुट फ़ॉर्म", "डैशबोर्ड", "एक्शन पैनल"] },
+      { title: "ऑडिट दराज", components: ["गतिविधि स्ट्रीम", "निर्यात नियंत्रण", "स्थिति लॉग"] }
     ],
     sprintPlan: [
       { sprint: "स्प्रिंट १ (सप्ताह १)", title: "आर्किटेक्चर एवं डेटा मॉडल", focus: "Supabase डेटाबेस स्कीमा और ऑथ सेटअप" },
@@ -84,9 +114,6 @@ const translations: Record<string, any> = {
   es: {
     langName: "Spanish (Español)",
     defaultTitle: "Arquitectura de Solución Empresarial",
-    bookingTitle: "Plataforma Inteligente de Reservas y Programación",
-    healthTitle: "Sistema de Gestión de Pacientes y Salud",
-    foodTitle: "Red de Pedidos de Comida y Logística en Vivo",
     initiatives: [
       { title: "Automatización de Procesos Principales", impact: "Alto Impacto", desc: "Automatiza los cuellos de botella clave del flujo de trabajo." },
       { title: "Motor de Inteligencia de Decisiones IA", impact: "Alto Impacto", desc: "Proporciona soporte de decisiones en tiempo real y pronósticos." }
@@ -111,16 +138,73 @@ const translations: Record<string, any> = {
     ],
     riskTitle: "Aislamiento de Datos y Concurrencia",
     riskMitigation: "Implementar políticas RLS y almacenamiento en caché Redis."
+  },
+  fr: {
+    langName: "French (Français)",
+    defaultTitle: "Architecture de Solution d'Entreprise",
+    initiatives: [
+      { title: "Automation des Processus Clés", impact: "Impact Élevé", desc: "Automatise les goulots d'étranglement principaux." },
+      { title: "Moteur d'Intelligence Décisionnelle IA", impact: "Impact Élevé", desc: "Support décisionnel en temps réel et prévisions." }
+    ],
+    steps: [
+      { id: 1, title: "1. Saisie et Validation", desc: "Capture la demande initiale de l'utilisateur" },
+      { id: 2, title: "2. Moteur de Règles IA", desc: "Vérifie les contraintes et autorisations" },
+      { id: 3, title: "3. Exécution du Service", desc: "Traite les transactions en base de données" },
+      { id: 4, title: "4. Notification et Audit", desc: "Met à jour le tableau de bord et l'audit" }
+    ],
+    endpoints: [
+      { method: "POST", path: "/api/v1/records/create", desc: "Créer un enregistrement et lancer le flux" }
+    ],
+    wireframeSections: [
+      { title: "Barre de Navigation", components: ["Logo", "Recherche", "Profil", "Notifications"] }
+    ],
+    sprintPlan: [
+      { sprint: "Sprint 1 (Semaine 1)", title: "Architecture & Modèle de Données", focus: "Schéma Supabase et Auth" }
+    ],
+    riskTitle: "Isolation des Données et Concurrence",
+    riskMitigation: "Mettre en œuvre les politiques RLS et le cache Redis."
+  },
+  de: {
+    langName: "German (Deutsch)",
+    defaultTitle: "Unternehmens-Lösungsarchitektur",
+    initiatives: [
+      { title: "Kerngeschäftsprozess-Automatisierung", impact: "Hohe Auswirkung", desc: "Automatisiert Engpässe im Arbeitsablauf." },
+      { title: "KI-Entscheidungs-Engine", impact: "Hohe Auswirkung", desc: "Echtzeit-Entscheidungsunterstützung und Prognosen." }
+    ],
+    steps: [
+      { id: 1, title: "1. Erfassung & Validierung", desc: "Erfasst die initiale Benutzeranfrage" },
+      { id: 2, title: "2. KI-Regelprüfung", desc: "Prüft Geschäftsbeschränkungen und Rechte" }
+    ],
+    endpoints: [
+      { method: "POST", path: "/api/v1/records/create", desc: "Neuen Datensatz erstellen" }
+    ],
+    wireframeSections: [
+      { title: "Navigationsleiste", components: ["Logo", "Suche", "Profil", "Benachrichtigungen"] }
+    ],
+    sprintPlan: [
+      { sprint: "Sprint 1 (Woche 1)", title: "Architektur & Datenmodell", focus: "Supabase-Schemas und Auth" }
+    ],
+    riskTitle: "Datentrennung & Nebenläufigkeit",
+    riskMitigation: "Implementieren Sie RLS-Richtlinien und Redis-Caching."
   }
 };
+
+// Aliases mapping string names to keys
+languageDict["English"] = languageDict["en"];
+languageDict["Gujarati"] = languageDict["gu"];
+languageDict["Hindi"] = languageDict["hi"];
+languageDict["Spanish"] = languageDict["es"];
+languageDict["French"] = languageDict["fr"];
+languageDict["German"] = languageDict["de"];
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { prompt, documentText, language, targetLanguage, selectedModel = "gemini-1.5-flash" } = body;
     
-    // Support both 'language' and 'targetLanguage' keys seamlessly
-    const langKey = (language || targetLanguage || "en").toLowerCase();
+    // Support language keys cleanly
+    const rawLang = (language || targetLanguage || "English").trim();
+    const langKey = rawLang.toLowerCase();
 
     if (!prompt && !documentText) {
       return NextResponse.json({ error: "Prompt or Document input is required" }, { status: 400 });
@@ -129,21 +213,15 @@ export async function POST(req: NextRequest) {
     const cleanPrompt = `${prompt || ""} ${documentText ? `\n[Document Context]: ${documentText.slice(0, 3000)}` : ""}`.trim();
     const apiKey = process.env.GEMINI_API_KEY;
 
-    // Multilingual domain fallback engine
-    const generateSmartDomainBlueprint = (p: string, lKey: string) => {
+    // Strict 1-to-1 language fallback generator
+    const generateSmartDomainBlueprint = (p: string, targetLangStr: string) => {
       const lower = p.toLowerCase();
       const hash = stringHash(p);
-      const dict = translations[lKey] || translations[lKey.substring(0, 2)] || translations["gu"] || translations["en"];
+      
+      // Strict 1-to-1 selection: English -> en, Gujarati -> gu, Hindi -> hi, Spanish -> es, French -> fr, German -> de
+      const dict = languageDict[targetLangStr] || languageDict[targetLangStr.toLowerCase()] || languageDict["en"];
 
       let title = dict.defaultTitle || "Custom Enterprise Architecture";
-      if (lower.includes("booking") || lower.includes("reservation") || lower.includes("appointment")) {
-        title = dict.bookingTitle || title;
-      } else if (lower.includes("hospital") || lower.includes("health") || lower.includes("doctor") || lower.includes("patient")) {
-        title = dict.healthTitle || title;
-      } else if (lower.includes("food") || lower.includes("restaurant") || lower.includes("delivery")) {
-        title = dict.foodTitle || title;
-      }
-
       let maturityScore = 82 + (hash % 12);
       let aiReadinessScore = 84 + (hash % 13);
       let weeksTimeline = 5 + (hash % 5);
@@ -155,7 +233,7 @@ export async function POST(req: NextRequest) {
       return {
         project_title: title,
         user_problem: p,
-        target_language: lKey,
+        target_language: targetLangStr,
         digital_maturity: maturityScore,
         ai_adoption: aiReadinessScore,
         timeline: `${weeksTimeline} Weeks`,
@@ -220,32 +298,24 @@ export async function POST(req: NextRequest) {
       };
     };
 
-    // If Gemini API is available and not mock mode
+    // If Gemini API key is available and not mock mode
     if (apiKey && apiKey.trim() !== "" && selectedModel !== "mock-mode") {
       try {
-        const langNameMap: Record<string, string> = {
-          gu: "Gujarati (ગુજરાતી)",
-          hi: "Hindi (हिन्दी)",
-          es: "Spanish (Español)",
-          fr: "French (Français)",
-          de: "German (Deutsch)",
-          en: "English"
-        };
-        const langTargetName = langNameMap[langKey] || langKey;
+        const targetLangName = rawLang;
         const modelName = selectedModel.includes("pro") ? "gemini-1.5-pro" : "gemini-1.5-flash";
 
         const systemPrompt = `You are a Senior Principal AI Solution Architect.
 Analyze the user requirement deeply and build a complete solution architecture.
 
-CRITICAL MANDATE: You MUST output EVERY text string (project_title, initiative titles and descriptions, bpmn_step titles and descriptions, endpoint descriptions, wireframe section titles and component labels, sprint titles and focus, and risk titles/mitigations) STRICTLY IN THE FOLLOWING LANGUAGE: ${langTargetName}.
+CRITICAL MANDATE: You MUST output EVERY text string (project_title, initiative titles and descriptions, bpmn_step titles and descriptions, endpoint descriptions, wireframe section titles and component labels, sprint titles and focus, and risk titles/mitigations) STRICTLY IN THE FOLLOWING LANGUAGE: ${targetLangName}.
 
 USER REQUIREMENT: "${cleanPrompt}"
 
 Return ONLY a valid JSON matching this structure:
 {
-  "project_title": "Title in ${langTargetName}",
+  "project_title": "Title in ${targetLangName}",
   "user_problem": "${cleanPrompt.slice(0, 150).replace(/"/g, '\\"')}",
-  "target_language": "${langKey}",
+  "target_language": "${targetLangName}",
   "digital_maturity": 88,
   "ai_adoption": 94,
   "timeline": "6 Weeks",
@@ -268,38 +338,33 @@ Return ONLY a valid JSON matching this structure:
     "ai_layer": "Google Gemini 1.5 Flash"
   },
   "initiatives": [
-    { "title": "Initiative 1 in ${langTargetName}", "impact": "High Impact", "desc": "Description in ${langTargetName}" },
-    { "title": "Initiative 2 in ${langTargetName}", "impact": "High Impact", "desc": "Description in ${langTargetName}" }
+    { "title": "Initiative 1 in ${targetLangName}", "impact": "High Impact", "desc": "Description in ${targetLangName}" },
+    { "title": "Initiative 2 in ${targetLangName}", "impact": "High Impact", "desc": "Description in ${targetLangName}" }
   ],
   "bpmn_steps": [
-    { "id": 1, "title": "Step 1 in ${langTargetName}", "desc": "Description in ${langTargetName}" },
-    { "id": 2, "title": "Step 2 in ${langTargetName}", "desc": "Description in ${langTargetName}" },
-    { "id": 3, "title": "Step 3 in ${langTargetName}", "desc": "Description in ${langTargetName}" },
-    { "id": 4, "title": "Step 4 in ${langTargetName}", "desc": "Description in ${langTargetName}" }
+    { "id": 1, "title": "Step 1 in ${targetLangName}", "desc": "Description in ${targetLangName}" },
+    { "id": 2, "title": "Step 2 in ${targetLangName}", "desc": "Description in ${targetLangName}" }
   ],
   "database_tables": [
-    { "table_name": "tbl_users", "columns": ["id (PK, UUID)", "col1", "col2"] },
-    { "table_name": "tbl_data", "columns": ["id (PK, UUID)", "fk_id (FK)", "col1"] }
+    { "table_name": "tbl_users", "columns": ["id (PK, UUID)", "col1", "col2"] }
   ],
   "api_endpoints": [
-    { "method": "POST", "path": "/api/v1/resource/create", "desc": "Description in ${langTargetName}" },
-    { "method": "GET", "path": "/api/v1/resource/{id}", "desc": "Description in ${langTargetName}" }
+    { "method": "POST", "path": "/api/v1/resource/create", "desc": "Description in ${targetLangName}" }
   ],
   "wireframe_sections": [
-    { "title": "Section Title in ${langTargetName}", "components": ["Component 1 in ${langTargetName}", "Component 2 in ${langTargetName}"] }
+    { "title": "Section Title in ${targetLangName}", "components": ["Component 1 in ${targetLangName}"] }
   ],
   "sprint_plan": [
-    { "sprint": "Sprint 1", "title": "Title in ${langTargetName}", "focus": "Deliverable focus in ${langTargetName}" },
-    { "sprint": "Sprint 2", "title": "Title in ${langTargetName}", "focus": "Deliverable focus in ${langTargetName}" }
+    { "sprint": "Sprint 1", "title": "Title in ${targetLangName}", "focus": "Deliverable focus in ${targetLangName}" }
   ],
   "roadmap_milestones": [
-    { "phase": "Phase 1 (Week 1-2)", "title": "Title in ${langTargetName}", "task": "Task in ${langTargetName}" }
+    { "phase": "Phase 1 (Week 1-2)", "title": "Title in ${targetLangName}", "task": "Task in ${targetLangName}" }
   ],
   "planning": {
     "effortHours": "240",
     "cloudCost": "$120/mo",
     "cloudDetail": "PostgreSQL + Edge Compute",
-    "risk": { "level": "Low-Medium", "title": "Risk in ${langTargetName}", "mitigation": "Mitigation in ${langTargetName}" }
+    "risk": { "level": "Low-Medium", "title": "Risk in ${targetLangName}", "mitigation": "Mitigation in ${targetLangName}" }
   }
 }
 Output ONLY raw valid JSON.`;
@@ -328,11 +393,11 @@ Output ONLY raw valid JSON.`;
           }
         }
       } catch (err) {
-        console.warn("Live Gemini API call error, using smart domain blueprint generator:", err);
+        console.warn("Live Gemini API call error, using 1-to-1 domain generator:", err);
       }
     }
 
-    const data = generateSmartDomainBlueprint(cleanPrompt, langKey);
+    const data = generateSmartDomainBlueprint(cleanPrompt, rawLang);
     return NextResponse.json({ success: true, data });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || "Failed to process request" }, { status: 500 });
