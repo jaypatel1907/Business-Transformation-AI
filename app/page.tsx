@@ -1,12 +1,15 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
+import { useRole } from "@/lib/role-context"
+import { RoleLogin } from "@/components/auth/role-login"
 import { TopNav } from "@/components/blueprint/top-nav"
 import { CompanionPanel, type ChatMessage } from "@/components/blueprint/companion-panel"
 import { Canvas, type TabId } from "@/components/blueprint/canvas"
 import { samplePrompt } from "@/lib/blueprint-data"
 import { saveBlueprintLocally, getLocalBlueprints } from "@/lib/supabase"
-import { Check, Copy, Share2, X, Download } from "lucide-react"
+import { exportCleanPDF, exportExecutiveReportPDF } from "@/lib/pdf-exporter"
+import { Check, Copy, Share2, X } from "lucide-react"
 
 let idCounter = 0
 const nextId = () => `m-${idCounter++}`
@@ -17,11 +20,12 @@ const initialMessages: ChatMessage[] = [
     role: "ai",
     label: "AI Solution Architect",
     content:
-      "Hello! I'm your Futurrizon AI Solution Architect. Describe your business requirement or upload a BRD/SOP document on the left, and I'll generate a complete, implementation-ready architecture blueprint across all modules.",
+      "Hello! I'm your Futurrizon AI Solution Architect. Describe your business requirement or upload a BRD/SOP document on the left, and I'll generate a complete, implementation-ready architecture blueprint tailored to your active workspace role.",
   },
 ]
 
 export default function Page() {
+  const { isAuthenticated, role } = useRole()
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages)
   const [generating, setGenerating] = useState(false)
   const [generated, setGenerated] = useState(false)
@@ -30,7 +34,7 @@ export default function Page() {
   const [targetLanguage, setTargetLanguage] = useState("English") // Defaulting to English
   const [lastPrompt, setLastPrompt] = useState<string>("")
   const [lastDocText, setLastDocText] = useState<string | undefined>(undefined)
-  
+
   // Share Modal states
   const [showShareModal, setShowShareModal] = useState(false)
   const [shareUrl, setShareUrl] = useState("")
@@ -47,55 +51,113 @@ export default function Page() {
         if (found && found.blueprint_data) {
           setBlueprintData(found.blueprint_data)
           setGenerated(true)
+          if (found.blueprint_data.target_language) {
+            setTargetLanguage(found.blueprint_data.target_language)
+          }
+          if (found.blueprint_data.user_problem) {
+            setLastPrompt(found.blueprint_data.user_problem)
+          }
         }
       }
     }
   }, [])
 
-  const runGeneration = useCallback(async (
-    userMessage?: ChatMessage,
-    rawPromptText?: string,
-    documentText?: string,
-    langToUse?: string
-  ) => {
-    if (userMessage) {
-      setMessages((prev) => [...prev, userMessage])
-    }
-    setGenerating(true)
+  const runGeneration = useCallback(
+    async (
+      userMessage?: ChatMessage,
+      rawPromptText?: string,
+      documentText?: string,
+      langToUse?: string
+    ) => {
+      if (userMessage) {
+        setMessages((prev) => [...prev, userMessage])
+      }
+      setGenerating(true)
 
-    const currentLang = langToUse || targetLanguage || "English"
-    const promptToSend =
-      rawPromptText ||
-      lastPrompt ||
-      "Analyze this business requirement and build architecture blueprint";
+      const currentLang = langToUse || targetLanguage || "English"
+      const promptToSend =
+        rawPromptText ||
+        lastPrompt ||
+        blueprintData?.user_problem ||
+        "Analyze this business requirement and build architecture blueprint"
 
-    const docToSend = documentText !== undefined ? documentText : lastDocText;
+      const docToSend = documentText !== undefined ? documentText : lastDocText
 
-    if (rawPromptText) setLastPrompt(rawPromptText);
-    if (documentText) setLastDocText(documentText);
+      if (rawPromptText) setLastPrompt(rawPromptText)
+      if (documentText) setLastDocText(documentText)
 
-    try {
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prompt: promptToSend,
-          documentText: docToSend,
-          language: currentLang,
-          targetLanguage: currentLang,
-          selectedModel: "gemini-1.5-flash"
-        }),
-      })
+      try {
+        const res = await fetch("/api/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            prompt: promptToSend,
+            documentText: docToSend,
+            language: currentLang,
+            targetLanguage: currentLang,
+            role: role || "Manager",
+            selectedModel: "gemini-1.5-flash",
+          }),
+        })
 
-      const result = await res.json()
+        const result = await res.json()
 
-      if (result.success && result.data) {
-        const data = result.data
-        setBlueprintData(data)
+        if (result.success && result.data) {
+          const data = result.data
+          setBlueprintData(data)
 
-        // Save record to local storage
-        saveBlueprintLocally(data)
+          // Save record to local storage
+          saveBlueprintLocally(data)
 
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: nextId(),
+              role: "ai",
+              label: "AI Solution Architect",
+              content: (
+                <div className="space-y-2">
+                  <p className="font-bold text-slate-900">
+                    ✨ Generated Blueprint ({role || "Manager"} • {currentLang}):{" "}
+                    <span className="text-indigo-700">{data.project_title}</span>
+                  </p>
+                  <p className="text-xs text-slate-600">
+                    Maturity: <strong>{data.digital_maturity}%</strong> | AI Readiness:{" "}
+                    <strong>{data.ai_adoption}%</strong> | Timeline: <strong>{data.timeline}</strong>
+                  </p>
+                  {role !== "Employee" && (
+                    <p className="text-xs text-slate-600">
+                      Est. Budget:{" "}
+                      <strong>
+                        {data.financial_estimation?.min_budget || "$18,000"} -{" "}
+                        {data.financial_estimation?.max_budget || "$32,000"}
+                      </strong>{" "}
+                      ({data.financial_estimation?.total_hours || "240 Hours"})
+                    </p>
+                  )}
+                  <ul className="list-disc space-y-1 pl-4 text-xs text-slate-700">
+                    <li>
+                      <strong className="text-slate-900">Process Workflow:</strong>{" "}
+                      {data.bpmn_steps?.length || 4} workflow steps mapped.
+                    </li>
+                    {role !== "Employee" && (
+                      <li>
+                        <strong className="text-slate-900">Database &amp; APIs:</strong>{" "}
+                        {data.database_tables?.map((t: any) => t.table_name).join(", ")} generated.
+                      </li>
+                    )}
+                  </ul>
+                </div>
+              ),
+            },
+          ])
+          setGenerated(true)
+          setActiveTab("dashboard")
+        } else {
+          throw new Error(result.error || "Failed to generate architecture blueprint")
+        }
+      } catch (err: any) {
+        console.error("AI Generation Error:", err)
         setMessages((prev) => [
           ...prev,
           {
@@ -103,96 +165,81 @@ export default function Page() {
             role: "ai",
             label: "AI Solution Architect",
             content: (
-              <div className="space-y-2">
-                <p className="font-bold text-slate-900">
-                  ✨ Generated Blueprint: <span className="text-indigo-700">{data.project_title}</span>
-                </p>
-                <p className="text-xs text-slate-600">
-                  Maturity: <strong>{data.digital_maturity}%</strong> | AI Readiness: <strong>{data.ai_adoption}%</strong> | Timeline: <strong>{data.timeline}</strong>
-                </p>
-                <p className="text-xs text-slate-600">
-                  Est. Budget: <strong>{data.financial_estimation?.min_budget || "$18,000"} - {data.financial_estimation?.max_budget || "$32,000"}</strong> ({data.financial_estimation?.total_hours || "240 Hours"})
-                </p>
-                <ul className="list-disc space-y-1 pl-4 text-xs text-slate-700">
-                  <li>
-                    <strong className="text-slate-900">Process Workflow:</strong> {data.bpmn_steps?.length || 4} workflow steps mapped.
-                  </li>
-                  <li>
-                    <strong className="text-slate-900">Database &amp; APIs:</strong> {data.database_tables?.map((t: any) => t.table_name).join(", ")} generated.
-                  </li>
-                </ul>
+              <div className="space-y-1 text-xs text-red-600">
+                <p className="font-semibold">⚠️ Generation Notice</p>
+                <p>{err.message || "Failed to generate blueprint"}</p>
               </div>
             ),
           },
         ])
-        setGenerated(true)
-        setActiveTab("dashboard")
-      } else {
-        throw new Error(result.error || "Failed to generate architecture blueprint")
+      } finally {
+        setGenerating(false)
       }
-    } catch (err: any) {
-      console.error("AI Generation Error:", err)
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: nextId(),
-          role: "ai",
-          label: "AI Solution Architect",
-          content: (
-            <div className="space-y-1 text-xs text-red-600">
-              <p className="font-semibold">⚠️ Generation Notice</p>
-              <p>{err.message || "Failed to generate blueprint"}</p>
-            </div>
-          ),
-        },
-      ])
-    } finally {
-      setGenerating(false)
-    }
-  }, [targetLanguage, lastPrompt, lastDocText])
+    },
+    [targetLanguage, lastPrompt, lastDocText, role, blueprintData]
+  )
 
-  const handleLanguageChange = useCallback((newLang: string) => {
-    setTargetLanguage(newLang)
-    if (generated || lastPrompt) {
-      runGeneration(undefined, lastPrompt || samplePrompt, lastDocText, newLang)
-    }
-  }, [generated, lastPrompt, lastDocText, runGeneration])
+  const handleLanguageChange = useCallback(
+    (newLang: string) => {
+      setTargetLanguage(newLang)
+      const promptToReplay = lastPrompt || blueprintData?.user_problem || samplePrompt
+      if (generated || blueprintData) {
+        runGeneration(undefined, promptToReplay, lastDocText, newLang)
+      }
+    },
+    [generated, lastPrompt, blueprintData, lastDocText, runGeneration]
+  )
 
   const handleSubmit = useCallback(
     (text: string, documentText?: string) => {
-      runGeneration({ id: nextId(), role: "user", label: "Business Requirement", content: text }, text, documentText)
+      runGeneration(
+        { id: nextId(), role: "user", label: "Business Requirement", content: text },
+        text,
+        documentText
+      )
     },
-    [runGeneration],
+    [runGeneration]
   )
 
-  const handleUpload = useCallback(
-    (fileName: string) => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: nextId(),
-          role: "user",
-          label: "Document Attached",
-          content: (
-            <span>
-              Attached <strong className="text-indigo-600">{fileName}</strong> — parsing content & building architecture...
-            </span>
-          ),
-        },
-      ])
-    },
-    [],
-  )
+  const handleUpload = useCallback((fileName: string) => {
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: nextId(),
+        role: "user",
+        label: "Document Attached",
+        content: (
+          <span>
+            Attached <strong className="text-indigo-600">{fileName}</strong> — parsing content & building architecture...
+          </span>
+        ),
+      },
+    ])
+  }, [])
 
   const handleLoadSample = useCallback(() => {
-    runGeneration({ id: nextId(), role: "user", label: "Sample Requirement", content: samplePrompt }, samplePrompt)
+    runGeneration(
+      { id: nextId(), role: "user", label: "Sample Requirement", content: samplePrompt },
+      samplePrompt
+    )
   }, [runGeneration])
 
-  // Export handlers
-  const handleExportPDF = useCallback(() => {
+  // PDF Export Handlers (Clean Target Container Exporter)
+  const handleExportExecutivePDF = useCallback(async () => {
     if (!blueprintData) return
-    window.print()
-  }, [blueprintData])
+    await exportExecutiveReportPDF(blueprintData, targetLanguage)
+  }, [blueprintData, targetLanguage])
+
+  const handleExportTabPDF = useCallback(async () => {
+    if (!blueprintData) return
+    const filename = `Blueprint-${activeTab.toUpperCase()}-${Date.now()}`
+    await exportCleanPDF({ elementId: "blueprint-canvas-content", filename })
+  }, [blueprintData, activeTab])
+
+  const handleExportChatPDF = useCallback(async () => {
+    const filename = `Blueprint-Chat-History-${Date.now()}`
+    await exportCleanPDF({ elementId: "chat-messages-container", filename })
+  }, [])
 
   const handleExportJSON = useCallback(() => {
     if (!blueprintData) return
@@ -214,6 +261,7 @@ export default function Page() {
 ## Executive Summary
 - **Requirement**: "${blueprintData.user_problem || "Business Solution"}"
 - **Target Language**: ${blueprintData.target_language || targetLanguage}
+- **Active Role**: ${role || "Manager"}
 - **Digital Maturity Score**: ${blueprintData.digital_maturity}%
 - **AI Adoption Readiness**: ${blueprintData.ai_adoption}%
 - **MVP Timeline**: ${blueprintData.timeline}
@@ -239,7 +287,7 @@ ${blueprintData.api_endpoints?.map((e: any) => `- \`${e.method} ${e.path}\`: ${e
     document.body.appendChild(downloadAnchor)
     downloadAnchor.click()
     downloadAnchor.remove()
-  }, [blueprintData, targetLanguage])
+  }, [blueprintData, targetLanguage, role])
 
   // Save & Share Handler
   const handleSaveAndShare = useCallback(() => {
@@ -256,11 +304,19 @@ ${blueprintData.api_endpoints?.map((e: any) => `- \`${e.method} ${e.path}\`: ${e
     setTimeout(() => setCopied(false), 2000)
   }, [shareUrl])
 
+  // If not authenticated, render Role Selection Login gate
+  if (!isAuthenticated) {
+    return <RoleLogin />
+  }
+
+  // If authenticated, render full Workspace
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-slate-50 text-slate-900 font-sans">
       <TopNav
         onLoadSample={handleLoadSample}
-        onExportPDF={handleExportPDF}
+        onExportExecutivePDF={handleExportExecutivePDF}
+        onExportTabPDF={handleExportTabPDF}
+        onExportChatPDF={handleExportChatPDF}
         onExportMarkdown={handleExportMarkdown}
         onExportJSON={handleExportJSON}
         onSaveAndShare={handleSaveAndShare}
@@ -269,7 +325,7 @@ ${blueprintData.api_endpoints?.map((e: any) => `- \`${e.method} ${e.path}\`: ${e
         generating={generating}
         hasBlueprintData={!!blueprintData}
       />
-      
+
       <main className="flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
         <CompanionPanel
           messages={messages}
@@ -283,6 +339,7 @@ ${blueprintData.api_endpoints?.map((e: any) => `- \`${e.method} ${e.path}\`: ${e
           generated={generated}
           generating={generating}
           data={blueprintData}
+          targetLanguage={targetLanguage}
         />
       </main>
 

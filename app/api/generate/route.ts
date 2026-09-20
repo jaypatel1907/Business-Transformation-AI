@@ -1,239 +1,509 @@
 import { NextRequest, NextResponse } from "next/server";
 
-function stringHash(str: string): number {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash |= 0;
-  }
-  return Math.abs(hash);
-}
-
-// 1-to-1 Multilingual Translation Dictionary for Domain Fallback Engine
-const languageDict: Record<string, any> = {
-  en: {
-    langName: "English",
-    defaultTitle: "Custom Enterprise Solution Architecture",
-    initiatives: [
-      { title: "Core Process Automation Suite", impact: "High Impact", desc: "Automates key bottleneck workflows and manual steps." },
-      { title: "AI Decision Intelligence Engine", impact: "High Impact", desc: "Provides real-time decision support, automated anomaly detection, and workload forecasting." }
-    ],
-    steps: [
-      { id: 1, title: "1. Intake & Validation", desc: "System captures initial request and verifies user input payload" },
-      { id: 2, title: "2. Business Logic Engine", desc: "Evaluates business constraints, permissions, and workflow state" },
-      { id: 3, title: "3. Service Execution", desc: "Processes database transactions and executes background queues" },
-      { id: 4, title: "4. Notification & Audit Sync", desc: "Syncs real-time user UI and appends cryptographic audit record" }
-    ],
-    endpoints: [
-      { method: "POST", path: "/api/v1/records/create", desc: "Create new record & trigger workflow pipeline" },
-      { method: "GET", path: "/api/v1/records/{id}", desc: "Query real-time execution status and data payload" },
-      { method: "PUT", path: "/api/v1/records/update", desc: "Update record attributes and state transition" }
-    ],
-    wireframeSections: [
-      { title: "Navigation Header Bar", components: ["App Logo", "Global Search Input", "User Profile Avatar", "Notification Bell"] },
-      { title: "Main Workspace Canvas", components: ["Requirement Input Form", "Real-time Metrics Dashboard", "Action Trigger Panel"] },
-      { title: "Audit Drawer", components: ["Activity Stream Log", "Export Controls", "Status Indicator"] }
-    ],
-    sprintPlan: [
-      { sprint: "Sprint 1 (Week 1)", title: "Architecture & Data Model", focus: "Supabase DB Schemas, RLS Policies & Auth Integration" },
-      { sprint: "Sprint 2 (Week 2)", title: "API Gateway & Middleware", focus: "REST Endpoints, Validation Rules & Error Handling" },
-      { sprint: "Sprint 3 (Week 3)", title: "AI Core & Pipeline Binding", focus: "Gemini API integration, Prompt Engineering & Triage Engine" },
-      { sprint: "Sprint 4 (Week 4)", title: "Frontend Component Suite", focus: "Tailwind UI, Dashboard Metrics & Interactive Wireframes" },
-      { sprint: "Sprint 5 (Week 5)", title: "Security & Load Testing", focus: "Penetration testing, Redis Caching & Latency Optimization" },
-      { sprint: "Sprint 6 (Week 6+)", title: "Production Launch & Handoff", focus: "Vercel Deployment, CI/CD pipeline & Documentation" }
-    ],
-    riskTitle: "Data Isolation & High Concurrency",
-    riskMitigation: "Implement Row Level Security (RLS) policies and Redis caching for hot endpoints."
-  },
-  gu: {
-    langName: "Gujarati (ગુજરાતી)",
-    defaultTitle: "કસ્ટમ એન્ટરપ્રાઇઝ સોલ્યુશન આર્કિટેક્ચર",
-    initiatives: [
-      { title: "મુખ્ય પ્રક્રિયા ઓટોમેશન શ્રૃંખલા", impact: "ઉચ્ચ અસર (High Impact)", desc: "મુખ્ય કાર્યપ્રવાહની અડચણો અને પ્રક્રિયાઓને સ્વચાલિત કરે છે." },
-      { title: "AI ડિસિઝન ઇન્ટેલિજન્સ એન્જિન", impact: "ઉચ્ચ અસર (High Impact)", desc: "રીયલ-ટાઇમ નિર્ણય સપોર્ટ, સ્વચાલિત વિસંગતતા શોધ અને વર્કલોડ આગાહી પૂરી પાડે છે." }
-    ],
-    steps: [
-      { id: 1, title: "૧. ડેટા ઇનટેક અને ચકાસણી", desc: "સિસ્ટમ વપરાશકર્તાની વિનંતી અને ડેટા સબમિશન સ્વીકારે છે" },
-      { id: 2, title: "૨. AI નિયમ ચકાસણી એન્જિન", desc: "વ્યવસાયિક મર્યાદાઓ, પરવાનગીઓ અને પ્રક્રિયા નિયમો તપાસે છે" },
-      { id: 3, title: "૩. સ્વચાલિત સર્વિસ એક્ઝિક્યુશન", desc: "ડેટાબેઝ વ્યવહારો અને બેકગ્રાઉન્ડ પ્રોસેસિંગ ક્યુ ચલાવે છે" },
-      { id: 4, title: "૪. નોટિફિકેશન અને ઓડિટ સિંક", desc: "યુઝર ડેશબોર્ડ અપડેટ કરે છે અને ઓડિટ લોગ સુરક્ષિત કરે છે" }
-    ],
-    endpoints: [
-      { method: "POST", path: "/api/v1/records/create", desc: "નવો રેકોર્ડ બનાવો અને AI વર્કફ્લો શરૂ કરો" },
-      { method: "GET", path: "/api/v1/records/{id}", desc: "રીયલ-ટાઇમ સ્થિતિ અને વિગતો મેળવો" },
-      { method: "PUT", path: "/api/v1/records/update", desc: "રેકોર્ડની સ્થિતિ અને લાક્ષણિકતાઓ અપડેટ કરો" }
-    ],
-    wireframeSections: [
-      { title: "નેવિગેશન અને હેડર બાર", components: ["એપ લોગો", "ગ્લોબલ સર્ચ", "યુઝર પ્રોફાઇલ", "નોટિફિકેશન બેલ"] },
-      { title: "મુખ્ય વર્કસ્પેસ કેનવાસ", components: ["ઇનપુટ ફોર્મ", "રીયલ-ટાઇમ મેટ્રિક્સ ડેશબોર્ડ", "એક્શન પેનલ"] },
-      { title: "ઓડિટ ડ્રોઅર", components: ["પ્રવૃત્તિ સ્ટ્રીમ", "એક્સપોર્ટ કંટ્રોલ્સ", "સ્ટેટસ લોગ"] }
-    ],
-    sprintPlan: [
-      { sprint: "સ્પ્રિન્ટ ૧ (અઠવાડિયું ૧)", title: "આર્કિટેક્ચર અને ડેટા મોડલ", focus: "Supabase ડેટાબેઝ સ્કીમા, RLS પોલિસી અને ઓથ સેટઅપ" },
-      { sprint: "સ્પ્રિન્ટ ૨ (અઠવાડિયું ૨)", title: "API ગેટવે અને મિડલવેર", focus: "REST એન્ડપોઇન્ટ્સ અને ભૂલ નિયંત્રણ" },
-      { sprint: "સ્પ્રિન્ટ ૩ (અઠવાડિયું ૩)", title: "AI કોર પ્રોસેસિંગ", focus: "Gemini API બાઇન્ડિંગ અને પ્રોમ્પ એન્જિનિયરિંગ" },
-      { sprint: "સ્પ્રિન્ટ ૪ (અઠવાડિયું ૪)", title: "ફ્રન્ટએન્ડ કમ્પોનન્ટ યુઆઈ", focus: "Tailwind UI, ડેશબોર્ડ મેટ્રિક્સ અને વાયરફ્રેમ્સ" },
-      { sprint: "સ્પ્રિન્ટ ૫ (અઠવાડિયું ૫)", title: "સુરક્ષા અને પરફોર્મન્સ ટેસ્ટિંગ", focus: "સુરક્ષા ઓડિટ, Redis કેશિંગ અને લેટન્સી સુધારણા" },
-      { sprint: "સ્પ્રિન્ટ ૬ (અઠવાડિયું ૬+)", title: "લાઈવ લોન્ચ અને હેન્ડઓવર", focus: "Vercel ડિપ્લોયમેન્ટ અને CI/CD પાઇપલાઇન" }
-    ],
-    riskTitle: "ડેટા આઇસોલેશન અને હાઇ કન્કરન્સી",
-    riskMitigation: "Row Level Security (RLS) પોલિસી અને સર્વર કેશિંગ સેટઅપ લાગુ કરો."
-  },
-  hi: {
-    langName: "Hindi (हिन्दी)",
-    defaultTitle: "कस्टम एंटरप्राइज समाधान आर्किटेक्चर",
-    initiatives: [
-      { title: "मुख्य प्रक्रिया स्वचालन प्रणाली", impact: "उच्च प्रभाव (High Impact)", desc: "मुख्य कार्यप्रवाह की बाधाओं और प्रक्रियाओं को स्वचालित करता है।" },
-      { title: "AI निर्णय इंटेलिजेंस इंजन", impact: "उच्च प्रभाव (High Impact)", desc: "रियल-टाइम निर्णय सहायता और कार्यभार पूर्वानुमान प्रदान करता है।" }
-    ],
-    steps: [
-      { id: 1, title: "१. डेटा इनटेक एवं सत्यापन", desc: "प्रणाली उपयोगकर्ता के अनुरोध और डेटा सबमिशन को स्वीकार करती है" },
-      { id: 2, title: "२. AI नियम सत्यापन इंजन", desc: "व्यावसायिक सीमाओं और प्रक्रिया नियमों की जांच करता है" },
-      { id: 3, title: "३. स्वचालित सेवा निष्पादन", desc: "डेटाबेस लेनदेन और बैकग्राउंड प्रोसेसिंग कतार चलाता है" },
-      { id: 4, title: "४. अधिसूचना एवं ऑडिट सिंक", desc: "उपयोगकर्ता डैशबोर्ड अपडेट करता है और ऑडिट लॉग सुरक्षित करता है" }
-    ],
-    endpoints: [
-      { method: "POST", path: "/api/v1/records/create", desc: "नया रिकॉर्ड बनाएं और वर्कफ़्लो प्रारंभ करें" },
-      { method: "GET", path: "/api/v1/records/{id}", desc: "रियल-टाइम स्थिति और विवरण प्राप्त करें" },
-      { method: "PUT", path: "/api/v1/records/update", desc: "रिकॉर्ड स्थिति अपडेट करें" }
-    ],
-    wireframeSections: [
-      { title: "नेविगेशन एवं हेडर बार", components: ["ऐप लोगो", "ग्लोबल खोज", "उपयोगकर्ता प्रोफ़ाइल", "अधिसूचना"] },
-      { title: "मुख्य कार्यस्थल", components: ["इनपुट फ़ॉर्म", "डैशबोर्ड", "एक्शन पैनल"] },
-      { title: "ऑडिट दराज", components: ["गतिविधि स्ट्रीम", "निर्यात नियंत्रण", "स्थिति लॉग"] }
-    ],
-    sprintPlan: [
-      { sprint: "स्प्रिंट १ (सप्ताह १)", title: "आर्किटेक्चर एवं डेटा मॉडल", focus: "Supabase डेटाबेस स्कीमा और ऑथ सेटअप" },
-      { sprint: "स्प्रिंट २ (सप्ताह २)", title: "API गेटवे", focus: "REST एंडपॉइंट्स और एरर हैंडलिंग" },
-      { sprint: "स्प्रिंट ३ (सप्ताह ३)", title: "AI कोर प्रोसेसिंग", focus: "Gemini API और प्रॉम्प्ट इंजीनियरिंग" }
-    ],
-    riskTitle: "डेटा अलगाव और उच्च समवर्तीता",
-    riskMitigation: "Row Level Security (RLS) नीतियों और कैशिंग को लागू करें।"
-  },
-  es: {
-    langName: "Spanish (Español)",
-    defaultTitle: "Arquitectura de Solución Empresarial",
-    initiatives: [
-      { title: "Automatización de Procesos Principales", impact: "Alto Impacto", desc: "Automatiza los cuellos de botella clave del flujo de trabajo." },
-      { title: "Motor de Inteligencia de Decisiones IA", impact: "Alto Impacto", desc: "Proporciona soporte de decisiones en tiempo real y pronósticos." }
-    ],
-    steps: [
-      { id: 1, title: "1. Entrada y Validación", desc: "Captura la solicitud inicial del usuario" },
-      { id: 2, title: "2. Motor de Reglas IA", desc: "Verifica restricciones comerciales y permisos" },
-      { id: 3, title: "3. Ejecución de Servicios", desc: "Procesa transacciones de base de datos" },
-      { id: 4, title: "4. Sincronización y Auditoría", desc: "Actualiza el panel de usuario y guarda auditoría" }
-    ],
-    endpoints: [
-      { method: "POST", path: "/api/v1/records/create", desc: "Crear nuevo registro e iniciar flujo" },
-      { method: "GET", path: "/api/v1/records/{id}", desc: "Obtener estado en tiempo real" }
-    ],
-    wireframeSections: [
-      { title: "Barra de Navegación", components: ["Logotipo", "Búsqueda Global", "Perfil", "Notificaciones"] },
-      { title: "Panel Principal", components: ["Formulario", "Métricas", "Panel de Acción"] }
-    ],
-    sprintPlan: [
-      { sprint: "Sprint 1 (Semana 1)", title: "Arquitectura y Modelo de Datos", focus: "Esquema Supabase y RLS" },
-      { sprint: "Sprint 2 (Semana 2)", title: "Gateway de API", focus: "Rutas REST y Manejo de Errores" }
-    ],
-    riskTitle: "Aislamiento de Datos y Concurrencia",
-    riskMitigation: "Implementar políticas RLS y almacenamiento en caché Redis."
-  },
-  fr: {
-    langName: "French (Français)",
-    defaultTitle: "Architecture de Solution d'Entreprise",
-    initiatives: [
-      { title: "Automation des Processus Clés", impact: "Impact Élevé", desc: "Automatise les goulots d'étranglement principaux." },
-      { title: "Moteur d'Intelligence Décisionnelle IA", impact: "Impact Élevé", desc: "Support décisionnel en temps réel et prévisions." }
-    ],
-    steps: [
-      { id: 1, title: "1. Saisie et Validation", desc: "Capture la demande initiale de l'utilisateur" },
-      { id: 2, title: "2. Moteur de Règles IA", desc: "Vérifie les contraintes et autorisations" },
-      { id: 3, title: "3. Exécution du Service", desc: "Traite les transactions en base de données" },
-      { id: 4, title: "4. Notification et Audit", desc: "Met à jour le tableau de bord et l'audit" }
-    ],
-    endpoints: [
-      { method: "POST", path: "/api/v1/records/create", desc: "Créer un enregistrement et lancer le flux" }
-    ],
-    wireframeSections: [
-      { title: "Barre de Navigation", components: ["Logo", "Recherche", "Profil", "Notifications"] }
-    ],
-    sprintPlan: [
-      { sprint: "Sprint 1 (Semaine 1)", title: "Architecture & Modèle de Données", focus: "Schéma Supabase et Auth" }
-    ],
-    riskTitle: "Isolation des Données et Concurrence",
-    riskMitigation: "Mettre en œuvre les politiques RLS et le cache Redis."
-  },
-  de: {
-    langName: "German (Deutsch)",
-    defaultTitle: "Unternehmens-Lösungsarchitektur",
-    initiatives: [
-      { title: "Kerngeschäftsprozess-Automatisierung", impact: "Hohe Auswirkung", desc: "Automatisiert Engpässe im Arbeitsablauf." },
-      { title: "KI-Entscheidungs-Engine", impact: "Hohe Auswirkung", desc: "Echtzeit-Entscheidungsunterstützung und Prognosen." }
-    ],
-    steps: [
-      { id: 1, title: "1. Erfassung & Validierung", desc: "Erfasst die initiale Benutzeranfrage" },
-      { id: 2, title: "2. KI-Regelprüfung", desc: "Prüft Geschäftsbeschränkungen und Rechte" }
-    ],
-    endpoints: [
-      { method: "POST", path: "/api/v1/records/create", desc: "Neuen Datensatz erstellen" }
-    ],
-    wireframeSections: [
-      { title: "Navigationsleiste", components: ["Logo", "Suche", "Profil", "Benachrichtigungen"] }
-    ],
-    sprintPlan: [
-      { sprint: "Sprint 1 (Woche 1)", title: "Architektur & Datenmodell", focus: "Supabase-Schemas und Auth" }
-    ],
-    riskTitle: "Datentrennung & Nebenläufigkeit",
-    riskMitigation: "Implementieren Sie RLS-Richtlinien und Redis-Caching."
-  }
-};
-
-// Aliases mapping string names to keys
-languageDict["English"] = languageDict["en"];
-languageDict["Gujarati"] = languageDict["gu"];
-languageDict["Hindi"] = languageDict["hi"];
-languageDict["Spanish"] = languageDict["es"];
-languageDict["French"] = languageDict["fr"];
-languageDict["German"] = languageDict["de"];
-
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { prompt, documentText, language, targetLanguage, selectedModel = "gemini-1.5-flash" } = body;
-    
-    // Support language keys cleanly
-    const rawLang = (language || targetLanguage || "English").trim();
-    const langKey = rawLang.toLowerCase();
+    const {
+      prompt,
+      documentText,
+      language = "English",
+      targetLanguage,
+      role = "Manager",
+      selectedModel = "gemini-1.5-flash",
+    } = await req.json();
 
-    if (!prompt && !documentText) {
-      return NextResponse.json({ error: "Prompt or Document input is required" }, { status: 400 });
-    }
-
-    const cleanPrompt = `${prompt || ""} ${documentText ? `\n[Document Context]: ${documentText.slice(0, 3000)}` : ""}`.trim();
+    const rawLang = targetLanguage || language || "English";
     const apiKey = process.env.GEMINI_API_KEY;
 
-    // Strict 1-to-1 language fallback generator
-    const generateSmartDomainBlueprint = (p: string, targetLangStr: string) => {
-      const lower = p.toLowerCase();
-      const hash = stringHash(p);
-      
-      // Strict 1-to-1 selection: English -> en, Gujarati -> gu, Hindi -> hi, Spanish -> es, French -> fr, German -> de
-      const dict = languageDict[targetLangStr] || languageDict[targetLangStr.toLowerCase()] || languageDict["en"];
+    let cleanPrompt = prompt ? prompt.trim() : "";
+    if (documentText && documentText.trim().length > 0) {
+      cleanPrompt += `\n\n[ATTACHED BUSINESS DOCUMENT / BRD]:\n${documentText.slice(0, 3000)}`;
+    }
 
-      let title = dict.defaultTitle || "Custom Enterprise Architecture";
-      let maturityScore = 82 + (hash % 12);
-      let aiReadinessScore = 84 + (hash % 13);
-      let weeksTimeline = 5 + (hash % 5);
-      let totalHours = weeksTimeline * 40;
-      let hourlyRate = 75;
-      let minBudget = totalHours * hourlyRate;
-      let maxBudget = minBudget + 10000;
+    if (!cleanPrompt) {
+      cleanPrompt = "Build an enterprise AI solution architecture";
+    }
+
+    // Helper: Dynamic Domain-Aware Schema & API Generator
+    const getDomainSpecificSchemaAndApis = (p: string) => {
+      const lower = p.toLowerCase();
+
+      // 1. E-Commerce & Retail
+      if (
+        lower.includes("shop") ||
+        lower.includes("store") ||
+        lower.includes("cart") ||
+        lower.includes("product") ||
+        lower.includes("ecommerce") ||
+        lower.includes("e-commerce") ||
+        lower.includes("retail") ||
+        lower.includes("order") ||
+        lower.includes("inventory")
+      ) {
+        return {
+          tables: [
+            {
+              table_name: "tbl_products",
+              columns: [
+                "id (PK, UUID)",
+                "title (VARCHAR)",
+                "sku (UNIQUE VARCHAR)",
+                "category_id (FK -> tbl_categories.id)",
+                "price (NUMERIC)",
+                "stock_quantity (INTEGER)",
+                "created_at (TIMESTAMP)",
+              ],
+            },
+            {
+              table_name: "tbl_orders",
+              columns: [
+                "id (PK, UUID)",
+                "customer_id (FK -> tbl_customers.id)",
+                "order_status (ENUM)",
+                "total_amount (DECIMAL)",
+                "payment_status (VARCHAR)",
+                "created_at (TIMESTAMP)",
+              ],
+            },
+            {
+              table_name: "tbl_order_items",
+              columns: [
+                "id (PK, UUID)",
+                "order_id (FK -> tbl_orders.id)",
+                "product_id (FK -> tbl_products.id)",
+                "quantity (INTEGER)",
+                "unit_price (DECIMAL)",
+              ],
+            },
+            {
+              table_name: "tbl_customers",
+              columns: [
+                "id (PK, UUID)",
+                "full_name (VARCHAR)",
+                "email (UNIQUE VARCHAR)",
+                "shipping_address (JSONB)",
+                "phone (VARCHAR)",
+              ],
+            },
+          ],
+          endpoints: [
+            { method: "POST", path: "/api/v1/orders/checkout", desc: "Process cart checkout and initiate payment gateway" },
+            { method: "GET", path: "/api/v1/products/catalog", desc: "Query product inventory with semantic AI search & filters" },
+            { method: "GET", path: "/api/v1/orders/{id}/tracking", desc: "Retrieve real-time order & delivery logistics status" },
+            { method: "PUT", path: "/api/v1/inventory/adjust", desc: "Update warehouse stock quantities and trigger restock alerts" },
+            { method: "POST", path: "/api/v1/webhooks/payment", desc: "Listen for asynchronous payment confirmation webhooks" },
+          ],
+        };
+      }
+
+      // 2. Healthcare & Telemedicine
+      if (
+        lower.includes("health") ||
+        lower.includes("doctor") ||
+        lower.includes("patient") ||
+        lower.includes("clinic") ||
+        lower.includes("hospital") ||
+        lower.includes("medical") ||
+        lower.includes("appointment") ||
+        lower.includes("prescription")
+      ) {
+        return {
+          tables: [
+            {
+              table_name: "tbl_patients",
+              columns: [
+                "id (PK, UUID)",
+                "full_name (VARCHAR)",
+                "dob (DATE)",
+                "blood_group (VARCHAR)",
+                "emergency_contact (VARCHAR)",
+                "created_at (TIMESTAMP)",
+              ],
+            },
+            {
+              table_name: "tbl_doctors",
+              columns: [
+                "id (PK, UUID)",
+                "full_name (VARCHAR)",
+                "specialization (VARCHAR)",
+                "license_no (UNIQUE VARCHAR)",
+                "consultation_fee (NUMERIC)",
+                "schedule (JSONB)",
+              ],
+            },
+            {
+              table_name: "tbl_appointments",
+              columns: [
+                "id (PK, UUID)",
+                "patient_id (FK -> tbl_patients.id)",
+                "doctor_id (FK -> tbl_doctors.id)",
+                "appointment_time (TIMESTAMPTZ)",
+                "status (ENUM)",
+              ],
+            },
+            {
+              table_name: "tbl_medical_records",
+              columns: [
+                "id (PK, UUID)",
+                "patient_id (FK -> tbl_patients.id)",
+                "diagnosis_summary (TEXT)",
+                "ai_risk_score (FLOAT)",
+                "lab_attachments (JSONB)",
+              ],
+            },
+          ],
+          endpoints: [
+            { method: "POST", path: "/api/v1/appointments/book", desc: "Book consultation slot and send calendar notifications" },
+            { method: "GET", path: "/api/v1/patients/{id}/ehr", desc: "Query encrypted Electronic Health Records (EHR)" },
+            { method: "POST", path: "/api/v1/ai/triage-assessment", desc: "Analyze symptoms with Gemini medical triage engine" },
+            { method: "PUT", path: "/api/v1/prescriptions/issue", desc: "Generate and digitally sign e-prescription" },
+          ],
+        };
+      }
+
+      // 3. Fintech, Banking & Payments
+      if (
+        lower.includes("bank") ||
+        lower.includes("fintech") ||
+        lower.includes("wallet") ||
+        lower.includes("loan") ||
+        lower.includes("credit") ||
+        lower.includes("payment") ||
+        lower.includes("money") ||
+        lower.includes("transaction")
+      ) {
+        return {
+          tables: [
+            {
+              table_name: "tbl_accounts",
+              columns: [
+                "id (PK, UUID)",
+                "account_number (UNIQUE VARCHAR)",
+                "user_id (UUID)",
+                "balance (NUMERIC)",
+                "currency (VARCHAR)",
+                "status (VARCHAR)",
+              ],
+            },
+            {
+              table_name: "tbl_transactions",
+              columns: [
+                "id (PK, UUID)",
+                "source_account_id (FK -> tbl_accounts.id)",
+                "dest_account_id (FK -> tbl_accounts.id)",
+                "amount (NUMERIC)",
+                "txn_type (ENUM)",
+                "timestamp (TIMESTAMPTZ)",
+              ],
+            },
+            {
+              table_name: "tbl_kyc_records",
+              columns: [
+                "id (PK, UUID)",
+                "user_id (UUID)",
+                "id_document_type (VARCHAR)",
+                "verification_status (VARCHAR)",
+                "aml_score (FLOAT)",
+              ],
+            },
+            {
+              table_name: "tbl_loans",
+              columns: [
+                "id (PK, UUID)",
+                "borrower_id (UUID)",
+                "principal_amount (NUMERIC)",
+                "interest_rate (FLOAT)",
+                "approval_status (VARCHAR)",
+              ],
+            },
+          ],
+          endpoints: [
+            { method: "POST", path: "/api/v1/transfers/execute", desc: "Process instantaneous fund transfer with 2FA check" },
+            { method: "GET", path: "/api/v1/accounts/{id}/statement", desc: "Fetch transaction audit ledger and analytics" },
+            { method: "POST", path: "/api/v1/kyc/verify-identity", desc: "Run AI facial match & ID OCR document verification" },
+            { method: "POST", path: "/api/v1/loans/underwriting", desc: "Assess borrower credit risk and calculate loan approval" },
+          ],
+        };
+      }
+
+      // 4. Logistics, Supply Chain & Fleet
+      if (
+        lower.includes("delivery") ||
+        lower.includes("shipment") ||
+        lower.includes("logistics") ||
+        lower.includes("fleet") ||
+        lower.includes("warehouse") ||
+        lower.includes("transport") ||
+        lower.includes("freight")
+      ) {
+        return {
+          tables: [
+            {
+              table_name: "tbl_shipments",
+              columns: [
+                "id (PK, UUID)",
+                "tracking_number (UNIQUE VARCHAR)",
+                "sender_id (UUID)",
+                "destination_address (TEXT)",
+                "status (ENUM)",
+                "weight_kg (NUMERIC)",
+              ],
+            },
+            {
+              table_name: "tbl_fleet_vehicles",
+              columns: [
+                "id (PK, UUID)",
+                "license_plate (VARCHAR)",
+                "vehicle_type (VARCHAR)",
+                "current_gps_lat (FLOAT)",
+                "current_gps_lng (FLOAT)",
+                "status (VARCHAR)",
+              ],
+            },
+            {
+              table_name: "tbl_warehouses",
+              columns: [
+                "id (PK, UUID)",
+                "facility_name (VARCHAR)",
+                "location_city (VARCHAR)",
+                "capacity_sqft (INTEGER)",
+                "manager_contact (VARCHAR)",
+              ],
+            },
+          ],
+          endpoints: [
+            { method: "POST", path: "/api/v1/shipments/create", desc: "Register parcel consignment and generate barcode" },
+            { method: "GET", path: "/api/v1/fleet/telemetry", desc: "Stream live GPS coordinates and route ETA" },
+            { method: "PUT", path: "/api/v1/routes/optimize", desc: "Compute AI dispatch routing for lowest fuel consumption" },
+          ],
+        };
+      }
+
+      // 5. Education & Learning (EdTech)
+      if (
+        lower.includes("student") ||
+        lower.includes("course") ||
+        lower.includes("school") ||
+        lower.includes("college") ||
+        lower.includes("education") ||
+        lower.includes("quiz") ||
+        lower.includes("learning")
+      ) {
+        return {
+          tables: [
+            {
+              table_name: "tbl_courses",
+              columns: [
+                "id (PK, UUID)",
+                "course_title (VARCHAR)",
+                "instructor_id (UUID)",
+                "category (VARCHAR)",
+                "duration_weeks (INTEGER)",
+                "created_at (TIMESTAMP)",
+              ],
+            },
+            {
+              table_name: "tbl_students",
+              columns: [
+                "id (PK, UUID)",
+                "full_name (VARCHAR)",
+                "student_email (UNIQUE VARCHAR)",
+                "grade_level (VARCHAR)",
+                "enrolled_since (DATE)",
+              ],
+            },
+            {
+              table_name: "tbl_enrollments",
+              columns: [
+                "id (PK, UUID)",
+                "student_id (FK -> tbl_students.id)",
+                "course_id (FK -> tbl_courses.id)",
+                "progress_percentage (INTEGER)",
+                "completion_status (VARCHAR)",
+              ],
+            },
+            {
+              table_name: "tbl_assignments",
+              columns: [
+                "id (PK, UUID)",
+                "course_id (FK -> tbl_courses.id)",
+                "title (VARCHAR)",
+                "due_date (TIMESTAMPTZ)",
+                "max_score (INTEGER)",
+              ],
+            },
+          ],
+          endpoints: [
+            { method: "POST", path: "/api/v1/courses/enroll", desc: "Register student in course track and assign syllabus" },
+            { method: "GET", path: "/api/v1/students/{id}/gradebook", desc: "Fetch academic performance and milestone progress" },
+            { method: "POST", path: "/api/v1/ai/tutor-assistant", desc: "Query interactive AI homework tutor for student guidance" },
+            { method: "POST", path: "/api/v1/assignments/submit", desc: "Upload assignment response and trigger auto-grading" },
+          ],
+        };
+      }
+
+      // 6. Dynamic Custom Domain Extraction
+      const words = cleanPrompt
+        .replace(/[^a-zA-Z0-9\s]/g, "")
+        .split(/\s+/)
+        .filter((w: string) => w.length > 3)
+        .slice(0, 4);
+
+      const entity1 = words[0] ? words[0].toLowerCase() : "business";
+      const entity2 = words[1] ? words[1].toLowerCase() : "workflow";
+      const entity3 = words[2] ? words[2].toLowerCase() : "audit";
 
       return {
-        project_title: title,
+        tables: [
+          {
+            table_name: `tbl_${entity1}_master`,
+            columns: [
+              "id (PK, UUID)",
+              "name (VARCHAR)",
+              "code (UNIQUE VARCHAR)",
+              "status (ENUM)",
+              "metadata (JSONB)",
+              "created_at (TIMESTAMP)",
+            ],
+          },
+          {
+            table_name: `tbl_${entity2}_events`,
+            columns: [
+              "id (PK, UUID)",
+              `parent_id (FK -> tbl_${entity1}_master.id)`,
+              "event_type (VARCHAR)",
+              "payload (JSONB)",
+              "timestamp (TIMESTAMPTZ)",
+            ],
+          },
+          {
+            table_name: `tbl_${entity3}_analytics`,
+            columns: [
+              "id (PK, UUID)",
+              `reference_id (FK -> tbl_${entity1}_master.id)`,
+              "kpi_metric_value (NUMERIC)",
+              "confidence_score (FLOAT)",
+              "calculated_at (TIMESTAMP)",
+            ],
+          },
+        ],
+        endpoints: [
+          { method: "POST", path: `/api/v1/${entity1}/create`, desc: `Create new ${entity1} entity & trigger automated pipeline` },
+          { method: "GET", path: `/api/v1/${entity1}/{id}/status`, desc: `Query real-time processing status and metadata payload` },
+          { method: "PUT", path: `/api/v1/${entity1}/update-state`, desc: `Update state transitions and operational parameters` },
+          { method: "POST", path: `/api/v1/${entity2}/process-ai`, desc: `Run AI inference engine on ${entity2} data streams` },
+        ],
+      };
+    };
+
+    // Multilingual Localization Strings Helper
+    const getLocalizedStrings = (lang: string) => {
+      const l = lang.toLowerCase();
+      if (l.includes("gu") || l.includes("gujarat")) {
+        return {
+          titlePrefix: "એન્ટરપ્રાઇઝ સોલ્યુશન આર્કિટેક્ચર",
+          step1: { title: "૧. ડેટા ઇન્ટેક અને ઇન્જેશન", desc: "યુઝર ઇનપુટ, ડોક્યુમેન્ટ્સ અને સિગ્નલ્સ એકત્રિત કરવા." },
+          step2: { title: "૨. AI વિશ્લેષણ અને વેરિફિકેશન", desc: "બિઝનેસ નિયમો, પરવાનગીઓ અને નીતિઓની ચકાસણી." },
+          step3: { title: "૩. એક્ઝિક્યુશન અને વર્કફ્લો ઓર્કેસ્ટ્રેશન", desc: "માઈક્રોસર્વિસિસ, ડેટાબેઝ રાઈટ્સ અને એપીઆઈ સંકલન." },
+          step4: { title: "૪. મોનિટરિંગ અને સતત શિક્ષણ", desc: "ટેલિમેટ્રી લોગિંગ, ઓડિટ મેટ્રિક્સ અને ઓટોમેટિક એલર્ટ્સ." },
+          initiative1: "મુખ્ય પ્રોસેસ ડિજિટાઈઝેશન",
+          initiative2: "AI ઇન્ટેલિજન્સ એકીકરણ",
+          riskTitle: "ડેટા સુરક્ષા અને ટેનન્ટ આઇસોલેશન",
+          riskMitigation: "Supabase RLS સુરક્ષા નીતિઓ અને JWT ટોકન્સ લાગુ કરો.",
+        };
+      }
+      if (l.includes("hi") || l.includes("hindi")) {
+        return {
+          titlePrefix: "उद्यम समाधान वास्तुकला",
+          step1: { title: "१. डेटा सेवन और अंतर्ग्रहण", desc: "उपयोगकर्ता इनपुट, दस्तावेज़ और व्यावसायिक संकेत एकत्र करना।" },
+          step2: { title: "२. AI विश्लेषण और सत्यापन", desc: "व्यावसायिक नियमों, अनुमतियों और नीति मिलान को मान्य करना।" },
+          step3: { title: "३. निष्पादन और वर्कफ़्लो ऑर्केस्ट्रेशन", desc: "माइक्रोसर्विसेज, डेटाबेस और बाहरी APIs का समन्वय।" },
+          step4: { title: "४. फीडबैक और निरंतर सीखना", desc: "टेलीमेट्री लॉगिंग, ऑडिट मेट्रिक्स और अलर्ट ट्रिगर करना।" },
+          initiative1: "मुख्य प्रक्रिया डिजिटलीकरण",
+          initiative2: "AI इंटेलिजेंस एकीकरण",
+          riskTitle: "डेटा सुरक्षा और किरायेदार अलगाव",
+          riskMitigation: "Supabase RLS सुरक्षा नीतियां और JWT प्रमाणीकरण लागू करें।",
+        };
+      }
+      if (l.includes("es") || l.includes("span")) {
+        return {
+          titlePrefix: "Arquitectura Empresarial de Soluciones",
+          step1: { title: "1. Ingesta y Captura de Datos", desc: "Capturar entradas de usuarios, documentos y señales operativas." },
+          step2: { title: "2. Análisis y Verificación de IA", desc: "Validar reglas comerciales, permisos y cumplimiento normativo." },
+          step3: { title: "3. Ejecución y Orquestación de Flujos", desc: "Coordinar microservicios, escrituras en base de datos y APIs externas." },
+          step4: { title: "4. Retroalimentación y Aprendizaje Continuo", desc: "Registrar telemetría, métricas de auditoría y alertas proactivas." },
+          initiative1: "Digitalización de Procesos Clave",
+          initiative2: "Integración de Inteligencia Artificial",
+          riskTitle: "Seguridad de Datos y Aislamiento Multinquilino",
+          riskMitigation: "Implementar políticas de Row-Level Security (RLS) en Supabase.",
+        };
+      }
+      if (l.includes("fr") || l.includes("french")) {
+        return {
+          titlePrefix: "Architecture de Solution d'Entreprise",
+          step1: { title: "1. Ingestion et Capture de Données", desc: "Capturer les données utilisateurs, documents et flux métier." },
+          step2: { title: "2. Analyse IA et Vérification", desc: "Valider les règles d'entreprise, permissions et conformité." },
+          step3: { title: "3. Exécution et Orchestration des Flux", desc: "Coordonner les microservices, écritures base de données et APIs." },
+          step4: { title: "4. Rétroaction et Apprentissage Continu", desc: "Journaliser la télémétrie, métriques d'audit et alertes." },
+          initiative1: "Numérisation des Processus Clés",
+          initiative2: "Intégration de l'Intelligence Artificielle",
+          riskTitle: "Sécurité des Données & Isolation Multi-Locataire",
+          riskMitigation: "Mettre en œuvre les politiques de sécurité au niveau des lignes (RLS).",
+        };
+      }
+      if (l.includes("de") || l.includes("german")) {
+        return {
+          titlePrefix: "Unternehmens-Lösungsarchitektur",
+          step1: { title: "1. Datenaufnahme & Erfassung", desc: "Erfassung von Benutzereingaben, Dokumenten und Geschäftssignalen." },
+          step2: { title: "2. KI-Analyse & Verifikation", desc: "Validierung von Geschäftsregeln, Berechtigungen und Richtlinien." },
+          step3: { title: "3. Ausführung & Workflow-Orchestrierung", desc: "Koordination von Microservices, Datenbanktransaktionen und APIs." },
+          step4: { title: "4. Feedback & Kontinuierliches Lernen", desc: "Protokollierung von Telemetrie, Prüfmetriken und Warnungen." },
+          initiative1: "Digitalisierung der Kernprozesse",
+          initiative2: "KI-Intelligenz-Integration",
+          riskTitle: "Datensicherheit und Mandantentrennung",
+          riskMitigation: "Implementierung von Supabase Row-Level Security (RLS) Richtlinien.",
+        };
+      }
+      return {
+        titlePrefix: "Enterprise Solution Architecture",
+        step1: { title: "1. Intake & Ingestion", desc: "Capture user input, documents, or business signals." },
+        step2: { title: "2. AI Analysis & Verification", desc: "Validate business rules, permissions, and policy matching." },
+        step3: { title: "3. Execution & Workflow Orchestration", desc: "Coordinate microservices, database writes, and external APIs." },
+        step4: { title: "4. Feedback & Continuous Learning", desc: "Log telemetry, audit metrics, and trigger alerts." },
+        initiative1: "Core Process Digitization",
+        initiative2: "AI Intelligence Integration",
+        riskTitle: "Data Security & Tenant Isolation",
+        riskMitigation: "Implement Supabase Row-Level Security (RLS) and JWT token rotation.",
+      };
+    };
+
+    // Deterministic Smart Fallback Generator with Role Context & Language
+    const generateSmartDomainBlueprint = (p: string, targetLangStr: string, activeRole: string) => {
+      let hash = 0;
+      for (let i = 0; i < p.length; i++) {
+        hash = (hash << 5) - hash + p.charCodeAt(i);
+        hash |= 0;
+      }
+      hash = Math.abs(hash);
+
+      const domainData = getDomainSpecificSchemaAndApis(p);
+      const loc = getLocalizedStrings(targetLangStr);
+
+      const maturityScore = 84 + (hash % 12);
+      const aiReadinessScore = 86 + (hash % 11);
+      const weeksTimeline = 6 + (hash % 6);
+      const totalHours = weeksTimeline * 40;
+      const hourlyRate = 75;
+      const minBudget = totalHours * hourlyRate;
+      const maxBudget = minBudget + 12000;
+
+      const words = p.split(/\s+/).slice(0, 4).join(" ");
+      const dynamicTitle = `${loc.titlePrefix}: ${words.charAt(0).toUpperCase() + words.slice(1)}`;
+
+      return {
+        project_title: dynamicTitle,
         user_problem: p,
         target_language: targetLangStr,
+        user_role: activeRole,
         digital_maturity: maturityScore,
         ai_adoption: aiReadinessScore,
         timeline: `${weeksTimeline} Weeks`,
@@ -246,94 +516,108 @@ export async function POST(req: NextRequest) {
             { role: "Senior Full-Stack Engineer", count: 2, allocation: "100%" },
             { role: "UI/UX Product Designer", count: 1, allocation: "50%" },
             { role: "AI & Data Engineer", count: 1, allocation: "75%" },
-            { role: "DevOps & Cloud Architect", count: 1, allocation: "50%" }
-          ]
+            { role: "DevOps & Cloud Architect", count: 1, allocation: "50%" },
+          ],
         },
         tech_stack: {
           frontend: "React / Next.js 16 + Tailwind CSS",
           backend: "Node.js / Express API Gateway",
           database: "PostgreSQL (Supabase RLS)",
-          ai_layer: "Google Gemini 1.5 Flash"
+          ai_layer: "Google Gemini 1.5 Flash",
         },
-        initiatives: dict.initiatives || [
-          { title: `${title} Automation`, impact: "High Impact", desc: `Automates key workflows for "${p.slice(0, 50)}".` }
-        ],
-        bpmn_steps: dict.steps || [
-          { id: 1, title: "1. Intake", desc: "Initial request processing" },
-          { id: 2, title: "2. Verification", desc: "Validates rules & permissions" }
-        ],
-        database_tables: [
+        initiatives: [
           {
-            table_name: "tbl_users",
-            columns: ["id (PK, UUID)", "email (VARCHAR)", "full_name (VARCHAR)", "role (ENUM)", "created_at (TIMESTAMP)"]
+            title: loc.initiative1,
+            impact: "High Impact",
+            desc: `Automate end-to-end processing for "${p.slice(0, 60)}".`,
           },
           {
-            table_name: "tbl_app_records",
-            columns: ["id (PK, UUID)", "user_id (FK -> tbl_users.id)", "payload (JSONB)", "status (VARCHAR)", "updated_at (TIMESTAMP)"]
-          }
+            title: loc.initiative2,
+            impact: "High Impact",
+            desc: "Embed automated machine reasoning and predictive classification.",
+          },
         ],
-        api_endpoints: dict.endpoints || [
-          { method: "POST", path: "/api/v1/records/create", desc: "Create new record" }
+        bpmn_steps: [
+          { id: 1, title: loc.step1.title, desc: loc.step1.desc, phase: "Ingestion" },
+          { id: 2, title: loc.step2.title, desc: loc.step2.desc, phase: "Processing" },
+          { id: 3, title: loc.step3.title, desc: loc.step3.desc, phase: "Execution" },
+          { id: 4, title: loc.step4.title, desc: loc.step4.desc, phase: "Delivery" },
         ],
-        wireframe_sections: dict.wireframeSections || [
-          { title: "Header", components: ["Logo", "Search", "Profile"] }
+        database_tables: domainData.tables,
+        api_endpoints: domainData.endpoints,
+        wireframe_sections: [
+          { title: "Navigation & Hero", components: ["Brand Logo", "Global Search", "User Profile", "Quick Action Bar"] },
+          { title: "Operational Workbench", components: ["Data Table", "Live Analytics Cards", "Status Badges", "Filter Panel"] },
+          { title: "System Analytics & Logs", components: ["Activity Stream", "KPI Summary", "Export PDF/JSON Action"] },
         ],
-        sprint_plan: dict.sprintPlan || [
-          { sprint: "Sprint 1", title: "Architecture", focus: "Database Setup" }
-        ],
-        roadmap_milestones: [
-          { phase: "Phase 1 (Week 1-2)", title: "Architecture & Data Model", task: "Database schemas & Auth setup" },
-          { phase: "Phase 2 (Week 3-4)", title: "Core Logic & AI Engine", task: "API Gateway & Gemini API binding" }
+        roadmap_sprints: [
+          { sprint: "Sprint 1-2", focus: "Architecture & Data Model", deliverable: "PostgreSQL schemas, Auth RLS & Base UI" },
+          { sprint: "Sprint 3-4", focus: "Core Logic & AI Engine", deliverable: "API Gateway, Gemini integration & pipeline execution" },
+          { sprint: "Sprint 5-6", focus: "Testing & Enterprise Launch", deliverable: "End-to-end verification, load testing & Vercel deployment" },
         ],
         planning: {
           effortHours: `${totalHours}`,
-          cloudCost: `$${90 + (hash % 60)}/mo`,
-          cloudDetail: "PostgreSQL Database + Serverless API Gateway + Gemini API",
+          cloudCost: `$${110 + (hash % 50)}/mo`,
+          cloudDetail: "PostgreSQL + Edge Compute + Gemini API",
           risk: {
             level: "Low-Medium",
-            title: dict.riskTitle || "Data Isolation",
-            mitigation: dict.riskMitigation || "Implement RLS policies and caching."
-          }
-        }
+            title: loc.riskTitle,
+            mitigation: loc.riskMitigation,
+          },
+        },
       };
     };
 
-    // If Gemini API key is available and not mock mode
+    // If Gemini API key is available and not in mock-mode
     if (apiKey && apiKey.trim() !== "" && selectedModel !== "mock-mode") {
       try {
         const targetLangName = rawLang;
         const modelName = selectedModel.includes("pro") ? "gemini-1.5-pro" : "gemini-1.5-flash";
 
-        const systemPrompt = `You are a Senior Principal AI Solution Architect.
-Analyze the user requirement deeply and build a complete solution architecture.
+        const roleInstructions =
+          role === "Admin"
+            ? "Emphasize deep enterprise security, Supabase Row-Level Security (RLS), microservice architecture, API gateways, cloud cost optimization, and compliance."
+            : role === "Employee"
+            ? "Emphasize clear developer tasks, step-by-step implementation guide, clean UI wireframe components, and practical code integration steps."
+            : "Emphasize agile project management, sprint planning, cross-functional resource allocation, timeline risk mitigation, and business ROI.";
 
-CRITICAL MANDATE: You MUST output EVERY text string (project_title, initiative titles and descriptions, bpmn_step titles and descriptions, endpoint descriptions, wireframe section titles and component labels, sprint titles and focus, and risk titles/mitigations) STRICTLY IN THE FOLLOWING LANGUAGE: ${targetLangName}.
+        const systemPrompt = `You are a Principal AI Solution Architect.
+Analyze the user's business requirement and create a complete, bespoke, production-ready solution architecture for a user in the '${role}' role.
+
+ROLE DIRECTIVE (${role}):
+${roleInstructions}
+
+CRITICAL INSTRUCTIONS:
+1. TARGET LANGUAGE: You MUST output EVERY single text field (project_title, initiative titles & descriptions, bpmn_steps titles & descriptions, api_endpoints descriptions, wireframe_sections titles & component labels, roadmap_sprints deliverables, risk titles & mitigations) STRICTLY IN THIS LANGUAGE: ${targetLangName}.
+2. CUSTOM DATABASE SCHEMA: Generate 3 to 5 realistic, domain-specific PostgreSQL database tables tailored specifically to the user's requirement. Include 5-7 meaningful column definitions per table with constraints like 'id (PK, UUID)', 'foreign_key (FK -> ...)', 'VARCHAR', 'JSONB', 'TIMESTAMPTZ'.
+3. CUSTOM REST APIS: Generate 4 to 6 domain-specific REST API endpoints (POST, GET, PUT, DELETE) with realistic paths matching the domain.
 
 USER REQUIREMENT: "${cleanPrompt}"
 
-Return ONLY a valid JSON matching this structure:
+Output ONLY a single valid JSON object matching this schema:
 {
-  "project_title": "Title in ${targetLangName}",
+  "project_title": "Descriptive Title in ${targetLangName}",
   "user_problem": "${cleanPrompt.slice(0, 150).replace(/"/g, '\\"')}",
   "target_language": "${targetLangName}",
+  "user_role": "${role}",
   "digital_maturity": 88,
-  "ai_adoption": 94,
-  "timeline": "6 Weeks",
+  "ai_adoption": 92,
+  "timeline": "6-8 Weeks",
   "financial_estimation": {
     "min_budget": "$18,000",
-    "max_budget": "$32,000",
+    "max_budget": "$34,000",
     "total_hours": "240 Hours",
     "hourly_rate": "$75/hr",
     "team_roles": [
-      { "role": "Senior Full-Stack Dev", "count": 2, "allocation": "100%" },
-      { "role": "UI/UX Designer", "count": 1, "allocation": "50%" },
-      { "role": "AI Engineer", "count": 1, "allocation": "75%" },
-      { "role": "DevOps Engineer", "count": 1, "allocation": "50%" }
+      { "role": "Senior Full-Stack Engineer", "count": 2, "allocation": "100%" },
+      { "role": "UI/UX Product Designer", "count": 1, "allocation": "50%" },
+      { "role": "AI Solutions Engineer", "count": 1, "allocation": "75%" },
+      { "role": "DevOps & Cloud Architect", "count": 1, "allocation": "50%" }
     ]
   },
   "tech_stack": {
     "frontend": "React / Next.js 16 + Tailwind CSS",
-    "backend": "Node.js / Express API Gateway",
+    "backend": "Node.js / Express Edge Functions",
     "database": "PostgreSQL (Supabase RLS)",
     "ai_layer": "Google Gemini 1.5 Flash"
   },
@@ -342,32 +626,36 @@ Return ONLY a valid JSON matching this structure:
     { "title": "Initiative 2 in ${targetLangName}", "impact": "High Impact", "desc": "Description in ${targetLangName}" }
   ],
   "bpmn_steps": [
-    { "id": 1, "title": "Step 1 in ${targetLangName}", "desc": "Description in ${targetLangName}" },
-    { "id": 2, "title": "Step 2 in ${targetLangName}", "desc": "Description in ${targetLangName}" }
+    { "id": 1, "title": "1. Step in ${targetLangName}", "desc": "Description in ${targetLangName}", "phase": "Phase" },
+    { "id": 2, "title": "2. Step in ${targetLangName}", "desc": "Description in ${targetLangName}", "phase": "Phase" },
+    { "id": 3, "title": "3. Step in ${targetLangName}", "desc": "Description in ${targetLangName}", "phase": "Phase" },
+    { "id": 4, "title": "4. Step in ${targetLangName}", "desc": "Description in ${targetLangName}", "phase": "Phase" }
   ],
   "database_tables": [
-    { "table_name": "tbl_users", "columns": ["id (PK, UUID)", "col1", "col2"] }
+    {
+      "table_name": "tbl_custom_name",
+      "columns": ["id (PK, UUID)", "name (VARCHAR)", "created_at (TIMESTAMP)"]
+    }
   ],
   "api_endpoints": [
-    { "method": "POST", "path": "/api/v1/resource/create", "desc": "Description in ${targetLangName}" }
+    { "method": "POST", "path": "/api/v1/resource/action", "desc": "Description in ${targetLangName}" }
   ],
   "wireframe_sections": [
-    { "title": "Section Title in ${targetLangName}", "components": ["Component 1 in ${targetLangName}"] }
+    { "title": "Section Title in ${targetLangName}", "components": ["Component 1 in ${targetLangName}", "Component 2 in ${targetLangName}"] }
   ],
-  "sprint_plan": [
-    { "sprint": "Sprint 1", "title": "Title in ${targetLangName}", "focus": "Deliverable focus in ${targetLangName}" }
-  ],
-  "roadmap_milestones": [
-    { "phase": "Phase 1 (Week 1-2)", "title": "Title in ${targetLangName}", "task": "Task in ${targetLangName}" }
+  "roadmap_sprints": [
+    { "sprint": "Sprint 1-2", "focus": "Architecture & Data Model", "deliverable": "Deliverable in ${targetLangName}" },
+    { "sprint": "Sprint 3-4", "focus": "AI Engine & Workflows", "deliverable": "Deliverable in ${targetLangName}" },
+    { "sprint": "Sprint 5-6", "focus": "Testing & Launch", "deliverable": "Deliverable in ${targetLangName}" }
   ],
   "planning": {
     "effortHours": "240",
     "cloudCost": "$120/mo",
-    "cloudDetail": "PostgreSQL + Edge Compute",
+    "cloudDetail": "Supabase PostgreSQL + Edge Functions",
     "risk": { "level": "Low-Medium", "title": "Risk in ${targetLangName}", "mitigation": "Mitigation in ${targetLangName}" }
   }
 }
-Output ONLY raw valid JSON.`;
+Output raw JSON only.`;
 
         const response = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
@@ -378,8 +666,8 @@ Output ONLY raw valid JSON.`;
               contents: [{ parts: [{ text: systemPrompt }] }],
               generationConfig: {
                 temperature: 0.2,
-                responseMimeType: "application/json"
-              }
+                responseMimeType: "application/json",
+              },
             })
           }
         );
@@ -393,11 +681,11 @@ Output ONLY raw valid JSON.`;
           }
         }
       } catch (err) {
-        console.warn("Live Gemini API call error, using 1-to-1 domain generator:", err);
+        console.warn("Live Gemini API call error, using smart domain generator:", err);
       }
     }
 
-    const data = generateSmartDomainBlueprint(cleanPrompt, rawLang);
+    const data = generateSmartDomainBlueprint(cleanPrompt, rawLang, role);
     return NextResponse.json({ success: true, data });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || "Failed to process request" }, { status: 500 });

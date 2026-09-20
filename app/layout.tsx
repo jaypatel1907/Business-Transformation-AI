@@ -1,32 +1,18 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
+import { RoleProvider } from '@/lib/role-context'
 import './globals.css'
 
 const geistSans = Geist({ subsets: ['latin'], variable: '--font-geist-sans' })
 const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-geist-mono' })
 
 export const metadata: Metadata = {
-  title: 'BlueprintAI — Digital Transformation Platform',
+  title: 'BlueprintAI — Enterprise Digital Transformation Platform',
   description:
     'AI workspace that turns business context into implementation-ready transformation blueprints: architecture, workflows, database & APIs, and project plans.',
-  generator: 'v0.app',
   icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
+    icon: '/icon-light-32x32.png',
   },
 }
 
@@ -43,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`bg-white ${geistSans.variable} ${geistMono.variable}`}>
       <body className="font-sans antialiased bg-slate-50 text-slate-900">
-        {children}
+        <RoleProvider>{children}</RoleProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

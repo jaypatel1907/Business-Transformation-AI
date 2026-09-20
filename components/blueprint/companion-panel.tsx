@@ -1,7 +1,7 @@
-"use client"
+﻿"use client"
 
 import { useEffect, useRef, useState } from "react"
-import { Bot, Send, Paperclip, Lightbulb, FileText, X, UploadCloud, CheckCircle2 } from "lucide-react"
+import { Bot, Send, Paperclip, Lightbulb, FileText, X } from "lucide-react"
 import { quickPrompts } from "@/lib/blueprint-data"
 
 export type ChatMessage = {
@@ -36,11 +36,11 @@ export function CompanionPanel({
     if (!file) return
     const reader = new FileReader()
     reader.onload = (e) => {
-      const text = e.target?.result as string || ""
+      const text = (e.target?.result as string) || ""
       setAttachedFile({
         name: file.name,
         text,
-        size: `${(file.size / 1024).toFixed(1)} KB`
+        size: `${(file.size / 1024).toFixed(1)} KB`,
       })
       onUpload(file.name)
     }
@@ -78,7 +78,11 @@ export function CompanionPanel({
         </div>
 
         {/* Messages */}
-        <div ref={scrollRef} className="thin-scrollbar min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-5">
+        <div
+          id="chat-messages-container"
+          ref={scrollRef}
+          className="thin-scrollbar min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-5"
+        >
           {messages.map((m) => (
             <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : ""}`}>
               <div
@@ -146,7 +150,10 @@ export function CompanionPanel({
 
         {/* Input & Drag Dropzone Box */}
         <div
-          onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
+          onDragOver={(e) => {
+            e.preventDefault()
+            setIsDragging(true)
+          }}
           onDragLeave={() => setIsDragging(false)}
           onDrop={handleDrop}
           className={`border-t border-slate-200 p-3 bg-white transition ${
@@ -193,7 +200,7 @@ export function CompanionPanel({
               <Send className="h-4 w-4" />
             </button>
           </div>
-          
+
           <div className="mt-2 flex items-center justify-between px-1 text-[10px] text-slate-400">
             <span>Supports .pdf, .docx, .txt, .md, .brd</span>
             <span>Press Enter to Submit</span>
