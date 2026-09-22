@@ -572,7 +572,7 @@ export async function POST(req: NextRequest) {
     if (apiKey && apiKey.trim() !== "" && selectedModel !== "mock-mode") {
       try {
         const targetLangName = rawLang;
-        const modelName = selectedModel.includes("pro") ? "gemini-1.5-pro" : "gemini-1.5-flash";
+        const modelName = selectedModel.includes("pro") ? "gemini-2.5-pro" : "gemini-3.6-flash";
 
         const roleInstructions =
           role === "Admin"
@@ -619,7 +619,7 @@ Output ONLY a single valid JSON object matching this schema:
     "frontend": "React / Next.js 16 + Tailwind CSS",
     "backend": "Node.js / Express Edge Functions",
     "database": "PostgreSQL (Supabase RLS)",
-    "ai_layer": "Google Gemini 1.5 Flash"
+    "ai_layer": "Google Gemini 3.6 Flash"
   },
   "initiatives": [
     { "title": "Initiative 1 in ${targetLangName}", "impact": "High Impact", "desc": "Description in ${targetLangName}" },
@@ -665,10 +665,10 @@ Output raw JSON only.`;
             body: JSON.stringify({
               contents: [{ parts: [{ text: systemPrompt }] }],
               generationConfig: {
-                temperature: 0.2,
+                temperature: 0.3,
                 responseMimeType: "application/json",
               },
-            })
+            }),
           }
         );
 
@@ -677,8 +677,12 @@ Output raw JSON only.`;
           const candidateText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
           if (candidateText) {
             const parsed = JSON.parse(candidateText);
-            return NextResponse.json({ success: true, data: parsed });
+            console.log(">>> [GEMINI 3.6 FLASH] Real Bespoke AI Generated Successfully!");
+            return NextResponse.json({ success: true, data: parsed, gemini_used: true });
           }
+        } else {
+          const errText = await response.text();
+          console.error(`[GEMINI API ERROR] Status: ${response.status} - Body: ${errText.slice(0, 300)}`);
         }
       } catch (err) {
         console.warn("Live Gemini API call error, using smart domain generator:", err);
