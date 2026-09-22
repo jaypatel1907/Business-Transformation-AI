@@ -657,40 +657,54 @@ Output ONLY a single valid JSON object matching this schema:
 }
 Output raw JSON only.`;
 
-        const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: systemPrompt }] }],
-              generationConfig: {
-                temperature: 0.3,
-                responseMimeType: "application/json",
-              },
-            }),
-          }
-        );
+        const candidateModels = [
+          "gemini-3.5-flash",
+          "gemini-3.6-flash",
+          "gemini-3.7-flash",
+          "gemini-flash-latest",
+          "gemini-2.5-pro",
+        ];
 
-        if (response.ok) {
-          const resData = await response.json();
-          const candidateText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (candidateText) {
-            const parsed = JSON.parse(candidateText);
-            console.log(">>> [GEMINI 3.6 FLASH] Real Bespoke AI Generated Successfully!");
-            return NextResponse.json({ success: true, data: parsed, gemini_used: true });
+        for (const currentModel of candidateModels) {
+          try {
+            const response = await fetch(
+              `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${apiKey}`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  contents: [{ parts: [{ text: systemPrompt }] }],
+                  generationConfig: {
+                    temperature: 0.3,
+                    responseMimeType: "application/json",
+                  },
+                }),
+              }
+            );
+
+            if (response.ok) {
+              const resData = await response.json();
+              const candidateText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
+              if (candidateText) {
+                const parsed = JSON.parse(candidateText);
+                console.log(`>>> [GEMINI ${currentModel.toUpperCase()} SUCCESS] Bespoke Architecture Generated!`);
+                return NextResponse.json({ success: true, data: parsed, gemini_used: true, model: currentModel });
+              }
+            } else {
+              const errBody = await response.text();
+              console.warn(`[GEMINI ${currentModel} FAIL] Status: ${response.status} -> Trying next model...`);
+            }
+          } catch (modelErr) {
+            console.warn(`[GEMINI ${currentModel} ERROR]`, modelErr);
           }
-        } else {
-          const errText = await response.text();
-          console.error(`[GEMINI API ERROR] Status: ${response.status} - Body: ${errText.slice(0, 300)}`);
         }
       } catch (err) {
-        console.warn("Live Gemini API call error, using smart domain generator:", err);
+        console.warn("All live Gemini models failed, falling back to smart domain generator:", err);
       }
     }
 
     const data = generateSmartDomainBlueprint(cleanPrompt, rawLang, role);
-    return NextResponse.json({ success: true, data });
+    return NextResponse.json({ success: true, data, gemini_used: false });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || "Failed to process request" }, { status: 500 });
   }
