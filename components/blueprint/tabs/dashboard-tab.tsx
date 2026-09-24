@@ -161,45 +161,6 @@ export function DashboardTab({
       </div>
 
       {/* ------------------------------------------------------------- */}
-      {/* ACTION PLAN GUIDE: MANAGER TO EMPLOYEE INSTRUCTIONS */}
-      {/* ------------------------------------------------------------- */}
-      {(currentRole === "Employee" || currentRole === "Manager") && (
-        <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm">
-          <div className="mb-6">
-            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <CheckSquare className="h-5 w-5 text-emerald-600" />
-              Step-by-Step Action Plan (Manager Instructions)
-            </h3>
-            <p className="text-xs text-slate-500 mt-1">Direct guidelines on how to build and implement this requirement.</p>
-          </div>
-          
-          <div className="space-y-4">
-            {(data?.bpmn_steps || [
-              { id: 1, title: "Step 1: Setup Architecture", desc: "First, initialize the repository and setup the core framework.", phase: "Phase 1" },
-              { id: 2, title: "Step 2: Database Models", desc: "Then, configure the primary tables and schema.", phase: "Phase 2" }
-            ]).map((step: any, idx: number) => (
-              <div key={idx} className="flex gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200 transition hover:border-emerald-200 hover:shadow-sm">
-                <div className="flex-shrink-0 mt-0.5">
-                  <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">
-                    {step.id || idx + 1}
-                  </div>
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold text-slate-900 mb-1">{step.title}</h4>
-                  <p className="text-xs text-slate-600 leading-relaxed">{step.desc}</p>
-                  {step.phase && (
-                    <span className="inline-block mt-2 px-2 py-0.5 bg-slate-200 text-slate-600 rounded text-[9px] font-bold uppercase tracking-wider">
-                      {step.phase}
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ------------------------------------------------------------- */}
       {/* SHARED (Admin & Manager): Resource Allocation & Tech Stack */}
       {/* ------------------------------------------------------------- */}
       {currentRole !== "Employee" && (
@@ -261,41 +222,6 @@ export function DashboardTab({
                 </span>
                 <span className="font-mono text-purple-700 font-semibold">{techStack.ai_layer}</span>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ------------------------------------------------------------- */}
-      {/* MANAGER SPECIFIC VIEW: Sprint Progress & Blueprint History */}
-      {/* ------------------------------------------------------------- */}
-      {currentRole === "Manager" && (
-        <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm space-y-4">
-          <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-            <History className="h-4 w-4 text-indigo-600" />
-            {t.sprintRoadmap}
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-            <div className="p-3.5 rounded-xl bg-indigo-50/60 border border-indigo-100">
-              <span className="font-bold text-indigo-900 block">Sprint 1-2: Foundation</span>
-              <p className="text-[11px] text-slate-600 mt-1">Data Model, Supabase RLS & Base UI System</p>
-              <span className="inline-block mt-2 font-bold text-indigo-600 text-[10px] bg-indigo-100 px-2 py-0.5 rounded">
-                Status: On Track
-              </span>
-            </div>
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
-              <span className="font-bold text-slate-900 block">Sprint 3-4: AI & Workflows</span>
-              <p className="text-[11px] text-slate-600 mt-1">Gemini AI Orchestrator & Automated BPMN logic</p>
-              <span className="inline-block mt-2 font-bold text-slate-600 text-[10px] bg-slate-200 px-2 py-0.5 rounded">
-                Status: Scheduled
-              </span>
-            </div>
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
-              <span className="font-bold text-slate-900 block">Sprint 5-6: Production Launch</span>
-              <p className="text-[11px] text-slate-600 mt-1">Enterprise Hardening, Security Audit & Cloud Deploy</p>
-              <span className="inline-block mt-2 font-bold text-slate-600 text-[10px] bg-slate-200 px-2 py-0.5 rounded">
-                Status: Scheduled
-              </span>
             </div>
           </div>
         </div>

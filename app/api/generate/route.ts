@@ -480,25 +480,80 @@ export async function POST(req: NextRequest) {
       };
     };
 
-    // Deterministic Smart Fallback Generator with Role Context & Language
+    // Real-World Domain Intelligence Scoring Engine
     const generateSmartDomainBlueprint = (p: string, targetLangStr: string, activeRole: string) => {
-      let hash = 0;
-      for (let i = 0; i < p.length; i++) {
-        hash = (hash << 5) - hash + p.charCodeAt(i);
-        hash |= 0;
-      }
-      hash = Math.abs(hash);
-
+      const lower = p.toLowerCase();
       const domainData = getDomainSpecificSchemaAndApis(p);
       const loc = getLocalizedStrings(targetLangStr);
 
-      const maturityScore = 84 + (hash % 12);
-      const aiReadinessScore = 86 + (hash % 11);
-      const weeksTimeline = 6 + (hash % 6);
-      const totalHours = weeksTimeline * 40;
+      // ── 1. DIGITAL MATURITY SCORE ──────────────────────────────────────────
+      // Reflects HOW digitally mature the target INDUSTRY is today in real world
+      // Low = traditional/manual industries, High = already tech-native
+      let maturityScore = 55; // default: medium-low
+      if (lower.match(/fintech|bank|payment|wallet|upi|crypto|blockchain/))        maturityScore = 78;
+      else if (lower.match(/hospital|clinic|health|patient|doctor|medical|pharma/)) maturityScore = 52;
+      else if (lower.match(/school|college|education|lms|learning|course/))         maturityScore = 58;
+      else if (lower.match(/ecommerce|shop|store|retail|product|cart|order/))       maturityScore = 74;
+      else if (lower.match(/food|restaurant|delivery|kitchen|zomato|swiggy/))       maturityScore = 68;
+      else if (lower.match(/logistics|supply chain|warehouse|fleet|shipping/))      maturityScore = 62;
+      else if (lower.match(/real estate|property|rental|land|house/))              maturityScore = 48;
+      else if (lower.match(/agriculture|farm|crop|irrigation|soil/))               maturityScore = 35;
+      else if (lower.match(/saas|platform|software|api|developer|devops/))         maturityScore = 85;
+      else if (lower.match(/ai|machine learning|ml|nlp|vision|model|llm/))         maturityScore = 88;
+      else if (lower.match(/government|municipal|civic|public|citizen/))           maturityScore = 32;
+      else if (lower.match(/hr|recruit|employee|payroll|attendance/))              maturityScore = 61;
+      else if (lower.match(/manufacture|factory|production|assembly|plant/))       maturityScore = 44;
+      else if (lower.match(/gym|fitness|sport|yoga|wellness/))                     maturityScore = 55;
+      else if (lower.match(/travel|hotel|booking|tourism|ticket/))                 maturityScore = 70;
+      // Add ±3 based on role for slight variation
+      if (activeRole === "Admin") maturityScore = Math.min(maturityScore + 2, 92);
+      if (activeRole === "Employee") maturityScore = Math.max(maturityScore - 3, 28);
+
+      // ── 2. AI ADOPTION READINESS ────────────────────────────────────────────
+      // Reflects HOW MUCH AI can practically help in this domain right now
+      let aiReadinessScore = 60;
+      if (lower.match(/ai|machine learning|ml|nlp|vision|model|llm|predict/))      aiReadinessScore = 92;
+      else if (lower.match(/fintech|fraud|risk|credit|loan|insurance/))            aiReadinessScore = 88;
+      else if (lower.match(/ecommerce|recommend|personali|search|catalog/))        aiReadinessScore = 82;
+      else if (lower.match(/logistics|route|optimize|track|fleet|dispatch/))       aiReadinessScore = 78;
+      else if (lower.match(/hospital|diagnosis|radiology|triage|symptom/))         aiReadinessScore = 74;
+      else if (lower.match(/food|menu|order|kitchen|inventory/))                   aiReadinessScore = 65;
+      else if (lower.match(/saas|platform|automation|workflow|bot/))               aiReadinessScore = 85;
+      else if (lower.match(/hr|recruit|screen|resume|interview/))                  aiReadinessScore = 76;
+      else if (lower.match(/education|tutor|quiz|assessment|adaptive/))            aiReadinessScore = 72;
+      else if (lower.match(/real estate|valuation|price|property/))               aiReadinessScore = 62;
+      else if (lower.match(/government|document|process|permit|compliance/))       aiReadinessScore = 55;
+      else if (lower.match(/agriculture|pest|yield|weather|satellite/))            aiReadinessScore = 68;
+      else if (lower.match(/manufacture|quality|defect|inspection|sensor/))        aiReadinessScore = 71;
+
+      // ── 3. TIMELINE — based on real project complexity ──────────────────────
+      // Simple CRUD app = 4-6w, Medium complexity = 8-12w, Complex AI/Enterprise = 14-20w
+      let weeksTimeline = 8;
+      const wordCount = p.trim().split(/\s+/).length;
+      const hasAI = lower.match(/ai|machine learning|ml|nlp|vision|model|llm/);
+      const hasIntegration = lower.match(/integrate|third.party|payment gateway|erp|crm|sms|email/);
+      const isEnterprise = lower.match(/enterprise|large.scale|microservice|multi.tenant|sso|rbac/);
+      const isMobile = lower.match(/mobile|ios|android|flutter|app/);
+
+      if (hasAI && isEnterprise)         weeksTimeline = 18;
+      else if (hasAI && hasIntegration)  weeksTimeline = 14;
+      else if (hasAI)                    weeksTimeline = 12;
+      else if (isEnterprise)             weeksTimeline = 14;
+      else if (isMobile && hasIntegration) weeksTimeline = 12;
+      else if (isMobile)                 weeksTimeline = 10;
+      else if (hasIntegration)           weeksTimeline = 10;
+      else if (wordCount <= 6)           weeksTimeline = 6;  // simple idea
+      else                               weeksTimeline = 8;
+
+      // ── 4. FINANCIAL BUDGET — real market rates ─────────────────────────────
+      // India freelance/agency rates: $25-45/hr, US/Global: $65-120/hr
+      // We target mid-range startup budget
       const hourlyRate = 75;
+      const totalHours = weeksTimeline * 40;
       const minBudget = totalHours * hourlyRate;
-      const maxBudget = minBudget + 12000;
+      // Enterprise add-ons: security audit, cloud infra, QA = +$8k to +$25k
+      const overhead = isEnterprise ? 25000 : hasAI ? 18000 : hasIntegration ? 12000 : 8000;
+      const maxBudget = minBudget + overhead;
 
       const wordsForEntity = p.replace(/[^a-zA-Z0-9\s]/g, "").split(/\s+/).filter(w => w.length > 3);
       const dynamicEntity = wordsForEntity.length > 0 ? wordsForEntity.slice(-2).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ") : "Enterprise";
@@ -528,8 +583,18 @@ export async function POST(req: NextRequest) {
         platformBack = ["AWS EC2 (GPU)", "Google Cloud Run"];
       }
 
+      const isGuj = targetLangStr.toLowerCase().includes("gu");
+      const isHindi = targetLangStr.toLowerCase().includes("hi");
+
+      const chatReply = isGuj
+        ? `નમસ્તે! મેં તમારા **"${p}"** આઈડિયાનું ઊંડાણપૂર્વક વિશ્લેષણ કરીને સંપૂર્ણ સોલ્યુશન આર્કિટેક્ચર બ્લૂપ્રિન્ટ તૈયાર કરી છે.\n\n🎯 **મુખ્ય સિસ્ટમ હાઇલાઇટ્સ:**\n• **ઉદ્યોગ પરિપક્વતા:** ${maturityScore}% | **AI એડોપ્શન સંભાવના:** ${aiReadinessScore}%\n• **લક્ષિત ડિલિવરી:** ${weeksTimeline} અઠવાડિયા (અંદાજિત બજેટ: $${minBudget.toLocaleString()} - $${maxBudget.toLocaleString()})\n• **ટેક આર્કિટેક્ચર:** ${fStack.join(", ")} (ફ્રન્ટએન્ડ) + ${bStack.join(", ")} (બેકએન્ડ Gateway) + PostgreSQL (Supabase RLS)\n• **ડેટા મોડેલ & APIs:** ${domainData.tables.length} કસ્ટમ ટેબલ્સ અને ${domainData.endpoints.length} પ્રોડક્શન-રેડી REST APIs ડિઝાઈન કર્યા છે.\n\n👉 **કેનવાસ પ્લાન જુઓ:**\nજમણી બાજુના Tabs પર ક્લિક કરીને **Process Workflow**, **Live Database Schema**, **Interactive Wireframes**, અને **Sprint Roadmap** તપાસો. કોઈ સુધારો કરવો હોય તો મને જણાવો!`
+        : isHindi
+        ? `नमस्ते! मैंने आपके **"${p}"** विचार का संपूर्ण समाधान आर्किटेक्चर ब्लूप्रिंट तैयार किया है।\n\n🎯 **मुख्य सिस्टम हाइलाइट्स:**\n• **उद्योग परिपक्वता:** ${maturityScore}% | **AI अपनाने की तत्परता:** ${aiReadinessScore}%\n• **लक्षित डिलीवरी:** ${weeksTimeline} सप्ताह (अनुमानित बजट: $${minBudget.toLocaleString()} - $${maxBudget.toLocaleString()})\n• **अनुशंसित टेक स्टैक:** ${fStack.join(", ")} + ${bStack.join(", ")} + PostgreSQL (Supabase RLS)\n• **डेटाबेस और APIs:** ${domainData.tables.length} रिलेशनल टेबल और ${domainData.endpoints.length} REST endpoints तैयार किए हैं।\n\n👉 **दाईं ओर के Tabs देखें:**\nProcess Map, DB & APIs, UX Wireframe और Roadmap का निरीक्षण करें। यदि कोई परिवर्तन करना हो तो बताएं!`
+        : `Hello! I've analyzed your business requirement for **"${p}"** and generated a complete enterprise architecture blueprint.\n\n🎯 **Executive Strategy & Architecture Highlights:**\n• **Digital Maturity:** ${maturityScore}% | **AI Adoption Readiness:** ${aiReadinessScore}%\n• **Target MVP Delivery:** ${weeksTimeline} Weeks (Estimated Budget: $${minBudget.toLocaleString()} – $${maxBudget.toLocaleString()})\n• **Recommended Tech Stack:** ${fStack.join(", ")} (Client) + ${bStack.join(", ")} (Gateway) + PostgreSQL (Supabase RLS)\n• **Data & API Layer:** Engineered ${domainData.tables.length} domain-specific relational tables with ${domainData.endpoints.length} production REST endpoints.\n\n👉 **Explore Your Solution Canvas:**\nClick through the tabs on the right to inspect the interactive **Process Map**, **Database Schemas & APIs**, **UX Wireframe Components**, and **Sprint Roadmap**. Feel free to ask any questions or refine specific requirements!`;
+
       return {
         project_title: dynamicEntity + " | " + dynamicTitle,
+        chat_reply: chatReply,
         user_problem: p,
         target_language: targetLangStr,
         user_role: activeRole,
@@ -630,7 +695,7 @@ export async function POST(req: NextRequest) {
           ],
         planning: {
           effortHours: `${totalHours}`,
-          cloudCost: `$${110 + (hash % 50)}/mo`,
+          cloudCost: `$${isEnterprise ? 280 : hasAI ? 180 : 120}/mo`,
           cloudDetail: "PostgreSQL + Edge Compute + Gemini API",
           risk: {
             level: "Low-Medium",
@@ -675,6 +740,7 @@ USER REQUIREMENT: "${cleanPrompt}"
 Output ONLY a single valid JSON object matching this schema:
 {
   "project_title": "Descriptive Title in ${targetLangName}",
+  "chat_reply": "A warm, natural, highly intelligent, conversational response (like ChatGPT/Claude) in ${targetLangName} analyzing the user's idea, highlighting key architectural decisions, explaining database/API strategy, and inviting questions.",
   "user_problem": "${cleanPrompt.slice(0, 150).replace(/"/g, '\\"')}",
   "target_language": "${targetLangName}",
   "user_role": "${role}",

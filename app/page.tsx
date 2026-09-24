@@ -11,16 +11,53 @@ import { saveBlueprintLocally, getLocalBlueprints } from "@/lib/supabase"
 import { exportCleanPDF, exportExecutiveReportPDF } from "@/lib/pdf-exporter"
 import { Check, Copy, Share2, X } from "lucide-react"
 
-let idCounter = 0
-const nextId = () => `m-${idCounter++}`
+const nextId = () => `msg-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`
+
+function FormattedMessage({ text }: { text: string }) {
+  if (!text) return null
+  const paragraphs = text.split("\n\n")
+
+  return (
+    <div className="space-y-3 text-[13px] text-slate-800 leading-relaxed">
+      {paragraphs.map((p, i) => {
+        const isHighlight = p.startsWith("👉") || p.includes("Tabs") || p.includes("કેનવાસ") || p.includes("Canvas")
+        
+        const lines = p.split("\n").map((line, li) => {
+          const parts = line.split(/(\*\*.*?\*\*)/g)
+          return (
+            <div key={li} className={line.startsWith("•") ? "pl-2 py-0.5 text-slate-700" : ""}>
+              {parts.map((part, pi) => {
+                if (part.startsWith("**") && part.endsWith("**")) {
+                  return <strong key={pi} className="font-bold text-slate-900">{part.slice(2, -2)}</strong>
+                }
+                return part
+              })}
+            </div>
+          )
+        })
+
+        if (isHighlight) {
+          return (
+            <div key={i} className="mt-3 p-3 bg-indigo-50 border border-indigo-100 rounded-xl text-indigo-900 font-medium text-xs leading-relaxed">
+              {lines}
+            </div>
+          )
+        }
+
+        return <div key={i} className="space-y-1">{lines}</div>
+      })}
+    </div>
+  )
+}
 
 const initialMessages: ChatMessage[] = [
   {
-    id: nextId(),
+    id: "msg-welcome-0",
     role: "ai",
     label: "AI Solution Architect",
-    content:
-      "Hello! I'm your Futurrizon AI Solution Architect. Describe your business requirement or upload a BRD/SOP document on the left, and I'll generate a complete, implementation-ready architecture blueprint tailored to your active workspace role.",
+    content: (
+      <FormattedMessage text="Hello! I'm your AI Solution Architect. Describe your business idea, product vision, or upload a document, and I'll generate a complete, implementation-ready architecture blueprint tailored to your role." />
+    ),
   },
 ]
 
@@ -120,33 +157,14 @@ export default function Page() {
               role: "ai",
               label: "AI Solution Architect",
               content: (
-                <div className="space-y-4">
-                  <p className="font-semibold text-slate-900 text-sm leading-relaxed">
-                    {currentLang === "Gujarati" 
-                      ? "અરે વાહ! તમારો આઈડિયા ખૂબ જ સરસ છે. ચાલો હું તમને આ પ્રોજેક્ટ કઈ રીતે બનાવવો તે માટે સ્ટેપ-બાય-સ્ટેપ ગાઇડ કરું:"
-                      : "Great idea! Here is a simple, step-by-step guide on how we will build your project:"}
-                  </p>
-                  
-                  <div className="space-y-4 mt-3">
-                    {data.bpmn_steps?.map((step: any, idx: number) => (
-                      <div key={idx} className="text-[13px] text-slate-700 leading-relaxed">
-                        <strong className="text-slate-900 block mb-1">
-                          {currentLang === "Gujarati" ? "સ્ટેપ" : "Step"} {idx + 1}: {step.title}
-                        </strong>
-                        <span className="whitespace-pre-line">{step.desc}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-5 p-3.5 bg-indigo-50/80 border border-indigo-100 rounded-xl">
-                    <p className="text-[13px] text-indigo-800 font-medium leading-relaxed">
-                      👉 <strong>{currentLang === "Gujarati" ? "વધુ માહિતી:" : "More Info:"}</strong>{" "}
-                      {currentLang === "Gujarati" 
-                        ? "મેં આ પ્રોજેક્ટ માટે જરૂરી ડેટાબેઝ, વાયરફ્રેમ (ડિઝાઈન) અને આર્કિટેક્ચર પણ બનાવી દીધું છે. જમણી બાજુ આપેલા Tabs પર ક્લિક કરીને તમે આખી સિસ્ટમનો પ્લાન જોઈ શકો છો!"
-                        : "I have also created the full Database schema, APIs, and UX Wireframes for this project. Click the Tabs on the right to view the complete blueprint!"}
-                    </p>
-                  </div>
-                </div>
+                <FormattedMessage 
+                  text={
+                    data.chat_reply || 
+                    (currentLang === "Gujarati"
+                      ? `નમસ્તે! મેં તમારા **"${data.project_title || "આઈડિયા"}"** નું સંપૂર્ણ વિશ્લેષણ કરીને આર્કિટેક્ચર બ્લૂપ્રિન્ટ તૈયાર કરી છે.\n\n🎯 **સિસ્ટમ સારાંશ:**\n• **પરિપક્વતા સ્કોર:** ${data.digital_maturity || 85}%\n• **લક્ષિત સમયગાળો:** ${data.timeline || "8 Weeks"}\n• **ટેક સ્ટેક:** ${data.tech_stack?.frontend || "Next.js"} + ${data.tech_stack?.backend || "Node.js"}\n\n👉 **કેનવાસ પ્લાન જુઓ:** જમણી બાજુના Tabs પર ક્લિક કરીને Process Map, Database Schema, Wireframe અને Roadmap જુઓ!`
+                      : `Hello! I've analyzed your requirement for **"${data.project_title || "your project"}"** and generated an enterprise transformation blueprint.\n\n🎯 **Architecture Highlights:**\n• **Digital Maturity:** ${data.digital_maturity || 85}%\n• **Estimated Timeline:** ${data.timeline || "8 Weeks"}\n• **Engineered Tech Stack:** ${data.tech_stack?.frontend || "Next.js"} + ${data.tech_stack?.backend || "Node.js"}\n\n👉 **Explore the Solution Canvas:** Click through the tabs on the right to inspect the interactive Process Map, Database Schemas, UX Wireframes, and Roadmap!`)
+                  } 
+                />
               ),
             },
           ])

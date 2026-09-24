@@ -101,8 +101,8 @@ export function CompanionPanel({
           ref={scrollRef}
           className="thin-scrollbar min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-5"
         >
-          {messages.map((m) => (
-            <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : ""}`}>
+          {messages.map((m, idx) => (
+            <div key={`${m.id || "msg"}-${idx}`} className={`flex ${m.role === "user" ? "justify-end" : ""}`}>
               <div
                 className={`max-w-[88%] rounded-2xl px-4 py-3 text-[13px] leading-relaxed shadow-2xs ${
                   m.role === "ai"

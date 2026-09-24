@@ -2,7 +2,6 @@ import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { RoleProvider } from '@/lib/role-context'
-import Script from 'next/script'
 import './globals.css'
 
 const geistSans = Geist({ subsets: ['latin'], variable: '--font-geist-sans' })
@@ -32,10 +31,6 @@ export default function RootLayout({
       <body className="font-sans antialiased bg-slate-50 text-slate-900">
         <RoleProvider>{children}</RoleProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
-        <Script
-          src="https://www.noupe.com/embed/01a0c919ee7870008aace4a247b889431bc4.js"
-          strategy="afterInteractive"
-        />
       </body>
     </html>
   )
