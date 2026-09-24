@@ -22,25 +22,25 @@ import {
 } from "lucide-react"
 
 export function TopNav({
-  onLoadSample,
   onExportExecutivePDF,
-  onExportTabPDF,
+  onExportGuideRoadmapPDF,
+  onExportDatabaseApiPDF,
+  onExportWireframePDF,
   onExportChatPDF,
   onExportMarkdown,
   onExportJSON,
-  onSaveAndShare,
   targetLanguage,
   onLanguageChange,
   generating,
   hasBlueprintData,
 }: {
-  onLoadSample: () => void
   onExportExecutivePDF: () => void
-  onExportTabPDF: () => void
+  onExportGuideRoadmapPDF: () => void
+  onExportDatabaseApiPDF: () => void
+  onExportWireframePDF: () => void
   onExportChatPDF: () => void
   onExportMarkdown: () => void
   onExportJSON: () => void
-  onSaveAndShare: () => void
   targetLanguage: string
   onLanguageChange: (lang: string) => void
   generating: boolean
@@ -131,26 +131,7 @@ export function TopNav({
           )}
         </div>
 
-        {/* Sample Blueprint Button */}
-        <button
-          onClick={onLoadSample}
-          disabled={generating}
-          className="hidden sm:flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 shadow-2xs cursor-pointer"
-        >
-          <FolderOpen className="h-3.5 w-3.5 text-indigo-600" />
-          <span>Sample Project</span>
-        </button>
 
-        {/* Save & Share Button */}
-        <button
-          onClick={onSaveAndShare}
-          disabled={!hasBlueprintData || generating}
-          title="Save & Share Blueprint Link"
-          className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-40 shadow-2xs cursor-pointer"
-        >
-          <Share2 className="h-3.5 w-3.5 text-indigo-600" />
-          <span className="hidden md:inline">Save & Share</span>
-        </button>
 
         {/* Multi-Format Export Dropdown */}
         <div className="relative">
@@ -179,21 +160,47 @@ export function TopNav({
                 >
                   <Sparkles className="h-4 w-4 text-indigo-600 flex-shrink-0" />
                   <div className="text-left">
-                    <div className="font-semibold">Executive Report (.pdf)</div>
-                    <div className="text-[10px] text-slate-400">Full styled blueprint document</div>
+                    <div className="font-semibold">All-in-One Full Report (.pdf)</div>
+                    <div className="text-[10px] text-slate-400">Everything combined in one file</div>
                   </div>
                 </button>
                 <button
                   onClick={() => {
-                    onExportTabPDF()
+                    onExportGuideRoadmapPDF()
                     setShowExportMenu(false)
                   }}
                   className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition cursor-pointer"
                 >
-                  <Layers className="h-4 w-4 text-red-500 flex-shrink-0" />
+                  <Layers className="h-4 w-4 text-emerald-500 flex-shrink-0" />
                   <div className="text-left">
-                    <div className="font-semibold">Active Canvas Tab (.pdf)</div>
-                    <div className="text-[10px] text-slate-400">Current visible tab only</div>
+                    <div className="font-semibold">Guide & Roadmap (.pdf)</div>
+                    <div className="text-[10px] text-slate-400">Step-by-step plan & timeline</div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => {
+                    onExportDatabaseApiPDF()
+                    setShowExportMenu(false)
+                  }}
+                  className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition cursor-pointer"
+                >
+                  <Box className="h-4 w-4 text-sky-500 flex-shrink-0" />
+                  <div className="text-left">
+                    <div className="font-semibold">Database & APIs (.pdf)</div>
+                    <div className="text-[10px] text-slate-400">Tables and REST endpoints</div>
+                  </div>
+                </button>
+                <button
+                  onClick={() => {
+                    onExportWireframePDF()
+                    setShowExportMenu(false)
+                  }}
+                  className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition cursor-pointer"
+                >
+                  <Box className="h-4 w-4 text-rose-500 flex-shrink-0" />
+                  <div className="text-left">
+                    <div className="font-semibold">Wireframe UI (.pdf)</div>
+                    <div className="text-[10px] text-slate-400">Design layout structures</div>
                   </div>
                 </button>
                 <button

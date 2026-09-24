@@ -393,3 +393,113 @@ export const exportElementToPDF = (elementId: string, customFilename?: string) =
   exportCleanPDF({ elementId, filename: customFilename || `Blueprint-${elementId}-${Date.now()}` })
 
 export const exportExecutiveReportToPDF = exportExecutiveReportPDF
+
+export async function exportGuideRoadmapPDF(data: any, language: string = "English") {
+  if (!data) return;
+  const container = document.createElement("div");
+  container.style.position = "fixed"; container.style.top = "-99999px";
+  container.style.width = "794px"; container.style.padding = "28px"; container.style.backgroundColor = "#fff";
+  container.style.fontFamily = "sans-serif"; container.style.color = "#0f172a";
+  
+  container.innerHTML = `
+    <h1 style="font-size: 24px; color: #4f46e5; margin-bottom: 20px;">Guide & Roadmap - ${data.project_title || "Project"}</h1>
+    
+    <h2 style="font-size: 18px; margin-bottom: 12px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px;">Step-by-Step Guide</h2>
+    <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 30px;">
+      ${(data.bpmn_steps || []).map((s: any, i: number) => `
+        <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border-left: 4px solid #4f46e5;">
+          <h3 style="margin: 0 0 4px 0; font-size: 14px;">Step ${i + 1}: ${s.title}</h3>
+          <p style="margin: 0; font-size: 12px; color: #475569;">${s.desc}</p>
+        </div>
+      `).join("")}
+    </div>
+
+    <h2 style="font-size: 18px; margin-bottom: 12px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px;">Implementation Roadmap</h2>
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      ${(data.roadmap_sprints || []).map((r: any) => `
+        <div style="background: #f0fdf4; padding: 12px; border-radius: 8px; border-left: 4px solid #22c55e;">
+          <h3 style="margin: 0 0 4px 0; font-size: 14px;">${r.timeframe} - ${r.phase}</h3>
+          <p style="margin: 0 0 6px 0; font-size: 12px; color: #475569;">Owner: ${r.owner}</p>
+          <ul style="margin: 0; padding-left: 16px; font-size: 11px;">
+            ${(r.tasks || []).map((t: string) => `<li>${t}</li>`).join("")}
+          </ul>
+        </div>
+      `).join("")}
+    </div>
+  `;
+  document.body.appendChild(container);
+  await renderElementToPdf(container, `Guide_Roadmap_${Date.now()}.pdf`);
+  document.body.removeChild(container);
+}
+
+export async function exportDatabaseApiPDF(data: any, language: string = "English") {
+  if (!data) return;
+  const container = document.createElement("div");
+  container.style.position = "fixed"; container.style.top = "-99999px";
+  container.style.width = "794px"; container.style.padding = "28px"; container.style.backgroundColor = "#fff";
+  container.style.fontFamily = "sans-serif"; container.style.color = "#0f172a";
+  
+  container.innerHTML = `
+    <h1 style="font-size: 24px; color: #4f46e5; margin-bottom: 20px;">Database & APIs - ${data.project_title || "Project"}</h1>
+    
+    <h2 style="font-size: 18px; margin-bottom: 12px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px;">Database Tables</h2>
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px;">
+      ${(data.database_tables || []).map((t: any) => `
+        <div style="background: #f8fafc; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px;">
+          <h3 style="margin: 0 0 6px 0; font-size: 14px; color: #0284c7;">Table: ${t.table_name}</h3>
+          <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+            <tr style="background: #e2e8f0;"><th style="padding: 4px; text-align: left;">Column</th><th style="padding: 4px; text-align: left;">Type</th><th style="padding: 4px; text-align: left;">Description</th></tr>
+            ${(t.columns || []).map((c: any) => `<tr><td style="padding: 4px; border-bottom: 1px solid #f1f5f9; font-family: monospace;">${c.name}</td><td style="padding: 4px; border-bottom: 1px solid #f1f5f9;">${c.type}</td><td style="padding: 4px; border-bottom: 1px solid #f1f5f9;">${c.description || ""}</td></tr>`).join("")}
+          </table>
+        </div>
+      `).join("")}
+    </div>
+
+    <h2 style="font-size: 18px; margin-bottom: 12px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px;">REST APIs</h2>
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      ${(data.api_endpoints || []).map((a: any) => `
+        <div style="background: #fffbeb; padding: 12px; border: 1px solid #fde68a; border-radius: 6px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+            <span style="background: #fbbf24; color: #78350f; font-weight: bold; padding: 2px 6px; border-radius: 4px; font-size: 11px;">${a.method}</span>
+            <span style="font-family: monospace; font-size: 13px; font-weight: bold;">${a.endpoint}</span>
+          </div>
+          <p style="margin: 0; font-size: 12px; color: #475569;">${a.description}</p>
+        </div>
+      `).join("")}
+    </div>
+  `;
+  document.body.appendChild(container);
+  await renderElementToPdf(container, `Database_APIs_${Date.now()}.pdf`);
+  document.body.removeChild(container);
+}
+
+export async function exportWireframePDF(data: any, language: string = "English") {
+  if (!data) return;
+  const container = document.createElement("div");
+  container.style.position = "fixed"; container.style.top = "-99999px";
+  container.style.width = "794px"; container.style.padding = "28px"; container.style.backgroundColor = "#fff";
+  container.style.fontFamily = "sans-serif"; container.style.color = "#0f172a";
+  
+  container.innerHTML = `
+    <h1 style="font-size: 24px; color: #4f46e5; margin-bottom: 20px;">UI Wireframes - ${data.project_title || "Project"}</h1>
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+      ${(data.wireframe_sections || []).map((w: any) => `
+        <div style="border: 2px solid #cbd5e1; border-radius: 12px; overflow: hidden; page-break-inside: avoid;">
+          <div style="background: #f1f5f9; padding: 12px; border-bottom: 2px solid #cbd5e1;">
+            <h3 style="margin: 0; font-size: 16px; color: #334155;">${w.title}</h3>
+          </div>
+          <div style="padding: 24px; background: #fff; min-height: 200px; display: flex; flex-direction: column; gap: 16px;">
+            ${(w.components || []).map((c: string) => `
+              <div style="border: 2px dashed #94a3b8; padding: 16px; border-radius: 8px; text-align: center; color: #64748b; font-weight: bold;">
+                ${c}
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+  document.body.appendChild(container);
+  await renderElementToPdf(container, `Wireframe_${Date.now()}.pdf`);
+  document.body.removeChild(container);
+}

@@ -229,16 +229,30 @@ export default function Page() {
   // PDF Export Handlers (Clean Target Container Exporter)
   const handleExportExecutivePDF = useCallback(async () => {
     if (!blueprintData) return
+    const { exportExecutiveReportPDF } = await import('@/lib/pdf-exporter')
     await exportExecutiveReportPDF(blueprintData, targetLanguage)
   }, [blueprintData, targetLanguage])
 
-  const handleExportTabPDF = useCallback(async () => {
+  const handleExportGuideRoadmapPDF = useCallback(async () => {
     if (!blueprintData) return
-    const filename = `Blueprint-${activeTab.toUpperCase()}-${Date.now()}`
-    await exportCleanPDF({ elementId: "blueprint-canvas-content", filename })
-  }, [blueprintData, activeTab])
+    const { exportGuideRoadmapPDF } = await import('@/lib/pdf-exporter')
+    await exportGuideRoadmapPDF(blueprintData, targetLanguage)
+  }, [blueprintData, targetLanguage])
+
+  const handleExportDatabaseApiPDF = useCallback(async () => {
+    if (!blueprintData) return
+    const { exportDatabaseApiPDF } = await import('@/lib/pdf-exporter')
+    await exportDatabaseApiPDF(blueprintData, targetLanguage)
+  }, [blueprintData, targetLanguage])
+
+  const handleExportWireframePDF = useCallback(async () => {
+    if (!blueprintData) return
+    const { exportWireframePDF } = await import('@/lib/pdf-exporter')
+    await exportWireframePDF(blueprintData, targetLanguage)
+  }, [blueprintData, targetLanguage])
 
   const handleExportChatPDF = useCallback(async () => {
+    const { exportCleanPDF } = await import('@/lib/pdf-exporter')
     const filename = `Blueprint-Chat-History-${Date.now()}`
     await exportCleanPDF({ elementId: "chat-messages-container", filename })
   }, [])
@@ -315,13 +329,13 @@ ${blueprintData.api_endpoints?.map((e: any) => `- \`${e.method} ${e.path}\`: ${e
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-slate-50 text-slate-900 font-sans">
       <TopNav
-        onLoadSample={handleLoadSample}
         onExportExecutivePDF={handleExportExecutivePDF}
-        onExportTabPDF={handleExportTabPDF}
+        onExportGuideRoadmapPDF={handleExportGuideRoadmapPDF}
+        onExportDatabaseApiPDF={handleExportDatabaseApiPDF}
+        onExportWireframePDF={handleExportWireframePDF}
         onExportChatPDF={handleExportChatPDF}
         onExportMarkdown={handleExportMarkdown}
         onExportJSON={handleExportJSON}
-        onSaveAndShare={handleSaveAndShare}
         targetLanguage={targetLanguage}
         onLanguageChange={handleLanguageChange}
         generating={generating}
