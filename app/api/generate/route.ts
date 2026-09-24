@@ -5,6 +5,8 @@ export async function POST(req: NextRequest) {
     const {
       prompt,
       documentText,
+      documentBase64,
+      documentMimeType,
       language = "English",
       targetLanguage,
       role = "Manager",
@@ -17,6 +19,8 @@ export async function POST(req: NextRequest) {
     let cleanPrompt = prompt ? prompt.trim() : "";
     if (documentText && documentText.trim().length > 0) {
       cleanPrompt += `\n\n[ATTACHED BUSINESS DOCUMENT / BRD]:\n${documentText.slice(0, 3000)}`;
+    } else if (documentBase64) {
+      cleanPrompt += `\n\n[NOTE: THE USER HAS ATTACHED A DOCUMENT (PDF/IMAGE) FOR YOU TO ANALYZE. EXTRACT THEIR REQUIREMENTS FROM IT AND INCORPORATE THEM INTO THE BLUEPRINT.]`;
     }
 
     if (!cleanPrompt) {
@@ -400,15 +404,15 @@ export async function POST(req: NextRequest) {
       const l = lang.toLowerCase();
       if (l.includes("gu") || l.includes("gujarat")) {
         return {
-          titlePrefix: "એન્ટરપ્રાઇઝ સોલ્યુશન આર્કિટેક્ચર",
-          step1: { title: "૧. ડેટા ઇન્ટેક અને ઇન્જેશન", desc: "યુઝર ઇનપુટ, ડોક્યુમેન્ટ્સ અને સિગ્નલ્સ એકત્રિત કરવા." },
-          step2: { title: "૨. AI વિશ્લેષણ અને વેરિફિકેશન", desc: "બિઝનેસ નિયમો, પરવાનગીઓ અને નીતિઓની ચકાસણી." },
-          step3: { title: "૩. એક્ઝિક્યુશન અને વર્કફ્લો ઓર્કેસ્ટ્રેશન", desc: "માઈક્રોસર્વિસિસ, ડેટાબેઝ રાઈટ્સ અને એપીઆઈ સંકલન." },
-          step4: { title: "૪. મોનિટરિંગ અને સતત શિક્ષણ", desc: "ટેલિમેટ્રી લોગિંગ, ઓડિટ મેટ્રિક્સ અને ઓટોમેટિક એલર્ટ્સ." },
+          titlePrefix: "પ્રોજેક્ટ પ્લાન",
+          step1: { title: "૧. ડિઝાઇન અને હોમપેજ (Design)", desc: "સૌથી પહેલા આપણે યુઝર્સ માટે એક સુંદર અને આકર્ષક હોમપેજ બનાવીશું." },
+          step2: { title: "૨. પ્રોડક્ટ અને ફીચર્સ (Features)", desc: "ત્યારબાદ આપણે તેમાં જરૂરી ફીચર્સ અને પ્રોડક્ટ કેટેલોગ એડ કરીશું." },
+          step3: { title: "૩. ડેટાબેઝ અને સિસ્ટમ (Database)", desc: "પછી આપણે બધો ડેટા સાચવવા માટે પાછળની સિસ્ટમ (બેકએન્ડ) સેટ કરીશું." },
+          step4: { title: "૪. ટેસ્ટિંગ અને લાઈવ (Launch)", desc: "છેલ્લે આપણે બધું ચેક કરીને વેબસાઈટને ઈન્ટરનેટ પર લાઈવ કરીશું!" },
           initiative1: "મુખ્ય પ્રોસેસ ડિજિટાઈઝેશન",
           initiative2: "AI ઇન્ટેલિજન્સ એકીકરણ",
-          riskTitle: "ડેટા સુરક્ષા અને ટેનન્ટ આઇસોલેશન",
-          riskMitigation: "Supabase RLS સુરક્ષા નીતિઓ અને JWT ટોકન્સ લાગુ કરો.",
+          riskTitle: "ડેટા સુરક્ષા",
+          riskMitigation: "યુઝરનો ડેટા સુરક્ષિત રાખવા માટે બેઝિક સિક્યોરિટી નિયમો લગાવો.",
         };
       }
       if (l.includes("hi") || l.includes("hindi")) {
@@ -464,15 +468,15 @@ export async function POST(req: NextRequest) {
         };
       }
       return {
-        titlePrefix: "Enterprise Solution Architecture",
-        step1: { title: "1. Intake & Ingestion", desc: "Capture user input, documents, or business signals." },
-        step2: { title: "2. AI Analysis & Verification", desc: "Validate business rules, permissions, and policy matching." },
-        step3: { title: "3. Execution & Workflow Orchestration", desc: "Coordinate microservices, database writes, and external APIs." },
-        step4: { title: "4. Feedback & Continuous Learning", desc: "Log telemetry, audit metrics, and trigger alerts." },
+        titlePrefix: "Project Plan",
+        step1: { title: "1. Design & Homepage", desc: "First, we will design a beautiful and attractive homepage for your users." },
+        step2: { title: "2. Features & Catalog", desc: "Next, we will add the core features and product catalog so users can interact." },
+        step3: { title: "3. Database Setup", desc: "Then, we will set up the backend database to save all user data securely." },
+        step4: { title: "4. Testing & Launch", desc: "Finally, we will test everything and launch the website live on the internet!" },
         initiative1: "Core Process Digitization",
         initiative2: "AI Intelligence Integration",
-        riskTitle: "Data Security & Tenant Isolation",
-        riskMitigation: "Implement Supabase Row-Level Security (RLS) and JWT token rotation.",
+        riskTitle: "Data Security",
+        riskMitigation: "Implement basic security rules to keep user data safe.",
       };
     };
 
@@ -496,11 +500,36 @@ export async function POST(req: NextRequest) {
       const minBudget = totalHours * hourlyRate;
       const maxBudget = minBudget + 12000;
 
+      const wordsForEntity = p.replace(/[^a-zA-Z0-9\s]/g, "").split(/\s+/).filter(w => w.length > 3);
+      const dynamicEntity = wordsForEntity.length > 0 ? wordsForEntity.slice(-2).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ") : "Enterprise";
       const words = p.split(/\s+/).slice(0, 4).join(" ");
       const dynamicTitle = `${loc.titlePrefix}: ${words.charAt(0).toUpperCase() + words.slice(1)}`;
 
+      let fStack = ["React", "Next.js", "Tailwind CSS"];
+      let bStack = ["Node.js", "PostgreSQL", "Supabase"];
+      let aiToolFront = ["v0 by Vercel", "Cursor IDE"];
+      let aiToolBack = ["ChatGPT", "GitHub Copilot"];
+      let platformFront = ["Vercel", "GitHub Pages"];
+      let platformBack = ["AWS", "Supabase Platform"];
+      
+      const lowerPrompt = p.toLowerCase();
+      if (lowerPrompt.includes("mobile") || lowerPrompt.includes("app") || lowerPrompt.includes("ios") || lowerPrompt.includes("android")) {
+        fStack = ["Flutter", "Swift (iOS)", "Kotlin (Android)"];
+        bStack = ["Firebase", "Node.js", "Express"];
+        aiToolFront = ["GitHub Copilot for Mobile", "ChatGPT"];
+        platformFront = ["Apple App Store", "Google Play Console"];
+        platformBack = ["Firebase Hosting", "GCP"];
+      } else if (lowerPrompt.includes("data") || lowerPrompt.includes("machine learning") || lowerPrompt.includes("ai ") || lowerPrompt.includes("model")) {
+        fStack = ["Streamlit", "Python", "React"];
+        bStack = ["Python", "FastAPI", "PyTorch"];
+        aiToolFront = ["Cursor IDE", "Jupyter AI"];
+        aiToolBack = ["ChatGPT (Data Models)", "Claude 3.5 Sonnet"];
+        platformFront = ["Vercel", "HuggingFace Spaces"];
+        platformBack = ["AWS EC2 (GPU)", "Google Cloud Run"];
+      }
+
       return {
-        project_title: dynamicTitle,
+        project_title: dynamicEntity + " | " + dynamicTitle,
         user_problem: p,
         target_language: targetLangStr,
         user_role: activeRole,
@@ -513,17 +542,17 @@ export async function POST(req: NextRequest) {
           total_hours: `${totalHours} Hours`,
           hourly_rate: `$${hourlyRate}/hr`,
           team_roles: [
-            { role: "Senior Full-Stack Engineer", count: 2, allocation: "100%" },
-            { role: "UI/UX Product Designer", count: 1, allocation: "50%" },
-            { role: "AI & Data Engineer", count: 1, allocation: "75%" },
-            { role: "DevOps & Cloud Architect", count: 1, allocation: "50%" },
+            { role: `Lead ${dynamicEntity} Architect`, count: 1, allocation: "100%" },
+            { role: `${dynamicEntity} UI/UX Designer`, count: 1, allocation: "50%" },
+            { role: "Backend Systems Engineer", count: 2, allocation: "100%" },
+            { role: "Quality Assurance (QA)", count: 1, allocation: "50%" },
           ],
         },
         tech_stack: {
-          frontend: "React / Next.js 16 + Tailwind CSS",
-          backend: "Node.js / Express API Gateway",
+          frontend: fStack.join(", "),
+          backend: bStack.join(", "),
           database: "PostgreSQL (Supabase RLS)",
-          ai_layer: "Google Gemini 1.5 Flash",
+          ai_layer: "Google Gemini 3.6 Flash",
         },
         initiatives: [
           {
@@ -534,27 +563,71 @@ export async function POST(req: NextRequest) {
           {
             title: loc.initiative2,
             impact: "High Impact",
-            desc: "Embed automated machine reasoning and predictive classification.",
+            desc: `Embed automated machine reasoning for ${dynamicEntity}.`,
           },
         ],
         bpmn_steps: [
           { id: 1, title: loc.step1.title, desc: loc.step1.desc, phase: "Ingestion" },
           { id: 2, title: loc.step2.title, desc: loc.step2.desc, phase: "Processing" },
           { id: 3, title: loc.step3.title, desc: loc.step3.desc, phase: "Execution" },
-          { id: 4, title: loc.step4.title, desc: loc.step4.desc, phase: "Delivery" },
+          { id: 4, title: loc.step4.title, desc: loc.step4.desc, phase: "Delivery" }
         ],
         database_tables: domainData.tables,
+        database_relationships: [
+          `${domainData.tables[0]?.table_name || "users"} -> ${domainData.tables[1]?.table_name || "records"}`,
+          `${domainData.tables[1]?.table_name || "records"} -> ${domainData.tables[2]?.table_name || "details"}`,
+          `${domainData.tables[0]?.table_name || "users"} -> ${domainData.tables[2]?.table_name || "details"}`
+        ],
         api_endpoints: domainData.endpoints,
         wireframe_sections: [
-          { title: "Navigation & Hero", components: ["Brand Logo", "Global Search", "User Profile", "Quick Action Bar"] },
-          { title: "Operational Workbench", components: ["Data Table", "Live Analytics Cards", "Status Badges", "Filter Panel"] },
-          { title: "System Analytics & Logs", components: ["Activity Stream", "KPI Summary", "Export PDF/JSON Action"] },
+          { title: `${dynamicEntity} Customer Storefront`, components: [`${dynamicEntity} Catalog Grid`, "Advanced Search & Filters", "Shopping Cart Drawer", "Secure Checkout Flow"] },
+          { title: `${dynamicEntity} Admin Dashboard`, components: ["Live Sales Analytics", "Inventory Management Table", "Customer Order History", "Status Badges"] },
+          { title: `User & ${dynamicEntity} Settings`, components: ["User Profile Details", "Payment Methods", "Order Tracking Module"] }
         ],
-        roadmap_sprints: [
-          { sprint: "Sprint 1-2", focus: "Architecture & Data Model", deliverable: "PostgreSQL schemas, Auth RLS & Base UI" },
-          { sprint: "Sprint 3-4", focus: "Core Logic & AI Engine", deliverable: "API Gateway, Gemini integration & pipeline execution" },
-          { sprint: "Sprint 5-6", focus: "Testing & Enterprise Launch", deliverable: "End-to-end verification, load testing & Vercel deployment" },
-        ],
+          roadmap_sprints: [
+            {
+              timeframe: "Week 1 (Days 1-7)",
+              phase: "Client/UI & Architecture Setup",
+              tech_stack: fStack,
+              ai_tools: aiToolFront,
+              owner: "Lead Frontend/Mobile Developer",
+              platform: platformFront,
+              tasks: [
+                `Initialize repository and set up branching strategy for ${dynamicEntity}.`,
+                `Configure project build tools and package manager dependencies.`,
+                `Build main user interfaces and responsive layout components using ${fStack[0]}.`,
+                `Implement state management and local caching strategies.`
+              ]
+            },
+            {
+              timeframe: "Week 2 (Days 8-14)",
+              phase: "Backend, Database & Core Logic",
+              tech_stack: bStack,
+              ai_tools: aiToolBack,
+              owner: "Backend Data Engineer",
+              platform: platformBack,
+              tasks: [
+                `Design and provision database tables for the ${dynamicEntity} domain.`,
+                `Write secure REST/GraphQL API endpoints with JWT authentication.`,
+                `Implement core business logic and third-party integrations (e.g. payments).`,
+                `Set up Row-Level Security (RLS) policies for data isolation.`
+              ]
+            },
+            {
+              timeframe: "Week 3 (Days 15-21)",
+              phase: "Testing, QA & Production Deployment",
+              tech_stack: ["GitHub Actions", "Docker", "Jest/Cypress"],
+              ai_tools: ["Claude 3.5 Sonnet (for Tests)", "Gemini (Code Review)"],
+              owner: "DevOps / Full-Stack Engineer",
+              platform: ["Cloud Infrastructure (AWS EC2/Vercel)"],
+              tasks: [
+                `Write unit and integration tests for critical API paths.`,
+                `Configure CI/CD pipelines in GitHub Actions for automated deployment.`,
+                `Deploy to production environment and configure custom domains/SSL.`,
+                `Conduct final QA, performance audits, and release to end-users.`
+              ]
+            }
+          ],
         planning: {
           effortHours: `${totalHours}`,
           cloudCost: `$${110 + (hash % 50)}/mo`,
@@ -574,24 +647,29 @@ export async function POST(req: NextRequest) {
         const targetLangName = rawLang;
         const modelName = selectedModel.includes("pro") ? "gemini-2.5-pro" : "gemini-3.6-flash";
 
-        const roleInstructions =
-          role === "Admin"
-            ? "Emphasize deep enterprise security, Supabase Row-Level Security (RLS), microservice architecture, API gateways, cloud cost optimization, and compliance."
-            : role === "Employee"
-            ? "Emphasize clear developer tasks, step-by-step implementation guide, clean UI wireframe components, and practical code integration steps."
-            : "Emphasize agile project management, sprint planning, cross-functional resource allocation, timeline risk mitigation, and business ROI.";
+        const roleInstructions = "IMPORTANT: The user is a normal, non-technical person! DO NOT use ANY tech jargon like 'microservices', 'API gateways', 'RLS', or 'architecture'. Explain everything in extremely simple, everyday words.";
 
-        const systemPrompt = `You are a Principal AI Solution Architect.
-Analyze the user's business requirement and create a complete, bespoke, production-ready solution architecture for a user in the '${role}' role.
+        const systemPrompt = `You are a friendly, expert Website & App Development Guide talking to a NON-TECHNICAL person.
+Your job is to analyze the user's idea (e.g. a shoe website) and generate a super simple, step-by-step beginner-friendly plan.
+CRITICAL RULE: DO NOT use heavy enterprise or tech jargon in the descriptions! Use simple words so that a totally normal person can easily understand what to do and what features their website will have.
 
-ROLE DIRECTIVE (${role}):
 ${roleInstructions}
 
-CRITICAL INSTRUCTIONS:
-1. TARGET LANGUAGE: You MUST output EVERY single text field (project_title, initiative titles & descriptions, bpmn_steps titles & descriptions, api_endpoints descriptions, wireframe_sections titles & component labels, roadmap_sprints deliverables, risk titles & mitigations) STRICTLY IN THIS LANGUAGE: ${targetLangName}.
-2. CUSTOM DATABASE SCHEMA: Generate 3 to 5 realistic, domain-specific PostgreSQL database tables tailored specifically to the user's requirement. Include 5-7 meaningful column definitions per table with constraints like 'id (PK, UUID)', 'foreign_key (FK -> ...)', 'VARCHAR', 'JSONB', 'TIMESTAMPTZ'.
-3. CUSTOM REST APIS: Generate 4 to 6 domain-specific REST API endpoints (POST, GET, PUT, DELETE) with realistic paths matching the domain.
-
+CRITICAL INSTRUCTIONS (ABSOLUTE DOMAIN SPECIFICITY):
+1. TARGET LANGUAGE: EVERY text field MUST be written perfectly in: ${targetLangName}. Make it conversational and easy to read.
+2. DEEP WIREFRAMES: Describe the pages in normal words. E.g., if Shoe Shop, give me "Page 1: Shoe Catalog (Show shoe photos, size filters, price slider)", "Page 2: Cart & Checkout (Where people pay)".
+3. DEEP DATABASE SCHEMA: Generate 8-12 tables tailored to the domain. Use real technical column names (VARCHAR, etc) but keep table names obvious (e.g., 'users', 'products', 'orders').
+4. COMPREHENSIVE REST APIs: Give 10-15 standard REST APIs grouped by resource. (e.g., /api/shoes, /api/orders).
+5. ROADMAP & ROLES: Define normal team roles (e.g., "Website Designer", "App Developer", "Tester").
+6. HIGHLY DYNAMIC TECH STACK: Suggest the best tools for their specific idea (React for websites, Swift for iPhone apps, Python for AI).
+7. ACTION PLAN GUIDE (bpmn_steps): You MUST write this exactly as a friendly Manager giving direct, step-by-step instructions to a normal person building the app. 
+   - Rule: EXPLAIN EXACTLY WHAT THE STEP DOES FOR THE USER'S SPECIFIC IDEA!
+   - BAD: "Step 1: Setup Architecture and configure APIs."
+   - GOOD (If Shoes): "Step 1: Website Design - First, let's create a beautiful front page where customers can see photos of all your shoes."
+   - GOOD (If Shoes): "Step 2: Shopping Cart - Next, we will add a cart so people can pick their shoe size and buy it easily."
+   Write the title and description in a very simple, relatable tone. Explain the "WHY" in everyday language.
+8. SPRINT TASKS: Keep tasks practical. Instead of "Configure CI/CD", say "Publish the website to the internet so customers can visit it."
+   
 USER REQUIREMENT: "${cleanPrompt}"
 
 Output ONLY a single valid JSON object matching this schema:
@@ -609,33 +687,32 @@ Output ONLY a single valid JSON object matching this schema:
     "total_hours": "240 Hours",
     "hourly_rate": "$75/hr",
     "team_roles": [
-      { "role": "Senior Full-Stack Engineer", "count": 2, "allocation": "100%" },
-      { "role": "UI/UX Product Designer", "count": 1, "allocation": "50%" },
-      { "role": "AI Solutions Engineer", "count": 1, "allocation": "75%" },
-      { "role": "DevOps & Cloud Architect", "count": 1, "allocation": "50%" }
+      { "role": "[Dynamic Role 1]", "count": 2, "allocation": "100%" },
+      { "role": "[Dynamic Role 2]", "count": 1, "allocation": "50%" }
     ]
   },
   "tech_stack": {
-    "frontend": "React / Next.js 16 + Tailwind CSS",
-    "backend": "Node.js / Express Edge Functions",
-    "database": "PostgreSQL (Supabase RLS)",
-    "ai_layer": "Google Gemini 3.6 Flash"
+    "frontend": "[Dynamic Client/Frontend Tech based on requirement]",
+    "backend": "[Dynamic Backend Tech based on requirement]",
+    "database": "[Dynamic Database Tech based on requirement]",
+    "ai_layer": "[Dynamic AI/ML layer based on requirement]"
   },
   "initiatives": [
-    { "title": "Initiative 1 in ${targetLangName}", "impact": "High Impact", "desc": "Description in ${targetLangName}" },
-    { "title": "Initiative 2 in ${targetLangName}", "impact": "High Impact", "desc": "Description in ${targetLangName}" }
+    { "title": "Initiative 1 in ${targetLangName}", "impact": "High Impact", "desc": "Description in ${targetLangName}" }
   ],
   "bpmn_steps": [
-    { "id": 1, "title": "1. Step in ${targetLangName}", "desc": "Description in ${targetLangName}", "phase": "Phase" },
-    { "id": 2, "title": "2. Step in ${targetLangName}", "desc": "Description in ${targetLangName}", "phase": "Phase" },
-    { "id": 3, "title": "3. Step in ${targetLangName}", "desc": "Description in ${targetLangName}", "phase": "Phase" },
-    { "id": 4, "title": "4. Step in ${targetLangName}", "desc": "Description in ${targetLangName}", "phase": "Phase" }
+    { "id": 1, "title": "1. Step in ${targetLangName}", "desc": "Description in ${targetLangName}", "phase": "Phase" }
   ],
   "database_tables": [
     {
       "table_name": "tbl_custom_name",
       "columns": ["id (PK, UUID)", "name (VARCHAR)", "created_at (TIMESTAMP)"]
     }
+  ],
+  "database_relationships": [
+    "users -> orders",
+    "orders -> order_items",
+    "order_items -> products"
   ],
   "api_endpoints": [
     { "method": "POST", "path": "/api/v1/resource/action", "desc": "Description in ${targetLangName}" }
@@ -644,9 +721,18 @@ Output ONLY a single valid JSON object matching this schema:
     { "title": "Section Title in ${targetLangName}", "components": ["Component 1 in ${targetLangName}", "Component 2 in ${targetLangName}"] }
   ],
   "roadmap_sprints": [
-    { "sprint": "Sprint 1-2", "focus": "Architecture & Data Model", "deliverable": "Deliverable in ${targetLangName}" },
-    { "sprint": "Sprint 3-4", "focus": "AI Engine & Workflows", "deliverable": "Deliverable in ${targetLangName}" },
-    { "sprint": "Sprint 5-6", "focus": "Testing & Launch", "deliverable": "Deliverable in ${targetLangName}" }
+    { 
+      "timeframe": "Week 1", 
+      "phase": "Project Setup", 
+      "tech_stack": ["[Language 1]", "[Framework 2]"], 
+      "ai_tools": ["[Tool 1]", "[Tool 2]"], 
+      "owner": "[Dynamic Role]", 
+      "platform": ["[Platform 1]", "[Platform 2]"],
+      "tasks": [
+        "Detailed step 1 in ${targetLangName}",
+        "Detailed step 2 in ${targetLangName}"
+      ]
+    }
   ],
   "planning": {
     "effortHours": "240",
@@ -658,22 +744,31 @@ Output ONLY a single valid JSON object matching this schema:
 Output raw JSON only.`;
 
         const candidateModels = [
-          "gemini-3.5-flash",
           "gemini-3.6-flash",
           "gemini-3.7-flash",
           "gemini-flash-latest",
-          "gemini-2.5-pro",
+          "gemini-3.1-pro-preview"
         ];
 
         for (const currentModel of candidateModels) {
           try {
+            const reqParts: any[] = [{ text: systemPrompt }];
+            if (documentBase64) {
+              reqParts.push({
+                inlineData: {
+                  mimeType: documentMimeType || "application/pdf",
+                  data: documentBase64,
+                }
+              });
+            }
+
             const response = await fetch(
               `https://generativelanguage.googleapis.com/v1beta/models/${currentModel}:generateContent?key=${apiKey}`,
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                  contents: [{ parts: [{ text: systemPrompt }] }],
+                  contents: [{ parts: reqParts }],
                   generationConfig: {
                     temperature: 0.3,
                     responseMimeType: "application/json",
@@ -686,7 +781,8 @@ Output raw JSON only.`;
               const resData = await response.json();
               const candidateText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
               if (candidateText) {
-                const parsed = JSON.parse(candidateText);
+                const cleanedText = candidateText.replace(/^```(json)?|```$/gi, "").trim();
+                const parsed = JSON.parse(cleanedText);
                 console.log(`>>> [GEMINI ${currentModel.toUpperCase()} SUCCESS] Bespoke Architecture Generated!`);
                 return NextResponse.json({ success: true, data: parsed, gemini_used: true, model: currentModel });
               }

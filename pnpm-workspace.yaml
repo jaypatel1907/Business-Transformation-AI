@@ -1,3 +1,6 @@
+allowBuilds:
+  core-js: set this to true or false
 minimumReleaseAgeExclude:
   - '@next/*'
   - next
+  - html2canvas-pro@2.4.4

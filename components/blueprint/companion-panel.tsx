@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { useEffect, useRef, useState } from "react"
 import { Bot, Send, Paperclip, Lightbulb, FileText, X } from "lucide-react"
@@ -19,12 +19,12 @@ export function CompanionPanel({
 }: {
   messages: ChatMessage[]
   generating: boolean
-  onSubmit: (text: string, documentText?: string) => void
+  onSubmit: (text: string, documentText?: string, base64?: string, mimeType?: string) => void
   onUpload: (fileName: string) => void
 }) {
   const [value, setValue] = useState("")
   const [isDragging, setIsDragging] = useState(false)
-  const [attachedFile, setAttachedFile] = useState<{ name: string; text: string; size: string } | null>(null)
+  const [attachedFile, setAttachedFile] = useState<{ name: string; text: string; base64?: string; mimeType?: string; size: string } | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -36,15 +36,33 @@ export function CompanionPanel({
     if (!file) return
     const reader = new FileReader()
     reader.onload = (e) => {
-      const text = (e.target?.result as string) || ""
+      const result = (e.target?.result as string) || ""
+      
+      let base64Data = ""
+      let plainText = ""
+
+      if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
+        // extract base64 chunk from data URI
+        base64Data = result.includes("base64,") ? result.split("base64,")[1] : result
+      } else {
+        plainText = result
+      }
+
       setAttachedFile({
         name: file.name,
-        text,
+        text: plainText,
+        base64: base64Data,
+        mimeType: file.type || "application/pdf",
         size: `${(file.size / 1024).toFixed(1)} KB`,
       })
       onUpload(file.name)
     }
-    reader.readAsText(file)
+    
+    if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
+      reader.readAsDataURL(file)
+    } else {
+      reader.readAsText(file)
+    }
   }
 
   const handleDrop = (e: React.DragEvent) => {
@@ -58,7 +76,7 @@ export function CompanionPanel({
   const send = () => {
     const text = value.trim()
     if ((!text && !attachedFile) || generating) return
-    onSubmit(text || `Analyze uploaded document: ${attachedFile?.name}`, attachedFile?.text)
+    onSubmit(text || `Analyze uploaded document: ${attachedFile?.name}`, attachedFile?.text, attachedFile?.base64, attachedFile?.mimeType)
     setValue("")
     setAttachedFile(null)
   }

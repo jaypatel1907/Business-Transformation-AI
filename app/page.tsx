@@ -67,7 +67,9 @@ export default function Page() {
       userMessage?: ChatMessage,
       rawPromptText?: string,
       documentText?: string,
-      langToUse?: string
+      langToUse?: string,
+      docBase64?: string,
+      docMimeType?: string
     ) => {
       if (userMessage) {
         setMessages((prev) => [...prev, userMessage])
@@ -93,10 +95,12 @@ export default function Page() {
           body: JSON.stringify({
             prompt: promptToSend,
             documentText: docToSend,
+            documentBase64: docBase64,
+            documentMimeType: docMimeType,
             language: currentLang,
             targetLanguage: currentLang,
             role: role || "Manager",
-            selectedModel: "gemini-1.5-flash",
+            selectedModel: "gemini-3.6-flash",
           }),
         })
 
@@ -116,37 +120,32 @@ export default function Page() {
               role: "ai",
               label: "AI Solution Architect",
               content: (
-                <div className="space-y-2">
-                  <p className="font-bold text-slate-900">
-                    ✨ Generated Blueprint ({role || "Manager"} • {currentLang}):{" "}
-                    <span className="text-indigo-700">{data.project_title}</span>
+                <div className="space-y-4">
+                  <p className="font-semibold text-slate-900 text-sm leading-relaxed">
+                    {currentLang === "Gujarati" 
+                      ? "અરે વાહ! તમારો આઈડિયા ખૂબ જ સરસ છે. ચાલો હું તમને આ પ્રોજેક્ટ કઈ રીતે બનાવવો તે માટે સ્ટેપ-બાય-સ્ટેપ ગાઇડ કરું:"
+                      : "Great idea! Here is a simple, step-by-step guide on how we will build your project:"}
                   </p>
-                  <p className="text-xs text-slate-600">
-                    Maturity: <strong>{data.digital_maturity}%</strong> | AI Readiness:{" "}
-                    <strong>{data.ai_adoption}%</strong> | Timeline: <strong>{data.timeline}</strong>
-                  </p>
-                  {role !== "Employee" && (
-                    <p className="text-xs text-slate-600">
-                      Est. Budget:{" "}
-                      <strong>
-                        {data.financial_estimation?.min_budget || "$18,000"} -{" "}
-                        {data.financial_estimation?.max_budget || "$32,000"}
-                      </strong>{" "}
-                      ({data.financial_estimation?.total_hours || "240 Hours"})
+                  
+                  <div className="space-y-4 mt-3">
+                    {data.bpmn_steps?.map((step: any, idx: number) => (
+                      <div key={idx} className="text-[13px] text-slate-700 leading-relaxed">
+                        <strong className="text-slate-900 block mb-1">
+                          {currentLang === "Gujarati" ? "સ્ટેપ" : "Step"} {idx + 1}: {step.title}
+                        </strong>
+                        <span className="whitespace-pre-line">{step.desc}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-5 p-3.5 bg-indigo-50/80 border border-indigo-100 rounded-xl">
+                    <p className="text-[13px] text-indigo-800 font-medium leading-relaxed">
+                      👉 <strong>{currentLang === "Gujarati" ? "વધુ માહિતી:" : "More Info:"}</strong>{" "}
+                      {currentLang === "Gujarati" 
+                        ? "મેં આ પ્રોજેક્ટ માટે જરૂરી ડેટાબેઝ, વાયરફ્રેમ (ડિઝાઈન) અને આર્કિટેક્ચર પણ બનાવી દીધું છે. જમણી બાજુ આપેલા Tabs પર ક્લિક કરીને તમે આખી સિસ્ટમનો પ્લાન જોઈ શકો છો!"
+                        : "I have also created the full Database schema, APIs, and UX Wireframes for this project. Click the Tabs on the right to view the complete blueprint!"}
                     </p>
-                  )}
-                  <ul className="list-disc space-y-1 pl-4 text-xs text-slate-700">
-                    <li>
-                      <strong className="text-slate-900">Process Workflow:</strong>{" "}
-                      {data.bpmn_steps?.length || 4} workflow steps mapped.
-                    </li>
-                    {role !== "Employee" && (
-                      <li>
-                        <strong className="text-slate-900">Database &amp; APIs:</strong>{" "}
-                        {data.database_tables?.map((t: any) => t.table_name).join(", ")} generated.
-                      </li>
-                    )}
-                  </ul>
+                  </div>
                 </div>
               ),
             },
@@ -191,11 +190,14 @@ export default function Page() {
   )
 
   const handleSubmit = useCallback(
-    (text: string, documentText?: string) => {
+    (text: string, documentText?: string, base64?: string, mimeType?: string) => {
       runGeneration(
         { id: nextId(), role: "user", label: "Business Requirement", content: text },
         text,
-        documentText
+        documentText,
+        undefined,
+        base64,
+        mimeType
       )
     },
     [runGeneration]

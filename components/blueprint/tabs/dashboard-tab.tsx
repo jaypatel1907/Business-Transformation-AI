@@ -49,7 +49,7 @@ export function DashboardTab({
   const maturity = data?.digital_maturity || 88
   const adoption = data?.ai_adoption || 94
   const timeline = data?.timeline || "6 Weeks"
-  const title = data?.project_title || "Custom Enterprise Solution"
+  const title = data?.project_title || "Custom Website / App Project"
   const userProblem = data?.user_problem || ""
 
   const finEst = data?.financial_estimation || {
@@ -67,8 +67,8 @@ export function DashboardTab({
 
   const techStack = data?.tech_stack || {
     frontend: "Next.js 16 + React 19 + Tailwind",
-    backend: "Node.js / Express API Gateway",
-    database: "PostgreSQL (Supabase RLS)",
+    backend: "Node.js / Express",
+    database: "PostgreSQL",
     ai_layer: "Google Gemini 1.5 Flash",
   }
 
@@ -80,7 +80,7 @@ export function DashboardTab({
           <div>
             <div className="flex items-center gap-2">
               <span className="inline-block rounded-full bg-indigo-100 px-3 py-1 text-[11px] font-semibold text-indigo-700">
-                Futurrizon Enterprise Architecture Blueprint
+                Project Blueprint & Step-by-Step Guide
               </span>
               <span
                 className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold border ${
@@ -161,75 +161,40 @@ export function DashboardTab({
       </div>
 
       {/* ------------------------------------------------------------- */}
-      {/* ROLE SPECIFIC VIEW 1: EMPLOYEE VIEW (Tasks & Sprint Objectives) */}
+      {/* ACTION PLAN GUIDE: MANAGER TO EMPLOYEE INSTRUCTIONS */}
       {/* ------------------------------------------------------------- */}
-      {currentRole === "Employee" && (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          {/* My Assigned Implementation Tasks */}
-          <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm space-y-4">
-            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <CheckSquare className="h-4 w-4 text-emerald-600" />
-              {t.myTasks}
+      {(currentRole === "Employee" || currentRole === "Manager") && (
+        <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm">
+          <div className="mb-6">
+            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <CheckSquare className="h-5 w-5 text-emerald-600" />
+              Step-by-Step Action Plan (Manager Instructions)
             </h3>
-            <div className="space-y-2.5">
-              {[
-                { task: "Scaffold Next.js 16 App & Tailwind UI Design Tokens", status: "In Progress", priority: "High", due: "Sprint 1" },
-                { task: "Setup Supabase Database Models & RLS Security Policies", status: "In Progress", priority: "High", due: "Sprint 1" },
-                { task: "Integrate Google Gemini 1.5 Streaming API Route", status: "Pending", priority: "Medium", due: "Sprint 2" },
-                { task: "Implement Document Upload & PDF Export Parser", status: "Pending", priority: "Medium", due: "Sprint 3" },
-              ].map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
-                  <div>
-                    <span className="font-semibold text-slate-900 block">{item.task}</span>
-                    <span className="text-[10px] text-slate-500">Due: {item.due} • Priority: {item.priority}</span>
-                  </div>
-                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
-                    item.status === "In Progress" ? "bg-amber-100 text-amber-800" : "bg-slate-200 text-slate-700"
-                  }`}>
-                    {item.status}
-                  </span>
-                </div>
-              ))}
-            </div>
+            <p className="text-xs text-slate-500 mt-1">Direct guidelines on how to build and implement this requirement.</p>
           </div>
-
-          {/* Sprint Objectives Progress */}
-          <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm space-y-4">
-            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-indigo-600" />
-              {t.sprintObjectives} (Sprint 1)
-            </h3>
-            <div className="space-y-4 text-xs">
-              <div>
-                <div className="flex justify-between font-semibold mb-1">
-                  <span>Core Architecture Foundation</span>
-                  <span className="text-indigo-600">65%</span>
+          
+          <div className="space-y-4">
+            {(data?.bpmn_steps || [
+              { id: 1, title: "Step 1: Setup Architecture", desc: "First, initialize the repository and setup the core framework.", phase: "Phase 1" },
+              { id: 2, title: "Step 2: Database Models", desc: "Then, configure the primary tables and schema.", phase: "Phase 2" }
+            ]).map((step: any, idx: number) => (
+              <div key={idx} className="flex gap-4 p-4 rounded-xl bg-slate-50 border border-slate-200 transition hover:border-emerald-200 hover:shadow-sm">
+                <div className="flex-shrink-0 mt-0.5">
+                  <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">
+                    {step.id || idx + 1}
+                  </div>
                 </div>
-                <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
-                  <div className="bg-indigo-600 h-full rounded-full w-[65%]" />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between font-semibold mb-1">
-                  <span>UI Wireframe Prototype & Canvas</span>
-                  <span className="text-emerald-600">80%</span>
-                </div>
-                <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
-                  <div className="bg-emerald-500 h-full rounded-full w-[80%]" />
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900 mb-1">{step.title}</h4>
+                  <p className="text-xs text-slate-600 leading-relaxed">{step.desc}</p>
+                  {step.phase && (
+                    <span className="inline-block mt-2 px-2 py-0.5 bg-slate-200 text-slate-600 rounded text-[9px] font-bold uppercase tracking-wider">
+                      {step.phase}
+                    </span>
+                  )}
                 </div>
               </div>
-
-              <div>
-                <div className="flex justify-between font-semibold mb-1">
-                  <span>API Microservices & Data Schema</span>
-                  <span className="text-amber-600">45%</span>
-                </div>
-                <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
-                  <div className="bg-amber-500 h-full rounded-full w-[45%]" />
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       )}
