@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { getTranslation } from "@/lib/i18n"
-import { Bot, Send, Paperclip, Lightbulb, FileText, X } from "lucide-react"
+import { Bot, Send, Paperclip, Lightbulb, FileText, X, Sparkles } from "lucide-react"
 import { quickPrompts } from "@/lib/blueprint-data"
 
 export type ChatMessage = {
