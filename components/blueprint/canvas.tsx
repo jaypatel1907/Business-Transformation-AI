@@ -24,7 +24,7 @@ interface CanvasProps {
 export function Canvas({ active, onChange, generated, data, targetLanguage = "English" }: CanvasProps) {
   const { role } = useRole()
   const isEmployee = role === "Employee"
-  const t = getTranslation(targetLanguage || data?.target_language || "English")
+  const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(targetLanguage || data?.target_language || "English", key)
 
   // If role is employee and current active tab is hidden (db or roadmap), reset to dashboard
   useEffect(() => {
@@ -51,14 +51,14 @@ export function Canvas({ active, onChange, generated, data, targetLanguage = "En
             value="dashboard"
             className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white font-medium text-slate-600 rounded-lg py-2 text-xs transition-all cursor-pointer"
           >
-            {t.dashboard}
+            {t("tabDashboard")}
           </TabsTrigger>
 
           <TabsTrigger
             value="bpmn"
             className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white font-medium text-slate-600 rounded-lg py-2 text-xs transition-all cursor-pointer"
           >
-            {t.processMap}
+            {t("tabGuide")}
           </TabsTrigger>
 
           {/* DB & APIs Tab: Hidden for Employee */}
@@ -67,7 +67,7 @@ export function Canvas({ active, onChange, generated, data, targetLanguage = "En
               value="db"
               className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white font-medium text-slate-600 rounded-lg py-2 text-xs transition-all cursor-pointer"
             >
-              {t.dbApis}
+              {t("tabDatabase")}
             </TabsTrigger>
           )}
 
@@ -75,7 +75,7 @@ export function Canvas({ active, onChange, generated, data, targetLanguage = "En
             value="wireframe"
             className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white font-medium text-slate-600 rounded-lg py-2 text-xs transition-all cursor-pointer"
           >
-            {t.uxWireframe}
+            {t("tabWireframe")}
           </TabsTrigger>
 
           {/* Roadmap Tab: Hidden for Employee */}
@@ -84,7 +84,7 @@ export function Canvas({ active, onChange, generated, data, targetLanguage = "En
               value="roadmap"
               className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white font-medium text-slate-600 rounded-lg py-2 text-xs transition-all cursor-pointer"
             >
-              {t.roadmap}
+              {t("tabRoadmap")}
             </TabsTrigger>
           )}
         </TabsList>

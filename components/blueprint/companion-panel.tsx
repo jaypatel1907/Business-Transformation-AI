@@ -20,7 +20,8 @@ export function CompanionPanel({
   messages: ChatMessage[]
   generating: boolean
   onSubmit: (text: string, documentText?: string, base64?: string, mimeType?: string) => void
-  onUpload: (fileName: string) => void
+  onUpload: (filename: string) => void
+  targetLanguage?: string
 }) {
   const [value, setValue] = useState("")
   const [isDragging, setIsDragging] = useState(false)
@@ -206,7 +207,7 @@ export function CompanionPanel({
                   send()
                 }
               }}
-              placeholder="Describe your business idea or drag & drop SOP/BRD document here..."
+              placeholder={getTranslation(targetLanguage, "inputPlaceholder") as string}
               className="flex-1 resize-none bg-transparent text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none"
             />
 
@@ -220,11 +221,12 @@ export function CompanionPanel({
           </div>
 
           <div className="mt-2 flex items-center justify-between px-1 text-[10px] text-slate-400">
-            <span>Supports .pdf, .docx, .txt, .md, .brd</span>
-            <span>Press Enter to Submit</span>
+            <span>{getTranslation(targetLanguage, "supportsDesc") as string}</span>
+            <span>{getTranslation(targetLanguage, "pressEnter") as string}</span>
           </div>
         </div>
       </div>
     </section>
   )
 }
+

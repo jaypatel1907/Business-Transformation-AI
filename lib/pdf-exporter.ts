@@ -2,6 +2,7 @@
 
 import html2canvasPro from "html2canvas-pro"
 import { jsPDF } from "jspdf"
+import { getTranslation } from "@/lib/i18n"
 
 interface ExportPdfOptions {
   elementId: string
@@ -309,7 +310,7 @@ export async function exportExecutiveReportPDF(data: any, language: string = "En
       </div>
     </div>
 
-    <!-- REST API Endpoints -->
+    <!-- `${getTranslation(language, "apiEndpoints")} -->
     <div style="margin-bottom: 20px; page-break-inside: avoid;">
       <h3 style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 0.05em;">4. Secure Microservices & REST Endpoints (${apisCount} Endpoints)</h3>
       <table style="width: 100%; border-collapse: collapse; font-size: 11px; text-align: left; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden;">
@@ -322,10 +323,10 @@ export async function exportExecutiveReportPDF(data: any, language: string = "En
         </thead>
         <tbody>
           ${(data.database_schema?.api_endpoints || [
-            { method: "GET", path: "/api/v1/blueprint", description: "Fetch transformation specifications", auth: "Bearer JWT" },
-            { method: "POST", path: "/api/v1/blueprint/generate", description: "Trigger Gemini AI synthesis pipeline", auth: "Bearer JWT" },
-            { method: "POST", path: "/api/v1/export/pdf", description: "Stream high-fidelity printable artifacts", auth: "Bearer JWT" },
-            { method: "GET", path: "/api/v1/audit/logs", description: "Retrieve compliance security logs", auth: "Admin Only" },
+            { `${getTranslation(language, "method")}: "GET", path: "/api/v1/blueprint", description: "Fetch transformation specifications", auth: "Bearer JWT" },
+            { `${getTranslation(language, "method")}: "POST", path: "/api/v1/blueprint/generate", description: "Trigger Gemini AI synthesis pipeline", auth: "Bearer JWT" },
+            { `${getTranslation(language, "method")}: "POST", path: "/api/v1/export/pdf", description: "Stream high-fidelity printable artifacts", auth: "Bearer JWT" },
+            { `${getTranslation(language, "method")}: "GET", path: "/api/v1/audit/logs", description: "Retrieve compliance security logs", auth: "Admin Only" },
           ])
             .slice(0, 5)
             .map(
@@ -342,7 +343,7 @@ export async function exportExecutiveReportPDF(data: any, language: string = "En
       </table>
     </div>
 
-    <!-- Implementation Roadmap -->
+    <!-- `${getTranslation(language, "projectRoadmap")} -->
     <div style="margin-bottom: 20px; page-break-inside: avoid;">
       <h3 style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 0.05em;">5. Phased Delivery Roadmap</h3>
       <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; font-size: 10px;">
@@ -402,9 +403,9 @@ export async function exportGuideRoadmapPDF(data: any, language: string = "Engli
   container.style.fontFamily = "sans-serif"; container.style.color = "#0f172a";
   
   container.innerHTML = `
-    <h1 style="font-size: 24px; color: #4f46e5; margin-bottom: 20px;">Guide & Roadmap - ${data.project_title || "Project"}</h1>
+    <h1 style="font-size: 24px; color: #4f46e5; margin-bottom: 20px;">`${getTranslation(language, "tabGuide")} & `${getTranslation(language, "tabRoadmap")} - ${data.project_title || "Project"}</h1>
     
-    <h2 style="font-size: 18px; margin-bottom: 12px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px;">Step-by-Step Guide</h2>
+    <h2 style="font-size: 18px; margin-bottom: 12px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px;">`${getTranslation(language, "stepByStepGuide")}</h2>
     <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 30px;">
       ${(data.bpmn_steps || []).map((s: any, i: number) => `
         <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border-left: 4px solid #4f46e5;">
@@ -414,12 +415,12 @@ export async function exportGuideRoadmapPDF(data: any, language: string = "Engli
       `).join("")}
     </div>
 
-    <h2 style="font-size: 18px; margin-bottom: 12px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px;">Implementation Roadmap</h2>
+    <h2 style="font-size: 18px; margin-bottom: 12px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px;">`${getTranslation(language, "projectRoadmap")}</h2>
     <div style="display: flex; flex-direction: column; gap: 12px;">
       ${(data.roadmap_sprints || []).map((r: any) => `
         <div style="background: #f0fdf4; padding: 12px; border-radius: 8px; border-left: 4px solid #22c55e;">
           <h3 style="margin: 0 0 4px 0; font-size: 14px;">${r.timeframe} - ${r.phase}</h3>
-          <p style="margin: 0 0 6px 0; font-size: 12px; color: #475569;">Owner: ${r.owner}</p>
+          <p style="margin: 0 0 6px 0; font-size: 12px; color: #475569;">`${getTranslation(language, "owner")}: ${r.owner}</p>
           <ul style="margin: 0; padding-left: 16px; font-size: 11px;">
             ${(r.tasks || []).map((t: string) => `<li>${t}</li>`).join("")}
           </ul>
@@ -440,13 +441,13 @@ export async function exportDatabaseApiPDF(data: any, language: string = "Englis
   container.style.fontFamily = "sans-serif"; container.style.color = "#0f172a";
   
   container.innerHTML = `
-    <h1 style="font-size: 24px; color: #4f46e5; margin-bottom: 20px;">Database & APIs - ${data.project_title || "Project"}</h1>
+    <h1 style="font-size: 24px; color: #4f46e5; margin-bottom: 20px;">`${getTranslation(language, "tabDatabase")} - ${data.project_title || "Project"}</h1>
     
-    <h2 style="font-size: 18px; margin-bottom: 12px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px;">Database Tables</h2>
+    <h2 style="font-size: 18px; margin-bottom: 12px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px;">`${getTranslation(language, "dbSchema")}</h2>
     <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px;">
       ${(data.database_tables || []).map((t: any) => `
         <div style="background: #f8fafc; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px;">
-          <h3 style="margin: 0 0 6px 0; font-size: 14px; color: #0284c7;">Table: ${t.table_name}</h3>
+          <h3 style="margin: 0 0 6px 0; font-size: 14px; color: #0284c7;">`${getTranslation(language, "tablesCount")}: ${t.table_name}</h3>
           <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
             <tr style="background: #e2e8f0;"><th style="padding: 4px; text-align: left;">Column</th><th style="padding: 4px; text-align: left;">Type</th><th style="padding: 4px; text-align: left;">Description</th></tr>
             ${(t.columns || []).map((c: any) => `<tr><td style="padding: 4px; border-bottom: 1px solid #f1f5f9; font-family: monospace;">${c.name}</td><td style="padding: 4px; border-bottom: 1px solid #f1f5f9;">${c.type}</td><td style="padding: 4px; border-bottom: 1px solid #f1f5f9;">${c.description || ""}</td></tr>`).join("")}

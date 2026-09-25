@@ -1,3 +1,4 @@
+import { getTranslation } from "@/lib/i18n"
 "use client"
 
 import { Route, Clock, Cloud, TriangleAlert, CheckCircle2, Calendar, Kanban, DollarSign, User, Code2, Bot, CheckSquare } from "lucide-react"
@@ -137,3 +138,4 @@ export function RoadmapTab({ generated, data }: { generated: boolean; data?: any
     </div>
   )
 }
+

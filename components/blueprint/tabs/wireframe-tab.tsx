@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { getTranslation } from "@/lib/i18n"
 import { ArrowLeft, ArrowRight, RotateCw, Home, Search, LayoutTemplate, Loader2 } from "lucide-react"
 
 export function WireframeTab({ generated, data }: { generated: boolean; data?: any }) {
@@ -284,3 +285,4 @@ export function WireframeTab({ generated, data }: { generated: boolean; data?: a
     </div>
   )
 }
+

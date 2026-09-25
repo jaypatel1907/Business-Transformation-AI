@@ -1,3 +1,4 @@
+import { getTranslation } from "@/lib/i18n"
 "use client"
 
 import { GitCommitHorizontal, CheckCircle2, ArrowRight } from "lucide-react"
@@ -59,3 +60,4 @@ export function BpmnTab({ generated, data }: { generated: boolean; data?: any })
     </div>
   )
 }
+

@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRole } from "@/lib/role-context"
+import { getTranslation } from "@/lib/i18n"
 import {
   Box,
   FolderOpen,
@@ -62,6 +63,8 @@ export function TopNav({
   const activeLang =
     languages.find((l) => l.code.toLowerCase() === (targetLanguage || "English").toLowerCase()) ||
     languages[0]
+
+  const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(targetLanguage, key)
 
   return (
     <header className="z-20 flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-2.5 sm:px-6 shadow-2xs">
@@ -141,7 +144,7 @@ export function TopNav({
             className="flex items-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-1.5 text-xs font-bold text-white transition hover:bg-indigo-700 disabled:opacity-40 shadow-sm cursor-pointer"
           >
             <Download className="h-3.5 w-3.5" />
-            <span>Export Report</span>
+            <span>{t("exportReport")}</span>
             <ChevronDown className="h-3 w-3 text-indigo-200" />
           </button>
 
@@ -160,8 +163,8 @@ export function TopNav({
                 >
                   <Sparkles className="h-4 w-4 text-indigo-600 flex-shrink-0" />
                   <div className="text-left">
-                    <div className="font-semibold">All-in-One Full Report (.pdf)</div>
-                    <div className="text-[10px] text-slate-400">Everything combined in one file</div>
+                    <div className="font-semibold">{t("allInOne")}</div>
+                    <div className="text-[10px] text-slate-400">{t("allInOneDesc")}</div>
                   </div>
                 </button>
                 <button
@@ -173,8 +176,8 @@ export function TopNav({
                 >
                   <Layers className="h-4 w-4 text-emerald-500 flex-shrink-0" />
                   <div className="text-left">
-                    <div className="font-semibold">Guide & Roadmap (.pdf)</div>
-                    <div className="text-[10px] text-slate-400">Step-by-step plan & timeline</div>
+                    <div className="font-semibold">{t("guideRoadmap")}</div>
+                    <div className="text-[10px] text-slate-400">{t("guideRoadmapDesc")}</div>
                   </div>
                 </button>
                 <button
@@ -186,8 +189,8 @@ export function TopNav({
                 >
                   <Box className="h-4 w-4 text-sky-500 flex-shrink-0" />
                   <div className="text-left">
-                    <div className="font-semibold">Database & APIs (.pdf)</div>
-                    <div className="text-[10px] text-slate-400">Tables and REST endpoints</div>
+                    <div className="font-semibold">{t("dbApi")}</div>
+                    <div className="text-[10px] text-slate-400">{t("dbApiDesc")}</div>
                   </div>
                 </button>
                 <button
@@ -199,8 +202,8 @@ export function TopNav({
                 >
                   <Box className="h-4 w-4 text-rose-500 flex-shrink-0" />
                   <div className="text-left">
-                    <div className="font-semibold">Wireframe UI (.pdf)</div>
-                    <div className="text-[10px] text-slate-400">Design layout structures</div>
+                    <div className="font-semibold">{t("wireframeUI")}</div>
+                    <div className="text-[10px] text-slate-400">{t("wireframeUIDesc")}</div>
                   </div>
                 </button>
                 <button
@@ -212,14 +215,14 @@ export function TopNav({
                 >
                   <MessageSquare className="h-4 w-4 text-amber-500 flex-shrink-0" />
                   <div className="text-left">
-                    <div className="font-semibold">Chat History (.pdf)</div>
-                    <div className="text-[10px] text-slate-400">Conversation thread only</div>
+                    <div className="font-semibold">{t("chatHistory")}</div>
+                    <div className="text-[10px] text-slate-400">{t("chatHistoryDesc")}</div>
                   </div>
                 </button>
               </div>
 
               <div className="px-3 pt-2 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                Raw Data Formats
+                {t("rawData")}
               </div>
               <div className="py-1">
                 <button

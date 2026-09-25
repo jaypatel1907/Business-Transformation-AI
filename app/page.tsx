@@ -10,6 +10,7 @@ import { samplePrompt } from "@/lib/blueprint-data"
 import { saveBlueprintLocally, getLocalBlueprints } from "@/lib/supabase"
 import { exportCleanPDF, exportExecutiveReportPDF } from "@/lib/pdf-exporter"
 import { Check, Copy, Share2, X } from "lucide-react"
+import { getTranslation } from "@/lib/i18n"
 
 const nextId = () => `msg-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`
 
@@ -50,27 +51,32 @@ function FormattedMessage({ text }: { text: string }) {
   )
 }
 
-const initialMessages: ChatMessage[] = [
+const getInitialMessages = (lang: string): ChatMessage[] => [
   {
     id: "msg-welcome-0",
     role: "ai",
     label: "AI Solution Architect",
-    content: (
-      <FormattedMessage text="Hello! I'm your AI Solution Architect. Describe your business idea, product vision, or upload a document, and I'll generate a complete, implementation-ready architecture blueprint tailored to your role." />
-    ),
-  },
+    content: <FormattedMessage text={getTranslation(lang, "welcome")} />
+  }
 ]
 
 export default function Page() {
   const { isAuthenticated, role } = useRole()
-  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages)
+  const [targetLanguage, setTargetLanguage] = useState("English") // Defaulting to English
+  const [messages, setMessages] = useState<ChatMessage[]>(getInitialMessages("English"))
   const [generating, setGenerating] = useState(false)
   const [generated, setGenerated] = useState(false)
   const [activeTab, setActiveTab] = useState<TabId>("dashboard")
   const [blueprintData, setBlueprintData] = useState<any>(null)
-  const [targetLanguage, setTargetLanguage] = useState("English") // Defaulting to English
   const [lastPrompt, setLastPrompt] = useState<string>("")
   const [lastDocText, setLastDocText] = useState<string | undefined>(undefined)
+
+  // Update welcome message if language changes and no other messages exist
+  useEffect(() => {
+    if (messages.length === 1 && messages[0].id === "msg-welcome-0") {
+      setMessages(getInitialMessages(targetLanguage))
+    }
+  }, [targetLanguage])
 
   // Share Modal states
   const [showShareModal, setShowShareModal] = useState(false)
@@ -361,7 +367,7 @@ ${blueprintData.api_endpoints?.map((e: any) => `- \`${e.method} ${e.path}\`: ${e
       />
 
       <main className="flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
-        <CompanionPanel
+        <CompanionPanel targetLanguage={targetLanguage}
           messages={messages}
           generating={generating}
           onSubmit={handleSubmit}
