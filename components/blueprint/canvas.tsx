@@ -5,12 +5,13 @@ import { useRole } from "@/lib/role-context"
 import { getTranslation } from "@/lib/i18n"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DashboardTab } from "@/components/blueprint/tabs/dashboard-tab"
+import { AnalysisTab } from "@/components/blueprint/tabs/analysis-tab"
 import { BpmnTab } from "@/components/blueprint/tabs/bpmn-tab"
 import { DbTab } from "@/components/blueprint/tabs/db-tab"
 import { WireframeTab } from "@/components/blueprint/tabs/wireframe-tab"
 import { RoadmapTab } from "@/components/blueprint/tabs/roadmap-tab"
 
-export type TabId = "dashboard" | "bpmn" | "db" | "wireframe" | "roadmap"
+export type TabId = "analysis" | "dashboard" | "bpmn" | "db" | "wireframe" | "roadmap"
 
 interface CanvasProps {
   active: TabId
@@ -19,9 +20,19 @@ interface CanvasProps {
   generating: boolean
   data?: any
   targetLanguage?: string
+  onUpdateAnalysis?: (updatedAnalysis: any) => void
+  onApproveAnalysis?: (analysis: any) => void
 }
 
-export function Canvas({ active, onChange, generated, data, targetLanguage = "English" }: CanvasProps) {
+export function Canvas({
+  active,
+  onChange,
+  generated,
+  data,
+  targetLanguage = "English",
+  onUpdateAnalysis,
+  onApproveAnalysis
+}: CanvasProps) {
   const { role } = useRole()
   const isEmployee = role === "Employee"
   const t = (key: Parameters<typeof getTranslation>[1]) => getTranslation(targetLanguage || data?.target_language || "English", key)
@@ -34,6 +45,7 @@ export function Canvas({ active, onChange, generated, data, targetLanguage = "En
   }, [isEmployee, active, onChange])
 
   const SafeDashboardTab = DashboardTab as any
+  const SafeAnalysisTab = AnalysisTab as any
   const SafeBpmnTab = BpmnTab as any
   const SafeDbTab = DbTab as any
   const SafeWireframeTab = WireframeTab as any
@@ -44,9 +56,16 @@ export function Canvas({ active, onChange, generated, data, targetLanguage = "En
       <Tabs value={active} onValueChange={(v) => onChange(v as TabId)} className="w-full">
         <TabsList
           className={`mb-6 grid w-full bg-white border border-slate-200/80 shadow-sm p-1 rounded-xl sticky top-0 z-10 ${
-            isEmployee ? "grid-cols-3 md:grid-cols-3" : "grid-cols-2 md:grid-cols-5"
+            isEmployee ? "grid-cols-4 md:grid-cols-4" : "grid-cols-3 md:grid-cols-6"
           }`}
         >
+          <TabsTrigger
+            value="analysis"
+            className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white font-medium text-slate-600 rounded-lg py-2 text-xs transition-all cursor-pointer"
+          >
+            {t("tabAnalysis")}
+          </TabsTrigger>
+
           <TabsTrigger
             value="dashboard"
             className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white font-medium text-slate-600 rounded-lg py-2 text-xs transition-all cursor-pointer"
@@ -90,6 +109,15 @@ export function Canvas({ active, onChange, generated, data, targetLanguage = "En
         </TabsList>
 
         <div id="blueprint-canvas-content" className="pb-12 bg-transparent rounded-xl">
+          <TabsContent value="analysis" className="mt-0 outline-none">
+            <SafeAnalysisTab
+              generated={generated}
+              data={data}
+              targetLanguage={targetLanguage}
+              onUpdateAnalysis={onUpdateAnalysis}
+              onApproveAnalysis={onApproveAnalysis}
+            />
+          </TabsContent>
           <TabsContent value="dashboard" className="mt-0 outline-none">
             <SafeDashboardTab generated={generated} data={data} targetLanguage={targetLanguage} />
           </TabsContent>

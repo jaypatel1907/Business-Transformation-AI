@@ -17,12 +17,14 @@ export function CompanionPanel({
   generating,
   onSubmit,
   onUpload,
+  onOpenDiscovery,
   targetLanguage = "English",
 }: {
   messages: ChatMessage[]
   generating: boolean
   onSubmit: (text: string, documentText?: string, base64?: string, mimeType?: string) => void
   onUpload: (filename: string) => void
+  onOpenDiscovery?: () => void
   targetLanguage?: string
 }) {
   const [value, setValue] = useState("")
@@ -137,9 +139,19 @@ export function CompanionPanel({
           ) : null}
         </div>
 
-        {/* Quick Suggestion Pills */}
-        <div className="flex flex-wrap gap-1.5 px-4 pb-2">
-          {quickPrompts.slice(0, 3).map((p) => (
+        {/* Quick Suggestion Pills & Discovery Action */}
+        <div className="flex flex-wrap items-center gap-1.5 px-4 pb-2">
+          {onOpenDiscovery && (
+            <button
+              onClick={onOpenDiscovery}
+              disabled={generating}
+              className="flex items-center gap-1 rounded-full border border-indigo-200 bg-indigo-50/90 px-2.5 py-1 text-[10px] font-bold text-indigo-700 transition hover:bg-indigo-100 disabled:opacity-50 cursor-pointer shadow-2xs"
+            >
+              <Sparkles className="h-3 w-3 text-indigo-600" />
+              <span>{targetLanguage?.toLowerCase().includes("gu") ? "AI ડિસ્કવરી ઇન્ટરવ્યુ" : "Guided AI Discovery"}</span>
+            </button>
+          )}
+          {quickPrompts.slice(0, 2).map((p) => (
             <button
               key={p}
               onClick={() => onSubmit(p)}

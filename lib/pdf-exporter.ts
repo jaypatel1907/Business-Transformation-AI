@@ -255,11 +255,48 @@ export async function exportExecutiveReportPDF(data: any, language: string = "En
           </div>
         </div>
       </div>
+    <!-- Deep Business Analysis & PPTD Gap Matrix -->
+    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; margin-bottom: 20px; page-break-inside: avoid;">
+      <h3 style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.05em;">2. Deep Business Analysis & PPTD Gap Assessment</h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+        <div style="background: #fff1f2; border: 1px solid #fecdd3; border-radius: 6px; padding: 10px;">
+          <strong style="font-size: 11px; color: #9f1239; display: block; margin-bottom: 4px;">As-Is: Current State Inefficiencies</strong>
+          <p style="font-size: 10px; color: #881337; margin: 0; line-height: 1.4;">${data.business_analysis?.current_state?.summary || "Manual processes and fragmented tools create operational latency."}</p>
+        </div>
+        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 10px;">
+          <strong style="font-size: 11px; color: #166534; display: block; margin-bottom: 4px;">To-Be: AI-Driven Target Operating Model</strong>
+          <p style="font-size: 10px; color: #14532d; margin: 0; line-height: 1.4;">${data.business_analysis?.future_state?.vision_summary || "Automated workflows and conversational AI copilot."}</p>
+        </div>
+      </div>
+      <table style="width: 100%; border-collapse: collapse; font-size: 10px; text-align: left; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px;">
+        <thead>
+          <tr style="background: #f8fafc; color: #475569; font-size: 9px; text-transform: uppercase;">
+            <th style="padding: 6px 8px; border-bottom: 1px solid #e2e8f0;">Category</th>
+            <th style="padding: 6px 8px; border-bottom: 1px solid #e2e8f0;">Identified Gap</th>
+            <th style="padding: 6px 8px; border-bottom: 1px solid #e2e8f0;">Mitigation Architecture</th>
+            <th style="padding: 6px 8px; border-bottom: 1px solid #e2e8f0;">Severity</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${(data.business_analysis?.gap_analysis || [
+            { category: "Process", gap_description: "Manual order & booking triage", mitigation_strategy: "Automated API workflow", severity: "High" },
+            { category: "Technology", gap_description: "Lack of centralized database", mitigation_strategy: "PostgreSQL with RLS", severity: "Critical" },
+            { category: "Data", gap_description: "Siloed customer logs", mitigation_strategy: "Unified 360 profile", severity: "Medium" }
+          ]).slice(0, 4).map((g: any) => `
+            <tr style="border-bottom: 1px solid #f1f5f9;">
+              <td style="padding: 5px 8px; font-weight: 700; color: #4338ca;">${g.category}</td>
+              <td style="padding: 5px 8px; color: #0f172a;">${g.gap_description}</td>
+              <td style="padding: 5px 8px; color: #047857;">${g.mitigation_strategy}</td>
+              <td style="padding: 5px 8px;"><span style="background: ${g.severity === "Critical" ? "#fee2e2; color: #991b1b" : "#fef3c7; color: #92400e"}; font-size: 8px; font-weight: 700; padding: 2px 5px; border-radius: 4px;">${g.severity}</span></td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
     </div>
 
     <!-- BPMN Process Map -->
     <div style="margin-bottom: 20px; page-break-inside: avoid;">
-      <h3 style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 0.05em;">2. Core Business Process Architecture (BPMN)</h3>
+      <h3 style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 0.05em;">3. Core Business Process Architecture (BPMN)</h3>
       <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; background: #ffffff;">
         <div style="display: flex; flex-direction: column; gap: 8px;">
           ${(data.process_map?.steps || [

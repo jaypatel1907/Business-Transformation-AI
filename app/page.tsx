@@ -13,8 +13,10 @@ import { BlueprintEditorModal } from "@/components/blueprint/blueprint-editor-mo
 import { BuildProgressModal } from "@/components/blueprint/build-progress-modal"
 import { LiveSuccessModal } from "@/components/blueprint/live-success-modal"
 import { ProjectHistoryModal } from "@/components/blueprint/project-history-modal"
+import { DiscoveryModal } from "@/components/blueprint/discovery-modal"
+import { BusinessContext, DiscoveryQuestion, DeepBusinessAnalysis } from "@/lib/discovery-types"
 import { ProjectRecord, saveProjectRecord, getLocalProjects } from "@/lib/project-store"
-import { Check, Copy, Share2, X, Rocket, Sparkles, ArrowRight } from "lucide-react"
+import { Check, Copy, Share2, X, Rocket, Sparkles, ArrowRight, BrainCircuit } from "lucide-react"
 import { getTranslation } from "@/lib/i18n"
 
 const nextId = () => `msg-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`
@@ -71,10 +73,15 @@ export default function Page() {
   const [messages, setMessages] = useState<ChatMessage[]>(getInitialMessages("English"))
   const [generating, setGenerating] = useState(false)
   const [generated, setGenerated] = useState(false)
-  const [activeTab, setActiveTab] = useState<TabId>("dashboard")
+  const [activeTab, setActiveTab] = useState<TabId>("analysis")
   const [blueprintData, setBlueprintData] = useState<any>(null)
   const [lastPrompt, setLastPrompt] = useState<string>("")
   const [lastDocText, setLastDocText] = useState<string | undefined>(undefined)
+
+  // Phase 1: Discovery & Business Context State
+  const [showDiscoveryModal, setShowDiscoveryModal] = useState(false)
+  const [discoveryContext, setDiscoveryContext] = useState<BusinessContext | null>(null)
+  const [discoveryAnswers, setDiscoveryAnswers] = useState<DiscoveryQuestion[]>([])
 
   // Update welcome message if language changes and no other messages exist
   useEffect(() => {
@@ -271,7 +278,9 @@ export default function Page() {
       documentText?: string,
       langToUse?: string,
       docBase64?: string,
-      docMimeType?: string
+      docMimeType?: string,
+      overrideContext?: BusinessContext,
+      overrideAnswers?: DiscoveryQuestion[]
     ) => {
       if (userMessage) {
         setMessages((prev) => [...prev, userMessage])
@@ -303,6 +312,8 @@ export default function Page() {
             targetLanguage: currentLang,
             role: role || "Manager",
             selectedModel: "gemini-3.6-flash",
+            businessContext: overrideContext || discoveryContext || undefined,
+            discoveryAnswers: overrideAnswers || (discoveryAnswers.length > 0 ? discoveryAnswers : undefined),
           }),
         })
 
@@ -326,15 +337,15 @@ export default function Page() {
                   text={
                     data.chat_reply || 
                     (currentLang === "Gujarati"
-                      ? `નમસ્તે! મેં તમારા **"${data.project_title || "આઈડિયા"}"** નું સંપૂર્ણ વિશ્લેષણ કરીને આર્કિટેક્ચર બ્લૂપ્રિન્ટ તૈયાર કરી છે.\n\n🎯 **સિસ્ટમ સારાંશ:**\n• **પરિપક્વતા સ્કોર:** ${data.digital_maturity || 85}%\n• **લક્ષિત સમયગાળો:** ${data.timeline || "8 Weeks"}\n• **ટેક સ્ટેક:** ${data.tech_stack?.frontend || "Next.js"} + ${data.tech_stack?.backend || "Node.js"}\n\n👉 **કેનવાસ પ્લાન જુઓ:** જમણી બાજુના Tabs પર ક્લિક કરીને Process Map, Database Schema, Wireframe અને Roadmap જુઓ!`
-                      : `Hello! I've analyzed your requirement for **"${data.project_title || "your project"}"** and generated an enterprise transformation blueprint.\n\n🎯 **Architecture Highlights:**\n• **Digital Maturity:** ${data.digital_maturity || 85}%\n• **Estimated Timeline:** ${data.timeline || "8 Weeks"}\n• **Engineered Tech Stack:** ${data.tech_stack?.frontend || "Next.js"} + ${data.tech_stack?.backend || "Node.js"}\n\n👉 **Explore the Solution Canvas:** Click through the tabs on the right to inspect the interactive Process Map, Database Schemas, UX Wireframes, and Roadmap!`)
+                      ? `નમસ્તે! મેં તમારા **"${data.project_title || "આઈડિયા"}"** નું સંપૂર્ણ વિશ્લેષણ કરીને આર્કિટેક્ચર બ્લૂપ્રિન્ટ તૈયાર કરી છે.\n\n🎯 **સિસ્ટમ સારાંશ:**\n• **પરિપક્વતા સ્કોર:** ${data.digital_maturity || 85}%\n• **લક્ષિત સમયગાળો:** ${data.timeline || "8 Weeks"}\n• **ટેક સ્ટેક:** ${data.tech_stack?.frontend || "Next.js"} + ${data.tech_stack?.backend || "Node.js"}\n\n👉 **કેનવાસ પ્લાન જુઓ:** જમણી બાજુના Tabs પર ક્લિક કરીને Deep Business Analysis, Process Map, Database Schema, Wireframe અને Roadmap જુઓ!`
+                      : `Hello! I've analyzed your requirement for **"${data.project_title || "your project"}"** and generated an enterprise transformation blueprint.\n\n🎯 **Architecture Highlights:**\n• **Digital Maturity:** ${data.digital_maturity || 85}%\n• **Estimated Timeline:** ${data.timeline || "8 Weeks"}\n• **Engineered Tech Stack:** ${data.tech_stack?.frontend || "Next.js"} + ${data.tech_stack?.backend || "Node.js"}\n\n👉 **Explore the Solution Canvas:** Click through the tabs on the right to inspect Deep Business Analysis, Process Map, Database Schemas, UX Wireframes, and Roadmap!`)
                   } 
                 />
               ),
             },
           ])
           setGenerated(true)
-          setActiveTab("dashboard")
+          setActiveTab("analysis")
         } else {
           throw new Error(result.error || "Failed to generate architecture blueprint")
         }
@@ -358,8 +369,83 @@ export default function Page() {
         setGenerating(false)
       }
     },
-    [targetLanguage, lastPrompt, lastDocText, role, blueprintData]
+    [targetLanguage, lastPrompt, lastDocText, role, blueprintData, discoveryContext, discoveryAnswers]
   )
+
+  const handleCompleteDiscovery = useCallback(
+    (context: BusinessContext, answers: DiscoveryQuestion[]) => {
+      setDiscoveryContext(context)
+      setDiscoveryAnswers(answers)
+      setShowDiscoveryModal(false)
+
+      const discoveryPrompt = `${lastPrompt || context.business_domain} (Target: ${context.target_audience}; Pain Points: ${context.current_pain_points.join(", ")})`
+      
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: nextId(),
+          role: "user",
+          label: "Discovery Completed",
+          content: (
+            <span>
+              🎯 <strong>Discovery Interview Completed:</strong> Synthesizing tailored Gap Analysis & Architecture for{" "}
+              <strong className="text-indigo-600">{context.business_domain}</strong>...
+            </span>
+          ),
+        },
+      ])
+
+      runGeneration(
+        undefined,
+        lastPrompt || context.business_domain,
+        lastDocText,
+        targetLanguage,
+        undefined,
+        undefined,
+        context,
+        answers
+      )
+    },
+    [lastPrompt, lastDocText, targetLanguage, runGeneration]
+  )
+
+  const handleUpdateAnalysis = useCallback((updatedAnalysis: DeepBusinessAnalysis) => {
+    if (!blueprintData) return
+    const updated = {
+      ...blueprintData,
+      business_analysis: updatedAnalysis,
+      digital_maturity: updatedAnalysis.digital_maturity.overall_score,
+      ai_adoption: updatedAnalysis.ai_readiness.overall_score,
+    }
+    setBlueprintData(updated)
+    saveBlueprintLocally(updated)
+  }, [blueprintData])
+
+  const handleApproveAnalysis = useCallback((approvedAnalysis: DeepBusinessAnalysis) => {
+    if (!blueprintData) return
+    const updated = {
+      ...blueprintData,
+      business_analysis: approvedAnalysis,
+      digital_maturity: approvedAnalysis.digital_maturity.overall_score,
+      ai_adoption: approvedAnalysis.ai_readiness.overall_score,
+    }
+    setBlueprintData(updated)
+    saveBlueprintLocally(updated)
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: nextId(),
+        role: "ai",
+        label: "AI Business Consultant",
+        content: (
+          <FormattedMessage
+            text={`✅ **Business Analysis & Gap Matrix Approved!**\n\nThe strategic value drivers, PPTD gap mitigations, and target KPIs have been approved and synchronized into the Solution Architecture. You can now review the **Process Guide**, **Database & APIs**, or proceed directly to **Approve & Build**.`}
+          />
+        ),
+      },
+    ])
+  }, [blueprintData])
 
   const handleLanguageChange = useCallback(
     (newLang: string) => {
@@ -521,6 +607,7 @@ ${blueprintData.api_endpoints?.map((e: any) => `- \`${e.method} ${e.path}\`: ${e
         onExportJSON={handleExportJSON}
         onOpenApproveBuild={() => setShowEditorModal(true)}
         onOpenHistory={() => setShowHistoryModal(true)}
+        onOpenDiscovery={() => setShowDiscoveryModal(true)}
         targetLanguage={targetLanguage}
         onLanguageChange={handleLanguageChange}
         generating={generating}
@@ -540,6 +627,13 @@ ${blueprintData.api_endpoints?.map((e: any) => `- \`${e.method} ${e.path}\`: ${e
 
           <div className="flex items-center gap-2">
             <button
+              onClick={() => setShowDiscoveryModal(true)}
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-700/80 hover:bg-indigo-600 text-indigo-100 font-bold text-xs shadow-xs transition cursor-pointer border border-indigo-500/40"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-indigo-300" />
+              <span>AI Discovery</span>
+            </button>
+            <button
               onClick={() => setShowEditorModal(true)}
               className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-extrabold text-xs shadow-md transition cursor-pointer"
             >
@@ -552,11 +646,13 @@ ${blueprintData.api_endpoints?.map((e: any) => `- \`${e.method} ${e.path}\`: ${e
       )}
 
       <main className="flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
-        <CompanionPanel targetLanguage={targetLanguage}
+        <CompanionPanel
+          targetLanguage={targetLanguage}
           messages={messages}
           generating={generating}
           onSubmit={handleSubmit}
           onUpload={handleUpload}
+          onOpenDiscovery={() => setShowDiscoveryModal(true)}
         />
         <Canvas
           active={activeTab}
@@ -565,8 +661,19 @@ ${blueprintData.api_endpoints?.map((e: any) => `- \`${e.method} ${e.path}\`: ${e
           generating={generating}
           data={blueprintData}
           targetLanguage={targetLanguage}
+          onUpdateAnalysis={handleUpdateAnalysis}
+          onApproveAnalysis={handleApproveAnalysis}
         />
       </main>
+
+      {/* Discovery Wizard & AI Business Consultant Modal */}
+      <DiscoveryModal
+        isOpen={showDiscoveryModal}
+        onClose={() => setShowDiscoveryModal(false)}
+        initialPrompt={lastPrompt || blueprintData?.user_problem || "Enterprise Solution"}
+        targetLanguage={targetLanguage}
+        onCompleteDiscovery={handleCompleteDiscovery}
+      />
 
       {/* 1. Blueprint Review & Approval Modal */}
       <BlueprintEditorModal

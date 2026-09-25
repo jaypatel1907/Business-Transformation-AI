@@ -34,6 +34,7 @@ export function TopNav({
   onExportJSON,
   onOpenApproveBuild,
   onOpenHistory,
+  onOpenDiscovery,
   targetLanguage,
   onLanguageChange,
   generating,
@@ -48,6 +49,7 @@ export function TopNav({
   onExportJSON: () => void
   onOpenApproveBuild?: () => void
   onOpenHistory?: () => void
+  onOpenDiscovery?: () => void
   targetLanguage: string
   onLanguageChange: (lang: string) => void
   generating: boolean
@@ -141,6 +143,18 @@ export function TopNav({
         </div>
 
 
+
+        {/* AI Discovery Interview Button */}
+        {onOpenDiscovery && (
+          <button
+            onClick={onOpenDiscovery}
+            title="Start Interactive AI Discovery Interview"
+            className="flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50/80 hover:bg-indigo-100/80 px-3 py-1.5 text-xs font-bold text-indigo-700 transition shadow-2xs cursor-pointer"
+          >
+            <Sparkles className="h-3.5 w-3.5 text-indigo-600" />
+            <span className="hidden sm:inline">AI Discovery</span>
+          </button>
+        )}
 
         {/* Project History Button */}
         {onOpenHistory && (

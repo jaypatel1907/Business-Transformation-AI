@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,12 +11,23 @@ export async function POST(req: NextRequest) {
       targetLanguage,
       role = "Manager",
       selectedModel = "gemini-1.5-flash",
+      businessContext,
+      discoveryAnswers,
     } = await req.json();
 
     const rawLang = targetLanguage || language || "English";
     const apiKey = process.env.GEMINI_API_KEY;
 
     let cleanPrompt = prompt ? prompt.trim() : "";
+    
+    // Enrich prompt with Phase 1 Business Discovery Context if provided
+    if (businessContext) {
+      cleanPrompt += `\n\n[PHASE 1 DISCOVERY CONTEXT]:\nDomain: ${businessContext.business_domain || "Enterprise"}\nTarget Audience: ${businessContext.target_audience || "General"}\nPain Points: ${(businessContext.current_pain_points || []).join("; ")}\nGoals: ${(businessContext.primary_goals || []).join("; ")}\nExisting Stack: ${(businessContext.existing_systems || []).join("; ")}`;
+    }
+    if (discoveryAnswers && Array.isArray(discoveryAnswers) && discoveryAnswers.length > 0) {
+      cleanPrompt += `\n\n[DISCOVERY INTERVIEW ANSWERS]:\n` + discoveryAnswers.map((a: any) => `- ${a.question}: ${a.selected_option || a.custom_answer}`).join("\n");
+    }
+
     if (documentText && documentText.trim().length > 0) {
       cleanPrompt += `\n\n[ATTACHED BUSINESS DOCUMENT / BRD]:\n${documentText.slice(0, 3000)}`;
     } else if (documentBase64) {
@@ -817,6 +828,152 @@ Click through the tabs on the right to inspect the interactive **Process Map**, 
             mitigation: loc.riskMitigation,
           },
         },
+        business_analysis: {
+          project_title: dynamicTitle,
+          executive_summary: {
+            strategic_intent: p,
+            key_value_drivers: [
+              "Reduction in manual operational latency",
+              "Automated 24/7 customer interactions via AI agents",
+              "Unified real-time data visibility across departments",
+              "Elimination of manual entry errors"
+            ],
+            projected_roi_percentage: "280% - 360%",
+            estimated_payback_months: "4-6 Months",
+            operational_efficiency_gain: "60%"
+          },
+          current_state: {
+            summary: "Fragmented operations with manual overhead, disconnected tools, and slow resolution times.",
+            manual_workflows: [
+              "Manual order & booking tracking",
+              "Disjointed inventory updates",
+              "Manual customer query triage"
+            ],
+            core_bottlenecks: [
+              "High peak-hour operational delays",
+              "Lack of real-time multi-channel sync",
+              "Data fragmentation across tools"
+            ],
+            legacy_limitations: [
+              "No centralized API database",
+              "Siloed customer records"
+            ]
+          },
+          future_state: {
+            vision_summary: "AI-augmented digital enterprise with autonomous agent workflows and real-time database state.",
+            automated_workflows: [
+              "Instant self-service web/mobile digital journey",
+              "Autonomous AI assistant for customer queries",
+              "Real-time database state with instant webhook sync"
+            ],
+            ai_transformation_touchpoints: [
+              "Conversational AI Assistant for order/service triage",
+              "Predictive demand forecasting",
+              "Intelligent exception alerts"
+            ],
+            target_kpis: [
+              "Sub-second response latency",
+              "99.9% uptime with scalable serverless cloud",
+              "90%+ positive customer satisfaction"
+            ]
+          },
+          gap_analysis: [
+            {
+              id: "gap-1",
+              category: "Process",
+              current_state: "Manual task coordination and data handoffs",
+              future_state: "Automated end-to-end digital workflow with real-time sync",
+              gap_description: "Missing automated scheduling, status tracking and notification pipeline",
+              severity: "Critical",
+              mitigation_strategy: "Implement event-driven REST API triggers and webhook handlers"
+            },
+            {
+              id: "gap-2",
+              category: "Technology",
+              current_state: "Disconnected standalone software without centralized API storage",
+              future_state: "Cloud-native PostgreSQL database with Row-Level Security (RLS)",
+              gap_description: "Lack of relational schema and unified REST endpoints",
+              severity: "High",
+              mitigation_strategy: "Provision structured tables and role-based access control (RBAC)"
+            },
+            {
+              id: "gap-3",
+              category: "Data",
+              current_state: "Customer purchase and booking history stored in offline logs",
+              future_state: "Unified customer 360 profile with real-time operational telemetry",
+              gap_description: "Inability to run personalized recommendation or retention engines",
+              severity: "Medium",
+              mitigation_strategy: "Consolidate user profiles in a secure encrypted PostgreSQL database"
+            },
+            {
+              id: "gap-4",
+              category: "People",
+              current_state: "Staff spends 60% of work hours on routine repetitive queries",
+              future_state: "AI Copilot assists staff; routine requests resolved autonomously",
+              gap_description: "Staff bandwidth exhausted on non-revenue administrative overhead",
+              severity: "High",
+              mitigation_strategy: "Deploy conversational AI assistant for frontline customer triage"
+            }
+          ],
+          digital_maturity: {
+            overall_score: maturityScore,
+            level: maturityScore >= 80 ? "Advanced" : maturityScore >= 60 ? "Defined" : "Developing",
+            dimensions: [
+              { name: "Strategy & Vision", score: Math.min(maturityScore + 5, 95), level: "Advanced", description: "Strategic digital roadmap.", recommendation: "Maintain quarterly KPI cycles." },
+              { name: "Technology Architecture", score: maturityScore, level: "Defined", description: "Modern cloud and API tier.", recommendation: "Enforce microservice scalability." },
+              { name: "Data & Analytics", score: Math.max(maturityScore - 5, 50), level: "Defined", description: "Relational database schema.", recommendation: "Enable real-time telemetry." },
+              { name: "Operations & Automation", score: Math.min(maturityScore + 2, 95), level: "Advanced", description: "Automated task workflows.", recommendation: "Deploy predictive scheduling." }
+            ]
+          },
+          ai_readiness: {
+            overall_score: aiReadinessScore,
+            readiness_grade: aiReadinessScore >= 80 ? "High AI Readiness" : "Moderate AI Readiness",
+            dimensions: [
+              { dimension: "Data Quality & Availability", score: Math.min(aiReadinessScore, 90), status: "Ready", finding: "Clean relational schemas ready for LLM context.", action_item: "Maintain data validation." },
+              { dimension: "Infrastructure & API Agility", score: Math.min(aiReadinessScore + 6, 96), status: "Ready", finding: "Modern Next.js / Node.js architecture.", action_item: "Configure rate limiting." },
+              { dimension: "Team & Organizational Adoption", score: Math.max(aiReadinessScore - 8, 60), status: "Ready", finding: "Staff receptive to workflow automation.", action_item: "Conduct copilot training." },
+              { dimension: "Governance, Security & Ethics", score: 88, status: "Ready", finding: "Role-based authentication & data isolation configured.", action_item: "Enforce audit logging." }
+            ],
+            key_enablers: ["Modern cloud API readiness", "Clean relational database schema", "Multi-model Gemini fallback architecture"],
+            key_blockers: ["Legacy manual habit", "User onboarding friction"]
+          },
+          ai_opportunities: [
+            {
+              id: "opp-1",
+              title: "Conversational Customer AI Assistant",
+              category: "Generative AI",
+              business_impact: "Transformational",
+              feasibility: "High (Plug & Play)",
+              estimated_roi: "340% ROI",
+              time_to_value: "2-3 Weeks",
+              description: "24/7 automated customer assistance for inquiries, bookings, orders, and instant FAQs.",
+              recommended: true
+            },
+            {
+              id: "opp-2",
+              title: "Dynamic Smart Recommendation Engine",
+              category: "Predictive Analytics",
+              business_impact: "High",
+              feasibility: "Medium (Custom Integration)",
+              estimated_roi: "210% ROI",
+              time_to_value: "4 Weeks",
+              description: "Contextual upsell & cross-sell suggestions based on user preferences and purchase history.",
+              recommended: true
+            },
+            {
+              id: "opp-3",
+              title: "Automated Workflow Dispatch & Anomaly Alerts",
+              category: "Intelligent Automation",
+              business_impact: "High",
+              feasibility: "High (Plug & Play)",
+              estimated_roi: "180% ROI",
+              time_to_value: "1-2 Weeks",
+              description: "Automated task triggers on new orders with instant manager alerts for delays.",
+              recommended: true
+            }
+          ],
+          is_approved: false
+        }
       };
     };
 
@@ -930,6 +1087,77 @@ Output ONLY a single valid JSON object matching this schema:
     "cloudCost": "$120/mo",
     "cloudDetail": "Supabase PostgreSQL + Edge Functions",
     "risk": { "level": "Low-Medium", "title": "Risk in ${targetLangName}", "mitigation": "Mitigation in ${targetLangName}" }
+  },
+  "business_analysis": {
+    "project_title": "Descriptive Title in ${targetLangName}",
+    "executive_summary": {
+      "strategic_intent": "Strategic intent in ${targetLangName}",
+      "key_value_drivers": ["Value driver 1 in ${targetLangName}", "Value driver 2 in ${targetLangName}"],
+      "projected_roi_percentage": "320%",
+      "estimated_payback_months": "4.5 Months",
+      "operational_efficiency_gain": "65%"
+    },
+    "current_state": {
+      "summary": "Current state summary in ${targetLangName}",
+      "manual_workflows": ["Manual workflow 1 in ${targetLangName}", "Manual workflow 2 in ${targetLangName}"],
+      "core_bottlenecks": ["Bottleneck 1 in ${targetLangName}", "Bottleneck 2 in ${targetLangName}"],
+      "legacy_limitations": ["Limitation 1 in ${targetLangName}"]
+    },
+    "future_state": {
+      "vision_summary": "Future state vision in ${targetLangName}",
+      "automated_workflows": ["Automated workflow 1 in ${targetLangName}", "Automated workflow 2 in ${targetLangName}"],
+      "ai_transformation_touchpoints": ["AI touchpoint 1 in ${targetLangName}", "AI touchpoint 2 in ${targetLangName}"],
+      "target_kpis": ["Target KPI 1 in ${targetLangName}"]
+    },
+    "gap_analysis": [
+      {
+        "id": "gap-1",
+        "category": "Process",
+        "current_state": "As-is status in ${targetLangName}",
+        "future_state": "Target state in ${targetLangName}",
+        "gap_description": "Identified gap in ${targetLangName}",
+        "severity": "High",
+        "mitigation_strategy": "Mitigation in ${targetLangName}"
+      },
+      {
+        "id": "gap-2",
+        "category": "Technology",
+        "current_state": "As-is status in ${targetLangName}",
+        "future_state": "Target state in ${targetLangName}",
+        "gap_description": "Identified gap in ${targetLangName}",
+        "severity": "High",
+        "mitigation_strategy": "Mitigation in ${targetLangName}"
+      }
+    ],
+    "digital_maturity": {
+      "overall_score": 88,
+      "level": "Advanced",
+      "dimensions": [
+        { "name": "Strategy & Vision", "score": 90, "level": "Advanced", "description": "Strategy description in ${targetLangName}", "recommendation": "Recommendation in ${targetLangName}" }
+      ]
+    },
+    "ai_readiness": {
+      "overall_score": 92,
+      "readiness_grade": "High AI Readiness",
+      "dimensions": [
+        { "dimension": "Data Quality & Availability", "score": 90, "status": "Ready", "finding": "Finding in ${targetLangName}", "action_item": "Action in ${targetLangName}" }
+      ],
+      "key_enablers": ["Enabler 1 in ${targetLangName}"],
+      "key_blockers": ["Blocker 1 in ${targetLangName}"]
+    },
+    "ai_opportunities": [
+      {
+        "id": "opp-1",
+        "title": "Opportunity 1 in ${targetLangName}",
+        "category": "Generative AI",
+        "business_impact": "Transformational",
+        "feasibility": "High (Plug & Play)",
+        "estimated_roi": "340% ROI",
+        "time_to_value": "2-3 Weeks",
+        "description": "Description in ${targetLangName}",
+        "recommended": true
+      }
+    ]
   }
 }
 Output raw JSON only.`;
