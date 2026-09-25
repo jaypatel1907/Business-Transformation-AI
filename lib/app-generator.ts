@@ -616,12 +616,46 @@ function generateDynamicExecutableHtml(
     }
 
     // Database Mock Storage
+    function parseColName(raw) {
+      if (!raw) return "field";
+      let name = raw.split(/\s+|\(/)[0].trim();
+      return name.replace(/[^a-zA-Z0-9_]/g, '');
+    }
+
+    function generateSampleRow(table, rowIndex) {
+      const row = {};
+      const cols = table.columns && table.columns.length ? table.columns : ["id", "name", "status", "created_at"];
+      cols.forEach(rawCol => {
+        const colName = parseColName(rawCol);
+        const lower = colName.toLowerCase();
+        if (lower === 'id' || lower.endsWith('_id')) {
+          row[colName] = (colName.includes('id') ? colName : 'id') + "-" + (1000 + rowIndex);
+        } else if (lower.includes('name') || lower.includes('title')) {
+          row[colName] = table.table_name.charAt(0).toUpperCase() + table.table_name.slice(1) + " Record #" + (rowIndex + 1);
+        } else if (lower.includes('status') || lower.includes('state')) {
+          row[colName] = rowIndex % 2 === 0 ? "active" : "verified";
+        } else if (lower.includes('email')) {
+          row[colName] = "user" + (rowIndex + 1) + "@" + table.table_name.toLowerCase() + ".org";
+        } else if (lower.includes('amount') || lower.includes('price') || lower.includes('cost') || lower.includes('fee')) {
+          row[colName] = "$" + (120 * (rowIndex + 1)).toFixed(2);
+        } else if (lower.includes('date') || lower.includes('time') || lower.includes('created') || lower.includes('updated')) {
+          row[colName] = new Date(Date.now() - rowIndex * 86400000).toISOString().split('T')[0];
+        } else if (lower.includes('desc') || lower.includes('notes') || lower.includes('detail')) {
+          row[colName] = "Managed entry for " + table.table_name;
+        } else {
+          row[colName] = "Value-" + (rowIndex + 1);
+        }
+      });
+      return row;
+    }
+
     let dbData = JSON.parse(localStorage.getItem("${title}_db_data") || "{}");
-    dbTables.forEach((t, i) => {
-      if (!dbData[t.table_name]) {
+    dbTables.forEach((t) => {
+      if (!dbData[t.table_name] || dbData[t.table_name].length === 0) {
         dbData[t.table_name] = [
-          { id: "row-" + (101 + i), name: "Sample " + t.table_name + " entity", status: "active", created_at: new Date().toISOString() },
-          { id: "row-" + (102 + i), name: "Enterprise record item", status: "verified", created_at: new Date().toISOString() }
+          generateSampleRow(t, 0),
+          generateSampleRow(t, 1),
+          generateSampleRow(t, 2)
         ];
       }
     });
@@ -859,18 +893,26 @@ function generateDynamicExecutableHtml(
       const tbody = document.getElementById("dbTableBody");
 
       const cols = curTable.columns || ["id (UUID)", "name (VARCHAR)", "status (VARCHAR)", "created_at (TIMESTAMP)"];
-      thead.innerHTML = \`<tr>\${cols.map(c => \`<th class="p-3.5">\${c}</th>\`).join('')}</tr>\`;
+      thead.innerHTML = \`<tr>\${cols.map(c => \`<th class="p-3.5 text-left font-mono font-semibold text-slate-700 bg-slate-100/80">\${c}</th>\`).join('')}</tr>\`;
 
       const rows = dbData[curTable.table_name] || [];
       if (rows.length === 0) {
         tbody.innerHTML = \`<tr><td colspan="\${cols.length}" class="p-8 text-center text-slate-400">No rows in table \${curTable.table_name}. Click Insert Record above!</td></tr>\`;
       } else {
         tbody.innerHTML = rows.map(r => \`
-          <tr class="hover:bg-slate-50">
-            <td class="p-3.5 font-bold text-blue-600">\${r.id}</td>
-            <td class="p-3.5">\${r.name || 'Sample entity'}</td>
-            <td class="p-3.5"><span class="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold">\${r.status || 'active'}</span></td>
-            <td class="p-3.5 text-slate-400 text-[10px]">\${r.created_at || 'Just now'}</td>
+          <tr class="hover:bg-slate-50 border-b border-slate-100">
+            \${cols.map((rawCol, idx) => {
+              const key = parseColName(rawCol);
+              const val = r[key] !== undefined ? r[key] : (r[rawCol] !== undefined ? r[rawCol] : (idx === 0 ? r.id || 'N/A' : (idx === 1 ? r.name || 'Sample entity' : (idx === 2 ? r.status || 'active' : r.created_at || 'Just now'))));
+              const isStatus = key.toLowerCase().includes('status') || String(val).toLowerCase() === 'active' || String(val).toLowerCase() === 'verified' || String(val).toLowerCase() === 'completed';
+              if (isStatus) {
+                return \`<td class="p-3.5"><span class="bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-md text-xs font-bold font-mono border border-emerald-200">\${val}</span></td>\`;
+              }
+              if (idx === 0 || key.toLowerCase().includes('id')) {
+                return \`<td class="p-3.5 font-bold font-mono text-blue-600 text-xs">\${val}</td>\`;
+              }
+              return \`<td class="p-3.5 text-slate-700 text-xs">\${val}</td>\`;
+            }).join('')}
           </tr>
         \`).join('');
       }
@@ -883,11 +925,18 @@ function generateDynamicExecutableHtml(
 
     function openAddRecordModal() {
       const curTable = dbTables[activeTableIndex] || dbTables[0];
+      const cols = curTable.columns || ["id (UUID)", "name (VARCHAR)", "status (VARCHAR)", "created_at (TIMESTAMP)"];
       const container = document.getElementById("addRecordFormFields");
-      container.innerHTML = \`
-        <div><label class="font-bold text-slate-700">Record Name:</label><input type="text" id="newRecName" placeholder="Enter entity name..." class="w-full mt-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl"></div>
-        <div><label class="font-bold text-slate-700">Status:</label><select id="newRecStatus" class="w-full mt-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl"><option>active</option><option>pending</option><option>verified</option></select></div>
-      \`;
+      const editableCols = cols.filter(c => !parseColName(c).toLowerCase().includes('id') && !parseColName(c).toLowerCase().includes('created_at'));
+      
+      container.innerHTML = (editableCols.length > 0 ? editableCols : cols).map(c => {
+        const colKey = parseColName(c);
+        const isStatus = colKey.toLowerCase().includes('status') || colKey.toLowerCase().includes('state');
+        if (isStatus) {
+          return \`<div><label class="font-bold text-xs text-slate-700">\${c}:</label><select id="field_\${colKey}" class="w-full mt-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"><option value="active">active</option><option value="pending">pending</option><option value="verified">verified</option><option value="completed">completed</option></select></div>\`;
+        }
+        return \`<div><label class="font-bold text-xs text-slate-700">\${c}:</label><input type="text" id="field_\${colKey}" placeholder="Enter \${colKey}..." class="w-full mt-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"></div>\`;
+      }).join('');
       document.getElementById("addRecordModal").classList.remove("hidden");
     }
 
@@ -895,15 +944,20 @@ function generateDynamicExecutableHtml(
 
     function saveNewDbRecord() {
       const curTable = dbTables[activeTableIndex] || dbTables[0];
-      const name = document.getElementById("newRecName")?.value || "New Record";
-      const status = document.getElementById("newRecStatus")?.value || "active";
+      const cols = curTable.columns || ["id (UUID)", "name (VARCHAR)", "status (VARCHAR)", "created_at (TIMESTAMP)"];
+      const newRow = {};
 
-      const newRow = {
-        id: "rec-" + Math.floor(1000 + Math.random() * 9000),
-        name: name,
-        status: status,
-        created_at: new Date().toLocaleTimeString()
-      };
+      cols.forEach((c, idx) => {
+        const colKey = parseColName(c);
+        if (colKey.toLowerCase() === 'id' || (idx === 0 && !newRow[colKey])) {
+          newRow[colKey] = "rec-" + Math.floor(1000 + Math.random() * 9000);
+        } else if (colKey.toLowerCase().includes('created_at') || colKey.toLowerCase().includes('updated_at')) {
+          newRow[colKey] = new Date().toISOString().split('T')[0];
+        } else {
+          const inputEl = document.getElementById(\`field_\${colKey}\`);
+          newRow[colKey] = inputEl && inputEl.value ? inputEl.value : \`New \${colKey}\`;
+        }
+      });
 
       if (!dbData[curTable.table_name]) dbData[curTable.table_name] = [];
       dbData[curTable.table_name].unshift(newRow);
@@ -946,21 +1000,38 @@ function generateDynamicExecutableHtml(
       resultEl.innerHTML = \`<span class="text-slate-400 animate-pulse">&gt; Executing \${api.method} \${api.path}...</span>\`;
 
       setTimeout(() => {
+        const isPost = api.method === 'POST';
+        const samplePayload = isPost ? {
+          status: "created",
+          resource_id: "res_" + Math.random().toString(36).substring(2, 9),
+          acknowledged: true,
+          created_at: new Date().toISOString()
+        } : {
+          items: (allItems && allItems.length ? allItems.slice(0, 3) : [{ id: "101", title: "Active entity", status: "ok" }]),
+          total_count: 42,
+          page: 1
+        };
+
         resultEl.innerHTML = JSON.stringify({
-          status: 200,
-          statusText: "OK",
-          latency: (30 + Math.floor(Math.random() * 40)) + "ms",
+          status: isPost ? 201 : 200,
+          statusText: isPost ? "Created" : "OK",
+          latency: (25 + Math.floor(Math.random() * 35)) + "ms",
           endpoint: api.path,
           method: api.method,
+          headers: {
+            "content-type": "application/json; charset=utf-8",
+            "x-rate-limit-remaining": "980",
+            "x-gateway-region": "auto-edge"
+          },
           response: {
             success: true,
-            domain: domainContext.domain,
-            message: "Successfully processed " + api.path,
-            data: { timestamp: new Date().toISOString(), tenant: "${title}" }
+            domain: domainContext.domain || "Enterprise Application",
+            message: "Successfully executed " + api.method + " " + api.path,
+            data: samplePayload
           }
         }, null, 2);
-        showToast(\`\${api.method} \${api.path} returned 200 OK!\`, "success");
-      }, 400);
+        showToast(\`\${api.method} \${api.path} returned \${isPost ? 201 : 200} OK!\`, "success");
+      }, 350);
     }
 
     // 7. AI Assistant

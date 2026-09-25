@@ -25,6 +25,7 @@ interface CanvasProps {
   targetLanguage?: string
   onUpdateAnalysis?: (updatedAnalysis: any) => void
   onApproveAnalysis?: (analysis: any) => void
+  onUpdateBlueprint?: (updatedData: any) => void
 }
 
 export function Canvas({
@@ -34,7 +35,8 @@ export function Canvas({
   data,
   targetLanguage = "English",
   onUpdateAnalysis,
-  onApproveAnalysis
+  onApproveAnalysis,
+  onUpdateBlueprint
 }: CanvasProps) {
   const { role } = useRole()
   const isEmployee = role === "Employee"
@@ -157,7 +159,12 @@ export function Canvas({
             <SafeProcessTab generated={generated} data={data} targetLanguage={targetLanguage} />
           </TabsContent>
           <TabsContent value="planning" className="mt-0 outline-none">
-            <SafePlanningTab generated={generated} data={data} targetLanguage={targetLanguage} />
+            <SafePlanningTab
+              generated={generated}
+              data={data}
+              targetLanguage={targetLanguage}
+              onUpdateBlueprint={onUpdateBlueprint}
+            />
           </TabsContent>
           <TabsContent value="knowledge" className="mt-0 outline-none">
             <SafeKnowledgeTab generated={generated} data={data} targetLanguage={targetLanguage} />
@@ -171,11 +178,21 @@ export function Canvas({
             </TabsContent>
           )}
           <TabsContent value="wireframe" className="mt-0 outline-none">
-            <SafeWireframeTab generated={generated} data={data} targetLanguage={targetLanguage} />
+            <SafeWireframeTab
+              generated={generated}
+              data={data}
+              targetLanguage={targetLanguage}
+              onUpdateBlueprint={onUpdateBlueprint}
+            />
           </TabsContent>
           {!isEmployee && (
             <TabsContent value="roadmap" className="mt-0 outline-none">
-              <SafeRoadmapTab generated={generated} data={data} targetLanguage={targetLanguage} />
+              <SafeRoadmapTab
+                generated={generated}
+                data={data}
+                targetLanguage={targetLanguage}
+                onUpdateBlueprint={onUpdateBlueprint}
+              />
             </TabsContent>
           )}
         </div>

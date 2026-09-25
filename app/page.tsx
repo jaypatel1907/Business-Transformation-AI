@@ -589,6 +589,12 @@ ${blueprintData.api_endpoints?.map((e: any) => `- \`${e.method} ${e.path}\`: ${e
     setTimeout(() => setCopied(false), 2000)
   }, [shareUrl])
 
+  const handleUpdateBlueprint = useCallback((updated: any) => {
+    if (!updated) return
+    setBlueprintData(updated)
+    saveBlueprintLocally(updated)
+  }, [])
+
   // If not authenticated, render Role Selection Login gate
   if (!isAuthenticated) {
     return <RoleLogin />
@@ -663,6 +669,7 @@ ${blueprintData.api_endpoints?.map((e: any) => `- \`${e.method} ${e.path}\`: ${e
           targetLanguage={targetLanguage}
           onUpdateAnalysis={handleUpdateAnalysis}
           onApproveAnalysis={handleApproveAnalysis}
+          onUpdateBlueprint={handleUpdateBlueprint}
         />
       </main>
 

@@ -32,6 +32,11 @@ import {
   Download,
   Eye,
   Zap,
+  HelpCircle,
+  Info,
+  X,
+  Clock,
+  ArrowRight,
 } from "lucide-react";
 
 interface ProcessIntelligenceTabProps {
@@ -55,6 +60,9 @@ export function ProcessIntelligenceTab({
   // Inspector Modal
   const [inspectingNode, setInspectingNode] = useState<ProcessNode | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Help & Explanation Guide Toggle
+  const [showHelpGuide, setShowHelpGuide] = useState(false);
 
   // Unsaved Changes Tracking
   const [isDirty, setIsDirty] = useState(false);
@@ -311,6 +319,18 @@ export function ProcessIntelligenceTab({
             </button>
 
             <button
+              onClick={() => setShowHelpGuide(!showHelpGuide)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl border transition cursor-pointer ${
+                showHelpGuide
+                  ? "bg-indigo-50 text-indigo-700 border-indigo-300"
+                  : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200"
+              }`}
+            >
+              <HelpCircle className="h-3.5 w-3.5 text-indigo-600" />
+              <span>{showHelpGuide ? "Hide Guide" : "What is this? (સરળ સમજૂતી)"}</span>
+            </button>
+
+            <button
               onClick={handleResetToBenchmark}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition cursor-pointer"
               title="Load Restaurant Table Booking Benchmark Fixture"
@@ -342,6 +362,59 @@ export function ProcessIntelligenceTab({
             </button>
           </div>
         </div>
+
+        {/* User Explanation & Guide Card */}
+        {showHelpGuide && (
+          <div className="rounded-xl bg-gradient-to-r from-indigo-50/90 via-slate-50 to-blue-50/80 p-4 border border-indigo-100 text-xs space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
+            <div className="flex items-center justify-between pb-2 border-b border-indigo-100">
+              <div className="flex items-center gap-2 font-bold text-indigo-950 text-sm">
+                <Info className="h-4 w-4 text-indigo-600" />
+                <span>Process Intelligence Guide · સરળ માર્ગદર્શિકા</span>
+              </div>
+              <button
+                onClick={() => setShowHelpGuide(false)}
+                className="text-slate-400 hover:text-slate-700 p-1 rounded-md"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-slate-700 leading-relaxed">
+              <div className="bg-white/80 p-3 rounded-lg border border-slate-200/70 space-y-1.5">
+                <p className="font-bold text-slate-900 flex items-center gap-1.5 text-xs">
+                  <span className="h-5 w-5 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-black text-[11px]">1</span>
+                  આ શું છે? (What is this?)
+                </p>
+                <p className="text-slate-600 text-[11px]">
+                  કોઈપણ બિઝનેસ કામ કેવી રીતે થાય છે (દા.ત. Customer ઓર્ડર આપે, System પ્રોસેસ કરે, Staff ચેક કરે) તેનો સ્ટેપ-બાય-સ્ટેપ વિઝ્યુઅલ ફ્લો ડાયાગ્રામ (Swimlanes) છે.
+                </p>
+              </div>
+
+              <div className="bg-white/80 p-3 rounded-lg border border-slate-200/70 space-y-1.5">
+                <p className="font-bold text-slate-900 flex items-center gap-1.5 text-xs">
+                  <span className="h-5 w-5 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center font-black text-[11px]">2</span>
+                  As-Is vs To-Be (અત્યારે vs ભવિષ્ય)
+                </p>
+                <p className="text-slate-600 text-[11px]">
+                  <strong>Current (As-Is):</strong> જ્યાં મેન્યુઅલ ભૂલો અને મોડું (Bottlenecks) થાય છે. <br />
+                  <strong>Future (To-Be):</strong> AI ઓટોમેશનથી 80% સમય અને ખર્ચ બચાવતો ફાસ્ટ ફ્લો.
+                </p>
+              </div>
+
+              <div className="bg-white/80 p-3 rounded-lg border border-slate-200/70 space-y-1.5">
+                <p className="font-bold text-slate-900 flex items-center gap-1.5 text-xs">
+                  <span className="h-5 w-5 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-black text-[11px]">3</span>
+                  કેવી રીતે વાપરવું? (How to use)
+                </p>
+                <p className="text-slate-600 text-[11px]">
+                  1. કોઈ પણ બોક્સ પર ક્લિક કરીને સમય/ખર્ચ જુઓ. <br />
+                  2. <strong>AI Optimize Workflow</strong> દબાવો જેથી AI આપમેળે સ્લો સ્ટેપ્સ ફાસ્ટ કરી દેશે. <br />
+                  3. ડાયાગ્રામ એક્સપોર્ટ કરવા <strong>Export PNG/JSON</strong> વાપરો.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Main Visual Process Canvas */}

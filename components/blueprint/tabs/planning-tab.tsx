@@ -41,6 +41,7 @@ interface PlanningTabProps {
   generated: boolean;
   data?: any;
   targetLanguage?: string;
+  onUpdateBlueprint?: (updatedData: any) => void;
 }
 
 type SubView = "wbs" | "resources" | "timeline" | "cost" | "roi" | "risks";
@@ -49,6 +50,7 @@ export function PlanningTab({
   generated,
   data,
   targetLanguage = "English",
+  onUpdateBlueprint,
 }: PlanningTabProps) {
   const [blueprint, setBlueprint] = useState<PlanningBlueprint | null>(null);
   const [activeSubView, setActiveSubView] = useState<SubView>("wbs");
@@ -84,12 +86,36 @@ export function PlanningTab({
     setSaveStatus("saving");
     const projectId = data?.id || data?.project_title || "active_project";
     savePlanningBlueprint(projectId, blueprint);
+    
+    if (onUpdateBlueprint) {
+      onUpdateBlueprint({
+        ...data,
+        planning_blueprint: blueprint,
+        financial_estimation: {
+          min_budget: `${blueprint.costModel.currency}${blueprint.costModel.low.toLocaleString()}`,
+          max_budget: `${blueprint.costModel.currency}${blueprint.costModel.high.toLocaleString()}`,
+          total_hours: `${blueprint.totalEstimatedHours.likely} Hours`,
+          hourly_rate: `${blueprint.costModel.currency}${blueprint.assumptions.fullstackDevRate}/hr`,
+          team_roles: blueprint.resources.map((r) => ({
+            role: r.role,
+            count: 1,
+            allocation: `${r.allocationPercent}%`
+          }))
+        },
+        planning: {
+          ...data?.planning,
+          effortHours: String(blueprint.totalEstimatedHours.likely),
+          cloudCost: `${blueprint.costModel.currency}${blueprint.assumptions.monthlyCloudCost}/mo`
+        }
+      });
+    }
+
     setTimeout(() => {
       setIsDirty(false);
       setSaveStatus("saved");
       setTimeout(() => setSaveStatus("idle"), 2500);
     }, 400);
-  }, [blueprint, data]);
+  }, [blueprint, data, onUpdateBlueprint]);
 
   // Handle Reset to Benchmark Fixture
   const handleResetToBenchmark = () => {
