@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react"
 import { getTranslation } from "@/lib/i18n"
 import { Bot, Send, Paperclip, Lightbulb, FileText, X} from "lucide-react"
 import { quickPrompts } from "@/lib/blueprint-data"
+import { getTranslation } from "@/lib/i18n"
 
 export type ChatMessage = {
   id: string
