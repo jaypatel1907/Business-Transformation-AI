@@ -99,17 +99,19 @@ export function WireframeTab({
 
   // Active Screen helper
   const activeScreen = useMemo(() => {
+    const screens = blueprint?.screens || []
     return (
-      blueprint.screens.find((s) => s.id === selectedScreenId) ||
-      blueprint.screens[0]
+      screens.find((s) => s.id === selectedScreenId) ||
+      screens[0] ||
+      null
     )
-  }, [blueprint.screens, selectedScreenId])
+  }, [blueprint?.screens, selectedScreenId])
 
   // Active Component helper
   const activeComponent = useMemo(() => {
     if (!activeScreen || !selectedComponentId) return null
     return (
-      activeScreen.components.find((c) => c.id === selectedComponentId) || null
+      activeScreen.components?.find((c) => c.id === selectedComponentId) || null
     )
   }, [activeScreen, selectedComponentId])
 
@@ -141,6 +143,9 @@ export function WireframeTab({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          prompt: data?.user_problem || data?.project_title || "Enterprise Solution",
+          blueprintData: data,
+          language: data?.target_language || "English",
           projectTitle: data?.project_title || "Enterprise Solution",
           userProblem: data?.user_problem || "Business Transformation Workflow",
           context
@@ -151,9 +156,15 @@ export function WireframeTab({
         throw new Error(`Failed to generate AI UX: ${response.statusText}`)
       }
 
-      const generatedBlueprint: UXBlueprint = await response.json()
+      const resData = await response.json()
+      const rawBlueprint = resData.ux_blueprint || resData
+      const generatedBlueprint: UXBlueprint =
+        rawBlueprint && Array.isArray(rawBlueprint.screens) && rawBlueprint.screens.length > 0
+          ? rawBlueprint
+          : normalizeToUXBlueprint(data)
+
       updateBlueprint(() => generatedBlueprint)
-      if (generatedBlueprint.screens.length > 0) {
+      if (generatedBlueprint.screens && generatedBlueprint.screens.length > 0) {
         setSelectedScreenId(generatedBlueprint.screens[0].id)
         setSelectedComponentId(null)
       }
@@ -162,6 +173,10 @@ export function WireframeTab({
       // Fallback normalization
       const fallback = normalizeToUXBlueprint(data)
       updateBlueprint(() => fallback)
+      if (fallback.screens && fallback.screens.length > 0) {
+        setSelectedScreenId(fallback.screens[0].id)
+        setSelectedComponentId(null)
+      }
     } finally {
       setIsGeneratingAI(false)
     }

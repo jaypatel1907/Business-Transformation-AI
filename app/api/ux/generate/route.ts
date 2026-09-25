@@ -4,7 +4,10 @@ import { UXBlueprint } from "@/lib/ux-wireframe-types"
 
 export async function POST(req: NextRequest) {
   try {
-    const { prompt, blueprintData, language = "English" } = await req.json()
+    const body = await req.json().catch(() => ({}))
+    const prompt = (body.prompt || body.userProblem || body.projectTitle || "").trim()
+    const blueprintData = body.blueprintData || body.context || body
+    const language = body.language || blueprintData?.target_language || "English"
     const apiKey = process.env.GEMINI_API_KEY
     const context = getUXGenerationContext(blueprintData)
     const activePrompt = (prompt || context.problem || context.title || "Enterprise Web Application").trim()
@@ -129,7 +132,13 @@ Return ONLY a valid JSON matching this schema:
                 const cleaned = text.replace(/^```(json)?|```$/gi, "").trim()
                 const uxBlueprint: UXBlueprint = JSON.parse(cleaned)
                 if (uxBlueprint.screens?.length > 0) {
-                  return NextResponse.json({ success: true, ux_blueprint: uxBlueprint, ai_used: true, model })
+                  return NextResponse.json({
+                    success: true,
+                    ux_blueprint: uxBlueprint,
+                    ...uxBlueprint,
+                    ai_used: true,
+                    model
+                  })
                 }
               }
             }
@@ -148,7 +157,12 @@ Return ONLY a valid JSON matching this schema:
       project_title: activePrompt
     })
 
-    return NextResponse.json({ success: true, ux_blueprint: fallbackBlueprint, ai_used: false })
+    return NextResponse.json({
+      success: true,
+      ux_blueprint: fallbackBlueprint,
+      ...fallbackBlueprint,
+      ai_used: false
+    })
   } catch (error: any) {
     return NextResponse.json({ error: error.message || "Failed to generate UX wireframe architecture" }, { status: 500 })
   }
