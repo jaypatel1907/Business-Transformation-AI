@@ -45,10 +45,10 @@ export function getTransformationDashboardData(data?: any): TransformationDashbo
   const uxJourneys = ux?.journeys || []
 
   // Phase 4: Planning & Financials
+  const planningData = data?.planning_data || data?.planning || {}
   const finEst = data?.financial_estimation || {}
   const rawSprints = data?.roadmap_sprints || data?.roadmap || []
   const techStack = data?.tech_stack || {}
-  const planning = data?.planning || {}
   const dbSchema = data?.db_schema || data?.database_schema || []
   const apiEndpoints = data?.api_endpoints || data?.endpoints || []
 
@@ -69,19 +69,27 @@ export function getTransformationDashboardData(data?: any): TransformationDashbo
   const strategicIntent =
     execSummary?.strategic_intent || "Establish digital enterprise leadership in agility and automated execution."
 
-  const targetMVP = data?.timeline || "6 Weeks"
+  const targetMVP = data?.timeline || (planningData?.milestones ? `${planningData.milestones.length * 2} Weeks` : "6 Weeks")
 
   // 2. Derive Executive KPIs
   const digitalMaturityVal = typeof data?.digital_maturity === "number" ? data.digital_maturity : 84
   const aiReadinessVal = typeof data?.ai_adoption === "number" ? data.ai_adoption : (data?.ai_readiness || 88)
-  const minBudgetNum = parseInt((finEst.min_budget || "$18,000").replace(/[^0-9]/g, ""), 10) || 18000
-  const maxBudgetNum = parseInt((finEst.max_budget || "$32,000").replace(/[^0-9]/g, ""), 10) || 32000
-  const avgInvestment = Math.round((minBudgetNum + maxBudgetNum) / 2)
+  
+  const phase4TotalCost = planningData?.costModel?.totalProjectCost
+  const minBudgetNum = phase4TotalCost ? Math.round(phase4TotalCost * 0.85) : (parseInt((finEst.min_budget || "$18,000").replace(/[^0-9]/g, ""), 10) || 18000)
+  const maxBudgetNum = phase4TotalCost ? Math.round(phase4TotalCost * 1.15) : (parseInt((finEst.max_budget || "$32,000").replace(/[^0-9]/g, ""), 10) || 32000)
+  const avgInvestment = phase4TotalCost ? Math.round(phase4TotalCost) : Math.round((minBudgetNum + maxBudgetNum) / 2)
 
   // Calculated Annual Benefit & ROI
-  const calculatedAnnualBenefit = Math.round(avgInvestment * 3.4)
-  const calculatedROI = Math.round(((calculatedAnnualBenefit - avgInvestment) / avgInvestment) * 100)
-  const paybackMonths = (avgInvestment / (calculatedAnnualBenefit / 12)).toFixed(1)
+  const calculatedAnnualBenefit = planningData?.roiModel?.threeYearNetBenefit
+    ? Math.round(planningData.roiModel.threeYearNetBenefit / 3)
+    : Math.round(avgInvestment * 3.4)
+  const calculatedROI = planningData?.roiModel?.expectedROI
+    ? Math.round(planningData.roiModel.expectedROI)
+    : Math.round(((calculatedAnnualBenefit - avgInvestment) / avgInvestment) * 100)
+  const paybackMonths = planningData?.roiModel?.paybackMonths
+    ? Number(planningData.roiModel.paybackMonths).toFixed(1)
+    : (avgInvestment / (calculatedAnnualBenefit / 12)).toFixed(1)
 
   const kpis: ExecutiveKPI[] = [
     {
