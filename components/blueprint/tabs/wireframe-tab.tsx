@@ -597,12 +597,25 @@ export function WireframeTab({
             {/* Right Inspector */}
             <div className="col-span-3 h-full">
               <ComponentInspector
-                component={activeComponent}
+                selectedComponent={activeComponent}
                 screens={blueprint.screens}
-                currentScreenId={selectedScreenId}
                 onUpdateComponent={handleUpdateComponent}
                 onDeleteComponent={handleDeleteComponent}
-                onClose={() => setSelectedComponentId(null)}
+                onDuplicateComponent={(cId) => {
+                  if (!activeScreen || !activeComponent) return
+                  const duplicated = {
+                    ...activeComponent,
+                    id: `comp_${Date.now()}`,
+                    label: `${activeComponent.label} (Copy)`
+                  }
+                  const updatedScreens = blueprint.screens.map((sc) => {
+                    if (sc.id === selectedScreenId) {
+                      return { ...sc, components: [...sc.components, duplicated] }
+                    }
+                    return sc
+                  })
+                  updateBlueprint((prev) => ({ ...prev, screens: updatedScreens }))
+                }}
               />
             </div>
           </div>
@@ -612,12 +625,23 @@ export function WireframeTab({
           <div className="h-[750px]">
             <UserFlowView
               blueprint={blueprint}
-              selectedScreenId={selectedScreenId}
               onSelectScreen={(sId) => {
                 setSelectedScreenId(sId)
                 setActiveView("canvas")
               }}
-              onUpdateBlueprint={updateBlueprint}
+              onAddNavigation={(sourceId, targetId, label) => {
+                const newNav = {
+                  id: `nav_${Date.now()}`,
+                  sourceScreenId: sourceId,
+                  targetScreenId: targetId,
+                  trigger: "click" as const,
+                  label: label || "Navigate",
+                }
+                updateBlueprint((prev) => ({
+                  ...prev,
+                  navigation: [...(prev.navigation || []), newNav]
+                }))
+              }}
             />
           </div>
         )}
