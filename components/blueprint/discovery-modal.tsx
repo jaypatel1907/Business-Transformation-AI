@@ -42,34 +42,226 @@ export function DiscoveryModal({
   const [customInputs, setCustomInputs] = useState<Record<string, string>>({})
   const [consultantFeedback, setConsultantFeedback] = useState<string>("")
 
+  const getClientFallbackQuestions = (p: string, lang: string): DiscoveryQuestion[] => {
+    const lower = (p || "").toLowerCase()
+    const isGuj = (lang || "").toLowerCase().includes("gu")
+
+    if (lower.includes("food") || lower.includes("restaurant") || lower.includes("dine") || lower.includes("kitchen") || lower.includes("table")) {
+      return [
+        {
+          id: "q1",
+          category: "Goals & Audience",
+          question: isGuj ? "તમારો મુખ્ય બિઝનેસ મૉડલ કયો છે?" : "What is your primary restaurant operating model?",
+          context_hint: isGuj ? "તમારા ગ્રાહકો કેવી રીતે ઓર્ડર કરશે?" : "Defines how customer orders and reservations flow.",
+          options: [
+            "Dine-in with Table QR Ordering & Advance Booking",
+            "Direct Online Food Delivery & Takeaway",
+            "Hybrid: Multi-Outlet Cloud Kitchen + Dine-In",
+            "Catering & Event Group Bookings"
+          ],
+          selected_option: "Dine-in with Table QR Ordering & Advance Booking"
+        },
+        {
+          id: "q2",
+          category: "Operations & Pain Points",
+          question: isGuj ? "હાલમાં સૌથી મોટો ઓપરેશનલ પડકાર શું છે?" : "What is currently your largest operational bottleneck?",
+          context_hint: isGuj ? "ક્યાં વધુ સમય અને પૈસા બગડે છે?" : "Helps pinpoint where automation produces fastest ROI.",
+          options: [
+            "High peak-hour order delays & kitchen miscommunication (KDS)",
+            "Manual phone reservations leading to double-booking & no-shows",
+            "Third-party delivery platform commission fees (25-30%)",
+            "Inventory wastage & inaccurate raw ingredient forecasting"
+          ],
+          selected_option: "High peak-hour order delays & kitchen miscommunication (KDS)"
+        },
+        {
+          id: "q3",
+          category: "Technology & Constraints",
+          question: isGuj ? "હાલમાં કઈ POS અથવા બિલિંગ સિસ્ટમ વાપરો છો?" : "What existing POS or billing infrastructure do you use?",
+          context_hint: isGuj ? "ઇન્ટિગ્રેશન માટે જરૂરી છે." : "Determines API connectivity and data sync needs.",
+          options: [
+            "Standalone modern cloud POS (e.g. Petpooja / Square / Toast)",
+            "Legacy desktop offline billing software",
+            "Spreadsheets & manual receipt books",
+            "Fresh greenfield setup (no legacy software)"
+          ],
+          selected_option: "Fresh greenfield setup (no legacy software)"
+        },
+        {
+          id: "q4",
+          category: "AI & Innovation",
+          question: isGuj ? "તમે કઈ AI સુવિધાઓ ઉમેરવા માંગો છો?" : "Which AI capability will provide the highest immediate value?",
+          context_hint: isGuj ? "AI સ્માર્ટ ફીચર્સ પસંદ કરો." : "Prioritizes AI model selection and agent architecture.",
+          options: [
+            "AI WhatsApp/Voice Assistant for 24/7 table booking & menu queries",
+            "Smart dynamic surge pricing & chef recommendation engine",
+            "Predictive demand forecasting to cut kitchen ingredient food waste",
+            "Automated sentiment analysis of customer reviews & feedback"
+          ],
+          selected_option: "AI WhatsApp/Voice Assistant for 24/7 table booking & menu queries"
+        }
+      ]
+    }
+
+    if (lower.includes("shop") || lower.includes("store") || lower.includes("ecommerce") || lower.includes("e-commerce") || lower.includes("retail") || lower.includes("product")) {
+      return [
+        {
+          id: "q1",
+          category: "Goals & Audience",
+          question: isGuj ? "તમારી ટાર્ગેટ માર્કેટ અને ગ્રાહક કેટેગરી કઈ છે?" : "What is your primary sales channel & target market?",
+          context_hint: isGuj ? "D2C કે B2B?" : "Identifies checkout complexity and multi-currency needs.",
+          options: [
+            "Direct to Consumer (D2C) Brand Storefront",
+            "B2B Wholesale / Multi-Vendor Marketplace",
+            "Omnichannel: Physical Retail Stores + Online App",
+            "Subscription Box / Recurring Membership Products"
+          ],
+          selected_option: "Direct to Consumer (D2C) Brand Storefront"
+        },
+        {
+          id: "q2",
+          category: "Operations & Pain Points",
+          question: isGuj ? "હાલમાં સૌથી મોટો ઓર્ડર/સેલ્સ પડકાર કયો છે?" : "What is your top fulfillment and customer conversion challenge?",
+          context_hint: isGuj ? "કાર્ટ ડ્રોપ-ઓફ કે ઇન્વેન્ટરી?" : "Highlights key customer conversion drop-offs.",
+          options: [
+            "High shopping cart abandonment before payment",
+            "Inventory mismatch between warehouse and online stock",
+            "Manual order tracking and high customer support ticket volume",
+            "Lack of personalized product recommendations"
+          ],
+          selected_option: "High shopping cart abandonment before payment"
+        },
+        {
+          id: "q3",
+          category: "Technology & Constraints",
+          question: isGuj ? "કયા પેમેન્ટ અને શિપિંગ પાર્ટનર્સ જોઈએ છે?" : "Which payment gateway and shipping integrations are mandatory?",
+          context_hint: isGuj ? "પેમેન્ટ ગેટવે સિલેક્શન" : "Defines third-party webhook integrations.",
+          options: [
+            "Stripe / Razorpay + Automated Courier Dispatch (Shiprocket)",
+            "Cash on Delivery (COD) with OTP Phone Verification",
+            "Global Multi-Currency + PayPal + Apple Pay",
+            "UPI Instant QR + Crypto / Buy-Now-Pay-Later (BNPL)"
+          ],
+          selected_option: "Stripe / Razorpay + Automated Courier Dispatch (Shiprocket)"
+        },
+        {
+          id: "q4",
+          category: "AI & Innovation",
+          question: isGuj ? "તમે કઈ AI ક્ષમતાથી સેલ્સ વધારવા માંગો છો?" : "What AI transformation capability do you want to prioritize?",
+          context_hint: isGuj ? "સ્માર્ટ AI ફીચર" : "Defines AI inference touchpoints.",
+          options: [
+            "AI Visual Product Search & Instant Style Matching",
+            "Personalized Cross-sell / Upsell Recommendation Engine",
+            "24/7 AI Shopping Assistant Chatbot with live cart access",
+            "Automated Dynamic Pricing & Inventory Restock Predictor"
+          ],
+          selected_option: "Personalized Cross-sell / Upsell Recommendation Engine"
+        }
+      ]
+    }
+
+    return [
+      {
+        id: "q1",
+        category: "Goals & Audience",
+        question: isGuj ? "આ પ્લેટફોર્મનો પ્રાથમિક ઉદ્દેશ્ય અને ટાર્ગેટ યુઝર્સ કોણ છે?" : "What is the primary business model and primary end-user group?",
+        context_hint: isGuj ? "મુખ્ય લક્ષ્ય વ્યાખ્યાયિત કરો" : "Defines user persona, authentication, and permission scope.",
+        options: [
+          "B2B Enterprise Clients with Multi-Role Portals",
+          "B2C Direct Consumers with Self-Serve Mobile/Web UI",
+          "Internal Operations & Employee Workforce Automation",
+          "Two-Sided Marketplace (Buyers & Service Providers)"
+        ],
+        selected_option: "B2C Direct Consumers with Self-Serve Mobile/Web UI"
+      },
+      {
+        id: "q2",
+        category: "Operations & Pain Points",
+        question: isGuj ? "હાલમાં પ્રક્રિયામાં સૌથી મોટો અવરોધ ક્યાં છે?" : "What is the most critical manual bottleneck or pain point today?",
+        context_hint: isGuj ? "ક્યાં મેન્યુઅલ કામ વધુ થાય છે?" : "Directly guides the future-state automation priorities.",
+        options: [
+          "Heavy reliance on manual spreadsheets & email follow-ups",
+          "Slow customer response times and high repetitive query load",
+          "Data fragmentation across multiple disconnected tools",
+          "Lack of real-time visibility, reporting, and predictive analytics"
+        ],
+        selected_option: "Heavy reliance on manual spreadsheets & email follow-ups"
+      },
+      {
+        id: "q3",
+        category: "Technology & Constraints",
+        question: isGuj ? "ઇન્ફ્રાસ્ટ્રક્ચર અને સિક્યુરિટી માટે તમારી શું પ્રાથમિકતા છે?" : "What are your core infrastructure and security requirements?",
+        context_hint: isGuj ? "સિક્યોરિટી અને સ્કેલેબિલિટી" : "Determines database isolation and cloud hosting topology.",
+        options: [
+          "Cloud-Native Serverless with High Scalability (PostgreSQL + Vercel/AWS)",
+          "Strict Enterprise Compliance (Role-Based Access Control + Row Level Security)",
+          "Rapid MVP Launch with Zero Maintenance Overhead",
+          "Hybrid / On-Premise API Gateway Integration"
+        ],
+        selected_option: "Cloud-Native Serverless with High Scalability (PostgreSQL + Vercel/AWS)"
+      },
+      {
+        id: "q4",
+        category: "AI & Innovation",
+        question: isGuj ? "કઈ AI સુવિધાથી તમારી કંપનીમાં સૌથી મોટો બદલાવ આવશે?" : "Which AI technology will deliver the greatest transformational impact?",
+        context_hint: isGuj ? "AI સોલ્યુશન પસંદ કરો" : "Shapes the AI microservice architecture.",
+        options: [
+          "Autonomous Generative AI Assistant with Context Retrieval (RAG)",
+          "Intelligent Workflow Automation & Smart Form Processing",
+          "Predictive Forecasting & Business Decision Analytics",
+          "Real-Time Multilingual Voice & Communication Agent"
+        ],
+        selected_option: "Autonomous Generative AI Assistant with Context Retrieval (RAG)"
+      }
+    ]
+  }
+
   // Fetch or initialize discovery questions
   const loadDiscoveryQuestions = async () => {
+    // Pre-populate immediate fallback so there is never a blank/stuck screen
+    const defaultList = getClientFallbackQuestions(initialPrompt, targetLanguage)
+    setQuestions(defaultList)
+    const initialAns: Record<string, string> = {}
+    defaultList.forEach((q) => {
+      initialAns[q.id] = q.selected_option || q.options[0] || ""
+    })
+    setAnswers(initialAns)
+
     setLoading(true)
     try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 4000)
+
       const res = await fetch("/api/discovery", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
         body: JSON.stringify({
           prompt: initialPrompt || "Enterprise Business Transformation Platform",
           language: targetLanguage
         })
       })
-      const data = await res.json()
-      if (data.success && data.questions?.length) {
-        setQuestions(data.questions)
-        const initialAnswers: Record<string, string> = {}
-        data.questions.forEach((q: DiscoveryQuestion) => {
-          initialAnswers[q.id] = q.selected_option || q.options[0] || ""
-        })
-        setAnswers(initialAnswers)
-        setConsultantFeedback(
-          targetLanguage.toLowerCase().includes("gu")
-            ? "તમારી જરૂરિયાતો અનુસાર પ્રશ્નો તૈયાર કરવામાં આવ્યા છે. યોગ્ય વિકલ્પો પસંદ કરો."
-            : "Tailored discovery questions generated. Select options or type custom requirements to refine the architecture."
-        )
+      clearTimeout(timeoutId)
+
+      if (res.ok) {
+        const data = await res.json()
+        const fetchedQuestions = Array.isArray(data.questions) ? data.questions : (data.questions?.questions || [])
+        if (data.success && fetchedQuestions.length > 0) {
+          setQuestions(fetchedQuestions)
+          const updatedAnswers: Record<string, string> = {}
+          fetchedQuestions.forEach((q: DiscoveryQuestion) => {
+            updatedAnswers[q.id] = q.selected_option || q.options[0] || ""
+          })
+          setAnswers(updatedAnswers)
+          setConsultantFeedback(
+            targetLanguage.toLowerCase().includes("gu")
+              ? "તમારી જરૂરિયાતો અનુસાર પ્રશ્નો તૈયાર કરવામાં આવ્યા છે. યોગ્ય વિકલ્પો પસંદ કરો."
+              : "Tailored discovery questions generated. Select options or type custom requirements to refine the architecture."
+          )
+        }
       }
     } catch (err) {
-      console.error("Discovery question load error:", err)
+      console.warn("Discovery question live fetch timed out or failed, using calibrated fallback:", err)
     } finally {
       setLoading(false)
     }

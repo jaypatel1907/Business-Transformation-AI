@@ -226,12 +226,18 @@ Return ONLY a JSON array of 4 question objects matching this schema.`
               const text = resData.candidates?.[0]?.content?.parts?.[0]?.text
               if (text) {
                 const cleaned = text.replace(/^```(json)?|```$/gi, "").trim()
-                const questions: DiscoveryQuestion[] = JSON.parse(cleaned)
-                return NextResponse.json({
-                  success: true,
-                  questions,
-                  consultant_summary: `Tailored discovery interview calibrated for "${cleanPrompt.slice(0, 50)}..."`
-                })
+                const parsed = JSON.parse(cleaned)
+                const questionsArray: DiscoveryQuestion[] = Array.isArray(parsed)
+                  ? parsed
+                  : (parsed.questions || parsed.discovery_questions || Object.values(parsed).find(v => Array.isArray(v)) || [])
+                
+                if (questionsArray && questionsArray.length > 0) {
+                  return NextResponse.json({
+                    success: true,
+                    questions: questionsArray,
+                    consultant_summary: `Tailored discovery interview calibrated for "${cleanPrompt.slice(0, 50)}..."`
+                  })
+                }
               }
             }
           } catch (mErr) {

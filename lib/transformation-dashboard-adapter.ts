@@ -13,6 +13,7 @@ import {
   NextBestAction,
   ProjectHealthDimension
 } from "./transformation-dashboard-types"
+import { cleanUserFacingPrompt } from "./domain-intelligence"
 
 /**
  * Aggregates all project phases into a cohesive, structured Executive Dashboard data model.
@@ -22,7 +23,7 @@ import {
 export function getTransformationDashboardData(data?: any): TransformationDashboardData {
   const projectId = data?.id || "proj-exec-001"
   const projectTitle = data?.project_title || "Enterprise Transformation Solution"
-  const userProblem = data?.user_problem || "Modernize and automate core operations through AI assistance."
+  const userProblem = cleanUserFacingPrompt(data?.user_problem || "Modernize and automate core operations through AI assistance.")
   const lastUpdated = data?.updated_at || new Date().toISOString()
 
   // Phase 1: Business Analysis

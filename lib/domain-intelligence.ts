@@ -78,11 +78,23 @@ export interface ApplicationRequirementContext {
   managementTableRows: string[][]
 }
 
+export function cleanUserFacingPrompt(text: string): string {
+  if (!text) return ""
+  return text
+    .replace(/\[PHASE 1 DISCOVERY CONTEXT\][\s\S]*?(?=\n\n\[|$)/gi, "")
+    .replace(/\[DISCOVERY INTERVIEW ANSWERS\][\s\S]*?(?=\n\n\[|$)/gi, "")
+    .replace(/\[ATTACHED BUSINESS DOCUMENT[\s\S]*?(?=\n\n\[|$)/gi, "")
+    .replace(/\[NOTE: THE USER HAS ATTACHED[\s\S]*?(?=\n\n\[|$)/gi, "")
+    .replace(/[\n\r]+/g, " ")
+    .trim()
+}
+
 export function classifyApplicationDomain(
   prompt: string,
   blueprintTitle?: string
 ): ApplicationRequirementContext {
-  const combined = (prompt + " " + (blueprintTitle || "")).toLowerCase()
+  const sanitizedPrompt = cleanUserFacingPrompt(prompt)
+  const combined = (sanitizedPrompt + " " + (prompt || "") + " " + (blueprintTitle || "")).toLowerCase()
 
   // 1. HEALTHCARE & HOSPITAL APPOINTMENTS
   if (
@@ -91,7 +103,7 @@ export function classifyApplicationDomain(
     )
   ) {
     return {
-      originalPrompt: prompt,
+      originalPrompt: sanitizedPrompt || prompt,
       projectTitle: blueprintTitle || "MediCare Health Portal",
       domain: "healthcare",
       domainLabel: "Healthcare & Clinical Care",
@@ -99,7 +111,7 @@ export function classifyApplicationDomain(
       primaryActor: "Patient / Care Seeker",
       adminActor: "Doctor / Medical Administrator",
       heroHeadline: "Specialized Healthcare & Instant Doctor Consultations",
-      heroSubtext: prompt || "Connect with leading medical specialists, book verified clinical consultations, and manage digital health records seamlessly.",
+      heroSubtext: "Connect with leading medical specialists, book verified clinical consultations, and manage digital health records seamlessly.",
       mainViewLabel: "Specialists & Services",
       mainViewIcon: "🩺",
       primaryAction: {
@@ -150,7 +162,7 @@ export function classifyApplicationDomain(
     !/food|dish|restaurant|order/.test(combined)
   ) {
     return {
-      originalPrompt: prompt,
+      originalPrompt: sanitizedPrompt || prompt,
       projectTitle: blueprintTitle || "Grand Horizon Hotel & Suites",
       domain: "hospitality",
       domainLabel: "Hospitality & Luxury Lodging",
@@ -158,7 +170,7 @@ export function classifyApplicationDomain(
       primaryActor: "Guest / Traveler",
       adminActor: "Hotel Manager / Front Desk",
       heroHeadline: "Luxury Stays & Seamless Room Reservations",
-      heroSubtext: prompt || "Discover world-class suites, check live availability, and reserve your premier getaway with instant concierge confirmation.",
+      heroSubtext: "Discover world-class suites, check live availability, and reserve your premier getaway with instant concierge confirmation.",
       mainViewLabel: "Rooms & Suites",
       mainViewIcon: "🏨",
       primaryAction: {
@@ -209,7 +221,7 @@ export function classifyApplicationDomain(
   ) {
     const isDelivery = /delivery|swiggy|zomato|courier|driver|rider/.test(combined)
     return {
-      originalPrompt: prompt,
+      originalPrompt: sanitizedPrompt || prompt,
       projectTitle: blueprintTitle || "Artisan Gourmet & Kitchen",
       domain: isDelivery ? "food_delivery" : "restaurant",
       domainLabel: isDelivery ? "Food Delivery & Cloud Kitchen" : "Restaurant & Table Reservations",
@@ -217,7 +229,7 @@ export function classifyApplicationDomain(
       primaryActor: "Food Lover / Diner",
       adminActor: "Head Chef / Kitchen Manager",
       heroHeadline: isDelivery ? "Gourmet Meals Delivered to Your Doorstep" : "Culinary Excellence & Table Reservations",
-      heroSubtext: prompt || "Explore curated chef specials, reserve prime dining tables, and enjoy culinary perfection.",
+      heroSubtext: isDelivery ? "Order freshly crafted gourmet meals prepared by certified master chefs with live dispatch tracking." : "Explore curated chef specials, reserve prime dining tables, and enjoy culinary perfection.",
       mainViewLabel: "Menu & Culinary Specials",
       mainViewIcon: "🍲",
       primaryAction: {
@@ -269,7 +281,7 @@ export function classifyApplicationDomain(
   // 4. JOB RECRUITMENT & TALENT PORTAL
   if (/job|recruitment|career|resume|candidate|hire|hiring|recruiter|applicant|interview|talent|vacancy/.test(combined)) {
     return {
-      originalPrompt: prompt,
+      originalPrompt: sanitizedPrompt || prompt,
       projectTitle: blueprintTitle || "TalentSphere Global Careers",
       domain: "job_portal",
       domainLabel: "Job Recruitment & Talent Portal",
@@ -277,7 +289,7 @@ export function classifyApplicationDomain(
       primaryActor: "Candidate / Job Seeker",
       adminActor: "Recruiter / Hiring Manager",
       heroHeadline: "Find Your Dream Role & Accelerate Your Career",
-      heroSubtext: prompt || "Discover verified opportunities across top tech and enterprise leaders. Apply with single-click AI resume matching.",
+      heroSubtext: "Discover verified opportunities across top tech and enterprise leaders. Apply with single-click AI resume matching.",
       mainViewLabel: "Open Positions",
       mainViewIcon: "💼",
       primaryAction: {
@@ -322,7 +334,7 @@ export function classifyApplicationDomain(
   // 5. GYM, FITNESS & WELLNESS
   if (/gym|fitness|trainer|workout|exercise|member|membership|crossfit|yoga|pilates|bodybuilding|sports/.test(combined)) {
     return {
-      originalPrompt: prompt,
+      originalPrompt: sanitizedPrompt || prompt,
       projectTitle: blueprintTitle || "Apex Fitness & Performance Club",
       domain: "fitness",
       domainLabel: "Fitness Club & Member Management",
@@ -330,7 +342,7 @@ export function classifyApplicationDomain(
       primaryActor: "Gym Member / Athlete",
       adminActor: "Head Trainer / Club Owner",
       heroHeadline: "Unleash Your Peak Athletic Potential",
-      heroSubtext: prompt || "Book elite training sessions, track personalized workout metrics, and join world-class fitness classes.",
+      heroSubtext: "Book elite training sessions, track personalized workout metrics, and join world-class fitness classes.",
       mainViewLabel: "Classes & Training Sessions",
       mainViewIcon: "🏋️",
       primaryAction: {
@@ -374,7 +386,7 @@ export function classifyApplicationDomain(
   // 6. REAL ESTATE & PROPERTY PORTAL
   if (/real estate|property|realty|rental|apartment|house|housing|land|tenant|landlord|leasing|listing/.test(combined)) {
     return {
-      originalPrompt: prompt,
+      originalPrompt: sanitizedPrompt || prompt,
       projectTitle: blueprintTitle || "Prestige Prime Real Estate",
       domain: "real_estate",
       domainLabel: "Real Estate & Property Platform",
@@ -382,7 +394,7 @@ export function classifyApplicationDomain(
       primaryActor: "Buyer / Tenant",
       adminActor: "Real Estate Broker / Property Manager",
       heroHeadline: "Find Luxury Properties & Schedule Private Viewings",
-      heroSubtext: prompt || "Explore curated residential and commercial listings. Schedule instant on-site tours with licensed brokers.",
+      heroSubtext: "Explore curated residential and commercial listings. Schedule instant on-site tours with licensed brokers.",
       mainViewLabel: "Featured Properties",
       mainViewIcon: "🏠",
       primaryAction: {
@@ -425,7 +437,7 @@ export function classifyApplicationDomain(
   // 7. EDUCATION & E-LEARNING (LMS)
   if (/education|school|college|course|student|teacher|learning|lms|study|academic|tutor|class|curriculum/.test(combined)) {
     return {
-      originalPrompt: prompt,
+      originalPrompt: sanitizedPrompt || prompt,
       projectTitle: blueprintTitle || "EduSphere Academy & LMS",
       domain: "education",
       domainLabel: "Education & Learning Management",
@@ -433,7 +445,7 @@ export function classifyApplicationDomain(
       primaryActor: "Student / Learner",
       adminActor: "Instructor / Academic Dean",
       heroHeadline: "Master Modern Skills with Expert-Led Courses",
-      heroSubtext: prompt || "Interactive curriculum, hands-on coding labs, and certified credential pathways designed for modern career growth.",
+      heroSubtext: "Interactive curriculum, hands-on coding labs, and certified credential pathways designed for modern career growth.",
       mainViewLabel: "Course Catalog",
       mainViewIcon: "🎓",
       primaryAction: {
@@ -475,7 +487,7 @@ export function classifyApplicationDomain(
   // 8. LOGISTICS, SUPPLY CHAIN & SHIPMENT TRACKING
   if (/logistics|supply chain|shipment|tracking|freight|courier|fleet|warehouse|cargo|dispatch|truck|delivery tracking/.test(combined)) {
     return {
-      originalPrompt: prompt,
+      originalPrompt: sanitizedPrompt || prompt,
       projectTitle: blueprintTitle || "OmniLogistics Fleet & Dispatch",
       domain: "logistics",
       domainLabel: "Logistics & Fleet Dispatch",
@@ -483,7 +495,7 @@ export function classifyApplicationDomain(
       primaryActor: "Shipper / Consignee",
       adminActor: "Dispatch Manager / Fleet Operator",
       heroHeadline: "Real-Time Freight Telemetry & Fleet Optimization",
-      heroSubtext: prompt || "Track shipments end-to-end, automate route dispatching, and manage multi-hub warehouse operations with zero latency.",
+      heroSubtext: "Track shipments end-to-end, automate route dispatching, and manage multi-hub warehouse operations with zero latency.",
       mainViewLabel: "Shipment Consignments",
       mainViewIcon: "🚚",
       primaryAction: {
@@ -530,7 +542,7 @@ export function classifyApplicationDomain(
     )
   ) {
     return {
-      originalPrompt: prompt,
+      originalPrompt: sanitizedPrompt || prompt,
       projectTitle: blueprintTitle || "Urban Luxe Commerce",
       domain: "ecommerce",
       domainLabel: "E-Commerce & Retail Marketplace",
@@ -538,7 +550,7 @@ export function classifyApplicationDomain(
       primaryActor: "Online Shopper / Buyer",
       adminActor: "Store Owner / Inventory Manager",
       heroHeadline: "Curated Premium Collection & Seamless Shopping",
-      heroSubtext: prompt || "Discover trending collections, enjoy personalized product recommendations, and checkout securely.",
+      heroSubtext: "Discover trending collections, enjoy personalized product recommendations, and checkout securely.",
       mainViewLabel: "Product Catalog",
       mainViewIcon: "🛍️",
       primaryAction: {
@@ -580,7 +592,7 @@ export function classifyApplicationDomain(
   // 10. GENERIC / CUSTOM DOMAIN FALLBACK (DOMAIN-NEUTRAL!)
   const cleanTitle = blueprintTitle || "Smart Operations Platform"
   return {
-    originalPrompt: prompt,
+    originalPrompt: sanitizedPrompt || prompt,
     projectTitle: cleanTitle,
     domain: "custom",
     domainLabel: "Enterprise Management & Workflows",
@@ -588,7 +600,7 @@ export function classifyApplicationDomain(
     primaryActor: "Operations User / Requester",
     adminActor: "System Administrator / Manager",
     heroHeadline: `Operational Command & Management Portal`,
-    heroSubtext: prompt || "Streamlined operational workflows, automated request processing, and real-time activity intelligence.",
+    heroSubtext: "Streamlined operational workflows, automated request processing, and real-time activity intelligence.",
     mainViewLabel: "Operational Modules",
     mainViewIcon: "⚡",
     primaryAction: {

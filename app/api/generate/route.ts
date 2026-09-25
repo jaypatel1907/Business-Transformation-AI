@@ -18,25 +18,24 @@ export async function POST(req: NextRequest) {
     const rawLang = targetLanguage || language || "English";
     const apiKey = process.env.GEMINI_API_KEY;
 
-    let cleanPrompt = prompt ? prompt.trim() : "";
+    const userFacingProblem = prompt ? prompt.trim() : (documentText ? "Document Requirement Specification" : "Build an enterprise AI solution architecture");
+    let augmentedPrompt = userFacingProblem;
     
-    // Enrich prompt with Phase 1 Business Discovery Context if provided
+    // Enrich prompt with Phase 1 Business Discovery Context if provided for LLM reasoning
     if (businessContext) {
-      cleanPrompt += `\n\n[PHASE 1 DISCOVERY CONTEXT]:\nDomain: ${businessContext.business_domain || "Enterprise"}\nTarget Audience: ${businessContext.target_audience || "General"}\nPain Points: ${(businessContext.current_pain_points || []).join("; ")}\nGoals: ${(businessContext.primary_goals || []).join("; ")}\nExisting Stack: ${(businessContext.existing_systems || []).join("; ")}`;
+      augmentedPrompt += `\n\n[PHASE 1 DISCOVERY CONTEXT]:\nDomain: ${businessContext.business_domain || "Enterprise"}\nTarget Audience: ${businessContext.target_audience || "General"}\nPain Points: ${(businessContext.current_pain_points || []).join("; ")}\nGoals: ${(businessContext.primary_goals || []).join("; ")}\nExisting Stack: ${(businessContext.existing_systems || []).join("; ")}`;
     }
     if (discoveryAnswers && Array.isArray(discoveryAnswers) && discoveryAnswers.length > 0) {
-      cleanPrompt += `\n\n[DISCOVERY INTERVIEW ANSWERS]:\n` + discoveryAnswers.map((a: any) => `- ${a.question}: ${a.selected_option || a.custom_answer}`).join("\n");
+      augmentedPrompt += `\n\n[DISCOVERY INTERVIEW ANSWERS]:\n` + discoveryAnswers.map((a: any) => `- ${a.question}: ${a.selected_option || a.custom_answer}`).join("\n");
     }
 
     if (documentText && documentText.trim().length > 0) {
-      cleanPrompt += `\n\n[ATTACHED BUSINESS DOCUMENT / BRD]:\n${documentText.slice(0, 3000)}`;
+      augmentedPrompt += `\n\n[ATTACHED BUSINESS DOCUMENT / BRD]:\n${documentText.slice(0, 3000)}`;
     } else if (documentBase64) {
-      cleanPrompt += `\n\n[NOTE: THE USER HAS ATTACHED A DOCUMENT (PDF/IMAGE) FOR YOU TO ANALYZE. EXTRACT THEIR REQUIREMENTS FROM IT AND INCORPORATE THEM INTO THE BLUEPRINT.]`;
+      augmentedPrompt += `\n\n[NOTE: THE USER HAS ATTACHED A DOCUMENT (PDF/IMAGE) FOR YOU TO ANALYZE. EXTRACT THEIR REQUIREMENTS FROM IT AND INCORPORATE THEM INTO THE BLUEPRINT.]`;
     }
 
-    if (!cleanPrompt) {
-      cleanPrompt = "Build an enterprise AI solution architecture";
-    }
+    const cleanPrompt = augmentedPrompt;
 
     // Helper: Dynamic Domain-Aware Schema & API Generator
     const getDomainSpecificSchemaAndApis = (p: string) => {
@@ -1023,7 +1022,7 @@ Output ONLY a single valid JSON object matching this schema:
 {
   "project_title": "Descriptive Title in ${targetLangName}",
   "chat_reply": "Exact formatted response following rule 9 in ${targetLangName}",
-  "user_problem": "${cleanPrompt.slice(0, 150).replace(/"/g, '\\"')}",
+  "user_problem": "${userFacingProblem.slice(0, 150).replace(/"/g, '\\"')}",
   "target_language": "${targetLangName}",
   "user_role": "${role}",
   "digital_maturity": 88,
@@ -1202,6 +1201,11 @@ Output raw JSON only.`;
               if (candidateText) {
                 const cleanedText = candidateText.replace(/^```(json)?|```$/gi, "").trim();
                 const parsed = JSON.parse(cleanedText);
+                if (parsed) {
+                  if (!parsed.user_problem || parsed.user_problem.includes("[PHASE 1 DISCOVERY") || parsed.user_problem.includes("[DISCOVERY INTERVIEW")) {
+                    parsed.user_problem = userFacingProblem;
+                  }
+                }
                 console.log(`>>> [GEMINI ${currentModel.toUpperCase()} SUCCESS] Bespoke Architecture Generated!`);
                 return NextResponse.json({ success: true, data: parsed, gemini_used: true, model: currentModel });
               }
@@ -1218,7 +1222,7 @@ Output raw JSON only.`;
       }
     }
 
-    const data = generateSmartDomainBlueprint(cleanPrompt, rawLang, role);
+    const data = generateSmartDomainBlueprint(userFacingProblem, rawLang, role);
     return NextResponse.json({ success: true, data, gemini_used: false });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || "Failed to process request" }, { status: 500 });
