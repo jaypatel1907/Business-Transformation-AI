@@ -7,12 +7,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DashboardTab } from "@/components/blueprint/tabs/dashboard-tab"
 import { AnalysisTab } from "@/components/blueprint/tabs/analysis-tab"
 import { ProcessIntelligenceTab } from "@/components/blueprint/tabs/process-intelligence-tab"
+import { PlanningTab } from "@/components/blueprint/tabs/planning-tab"
 import { BpmnTab } from "@/components/blueprint/tabs/bpmn-tab"
 import { DbTab } from "@/components/blueprint/tabs/db-tab"
 import { WireframeTab } from "@/components/blueprint/tabs/wireframe-tab"
 import { RoadmapTab } from "@/components/blueprint/tabs/roadmap-tab"
 
-export type TabId = "analysis" | "dashboard" | "process" | "bpmn" | "db" | "wireframe" | "roadmap"
+export type TabId = "analysis" | "dashboard" | "process" | "planning" | "bpmn" | "db" | "wireframe" | "roadmap"
 
 interface CanvasProps {
   active: TabId
@@ -48,6 +49,7 @@ export function Canvas({
   const SafeDashboardTab = DashboardTab as any
   const SafeAnalysisTab = AnalysisTab as any
   const SafeProcessTab = ProcessIntelligenceTab as any
+  const SafePlanningTab = PlanningTab as any
   const SafeBpmnTab = BpmnTab as any
   const SafeDbTab = DbTab as any
   const SafeWireframeTab = WireframeTab as any
@@ -58,7 +60,7 @@ export function Canvas({
       <Tabs value={active} onValueChange={(v) => onChange(v as TabId)} className="w-full">
         <TabsList
           className={`mb-6 grid w-full bg-white border border-slate-200/80 shadow-sm p-1 rounded-xl sticky top-0 z-10 ${
-            isEmployee ? "grid-cols-3 sm:grid-cols-5" : "grid-cols-3 sm:grid-cols-7"
+            isEmployee ? "grid-cols-3 sm:grid-cols-6" : "grid-cols-4 sm:grid-cols-8"
           }`}
         >
           <TabsTrigger
@@ -79,7 +81,14 @@ export function Canvas({
             value="process"
             className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white font-medium text-slate-600 rounded-lg py-2 text-xs transition-all cursor-pointer"
           >
-            {t("tabProcess") || "Process Intelligence"}
+            {t("tabProcess") || "Process"}
+          </TabsTrigger>
+
+          <TabsTrigger
+            value="planning"
+            className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white font-medium text-slate-600 rounded-lg py-2 text-xs transition-all cursor-pointer"
+          >
+            {t("tabPlanning") || "Planning & ROI"}
           </TabsTrigger>
 
           <TabsTrigger
@@ -137,6 +146,9 @@ export function Canvas({
           </TabsContent>
           <TabsContent value="process" className="mt-0 outline-none">
             <SafeProcessTab generated={generated} data={data} targetLanguage={targetLanguage} />
+          </TabsContent>
+          <TabsContent value="planning" className="mt-0 outline-none">
+            <SafePlanningTab generated={generated} data={data} targetLanguage={targetLanguage} />
           </TabsContent>
           <TabsContent value="bpmn" className="mt-0 outline-none">
             <SafeBpmnTab generated={generated} data={data} targetLanguage={targetLanguage} />
