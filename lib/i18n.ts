@@ -8,15 +8,11 @@ export const translations = {
     attached: "Attached",
     parsing: "parsing content & building architecture...",
     success: "Here is your detailed action plan and blueprint.",
-    
-    // Tabs
     tabDashboard: "Dashboard",
     tabGuide: "Guide",
     tabDatabase: "Database & APIs",
     tabWireframe: "Wireframes",
     tabRoadmap: "Roadmap",
-    
-    // Export Menu
     exportReport: "Export Report",
     allInOne: "All-in-One Full Report (.pdf)",
     allInOneDesc: "Everything combined in one file",
@@ -31,13 +27,9 @@ export const translations = {
     rawData: "RAW DATA FORMATS",
     markdown: "Markdown (.md)",
     rawJson: "Raw Architecture (.json)",
-
-    // Guide Tab
     stepByStepGuide: "Step-by-Step Project Guide",
     role: "Role",
     duration: "Duration",
-
-    // DB Tab
     dbSchema: "Database Schema",
     tablesCount: "Tables",
     column: "Column",
@@ -48,28 +40,26 @@ export const translations = {
     method: "Method",
     endpointRoute: "Endpoint Route",
     descAuth: "Description & Auth",
-
-    // Wireframe Tab
     uiWireframes: "UI Wireframe Specifications",
     layout: "Layout",
     components: "Components",
-
-    // Roadmap Tab
     projectRoadmap: "Project Delivery Roadmap",
     timeframe: "Timeframe",
     owner: "Owner",
     tasks: "Tasks",
-
-    // Dashboard Tab
     executiveSummary: "Executive Summary",
     techStack: "Tech Stack",
     keyObjectives: "Key Objectives",
     digitalMaturity: "Digital Maturity",
     aiReadiness: "AI Readiness",
     estBudget: "Est. Budget",
-    actionPlan: "Step-by-Step Action Plan"
+    financialBudget: "Est. Budget",
+    actionPlan: "Step-by-Step Action Plan",
+    statusReady: "STATUS: READY",
+    targetMvp: "TARGET MVP DELIVERY",
+    resourceAllocation: "Resource Allocation & Required Team Roles"
   },
-  "ગુજરાતી": {
+  "Gujarati": {
     inputPlaceholder: "તમારા બિઝનેસ આઈડિયા વિશે જણાવો અથવા અહી ડોક્યુમેન્ટ અપલોડ કરો...",
     supportsDesc: "સપોર્ટ: .pdf, .docx, .txt, .md, .brd",
     pressEnter: "સબમિટ કરવા Enter દબાવો",
@@ -78,13 +68,11 @@ export const translations = {
     attached: "જોડાયેલ",
     parsing: "કન્ટેન્ટ વાંચીને આર્કિટેક્ચર બની રહ્યું છે...",
     success: "આ રહ્યો તમારો ડિટેલ એક્શન પ્લાન અને બ્લુપ્રિન્ટ.",
-    
     tabDashboard: "ડેશબોર્ડ",
     tabGuide: "ગાઈડ",
     tabDatabase: "ડેટાબેઝ",
     tabWireframe: "વાયરફ્રેમ્સ",
     tabRoadmap: "રોડમેપ",
-
     exportReport: "એક્સપોર્ટ રિપોર્ટ",
     allInOne: "All-in-One Full Report (.pdf)",
     allInOneDesc: "બધું એક જ ફાઈલમાં",
@@ -99,11 +87,9 @@ export const translations = {
     rawData: "રો ડેટા ફોર્મેટ્સ",
     markdown: "માર્કડાઉન (.md)",
     rawJson: "રો આર્કિટેક્ચર (.json)",
-
     stepByStepGuide: "સ્ટેપ-બાય-સ્ટેપ પ્રોજેક્ટ ગાઈડ",
     role: "રોલ",
     duration: "સમયગાળો",
-
     dbSchema: "ડેટાબેઝ સ્કીમા",
     tablesCount: "ટેબલ્સ",
     column: "કોલમ",
@@ -114,25 +100,26 @@ export const translations = {
     method: "મેથડ",
     endpointRoute: "એન્ડપોઈન્ટ રૂટ",
     descAuth: "વર્ણન અને ઓથ (Auth)",
-
     uiWireframes: "UI વાયરફ્રેમ સ્પેસિફિકેશન્સ",
     layout: "લેઆઉટ",
     components: "કમ્પોનન્ટ્સ",
-
     projectRoadmap: "પ્રોજેક્ટ ડિલિવરી રોડમેપ",
     timeframe: "સમયગાળો",
     owner: "ઓનર (જવાબદાર)",
     tasks: "ટાસ્ક્સ",
-
     executiveSummary: "એક્ઝિક્યુટિવ સમરી",
     techStack: "ટેક સ્ટેક",
     keyObjectives: "મુખ્ય હેતુઓ",
     digitalMaturity: "ડિજિટલ મેચ્યોરિટી",
     aiReadiness: "AI રેડીનેસ",
     estBudget: "અંદાજિત બજેટ",
-    actionPlan: "સ્ટેપ-બાય-સ્ટેપ એક્શન પ્લાન"
+    financialBudget: "અંદાજિત બજેટ",
+    actionPlan: "સ્ટેપ-બાય-સ્ટેપ એક્શન પ્લાન",
+    statusReady: "સ્ટેટસ: રેડી",
+    targetMvp: "ટાર્ગેટ MVP ડિલિવરી",
+    resourceAllocation: "રિસોર્સ ફાળવણી અને જરૂરી ટીમ રોલ્સ"
   },
-  "हिन्दी": {
+  "Hindi": {
     inputPlaceholder: "अपने बिजनेस आइडिया के बारे में बताएं या यहां डॉक्यूमेंट अपलोड करें...",
     supportsDesc: "समर्थन: .pdf, .docx, .txt, .md, .brd",
     pressEnter: "सबमिट करने के लिए Enter दबाएं",
@@ -141,13 +128,11 @@ export const translations = {
     attached: "संलग्न",
     parsing: "कंटेंट पढ़कर आर्किटेक्चर बनाया जा रहा है...",
     success: "यह रहा आपका विस्तृत एक्शन प्लान और ब्लूप्रिंट।",
-    
     tabDashboard: "डैशबोर्ड",
     tabGuide: "गाइड",
     tabDatabase: "डेटाबेस",
     tabWireframe: "वायरफ्रेम्स",
     tabRoadmap: "रोडमैप",
-
     exportReport: "रिपोर्ट एक्सपोर्ट करें",
     allInOne: "All-in-One फुल रिपोर्ट (.pdf)",
     allInOneDesc: "सब कुछ एक ही फाइल में",
@@ -162,11 +147,9 @@ export const translations = {
     rawData: "रॉ डेटा फॉर्मेट्स",
     markdown: "मार्कडाउन (.md)",
     rawJson: "रॉ आर्किटेक्चर (.json)",
-
     stepByStepGuide: "स्टेप-बाय-स्टेप प्रोजेक्ट गाइड",
     role: "रोल",
     duration: "अवधि",
-
     dbSchema: "डेटाबेस स्कीमा",
     tablesCount: "टेबल्स",
     column: "कॉलम",
@@ -177,25 +160,26 @@ export const translations = {
     method: "मेथड",
     endpointRoute: "एंडपॉइंट रूट",
     descAuth: "विवरण और Auth",
-
     uiWireframes: "UI वायरफ्रेम स्पेसिफिकेशन्स",
     layout: "लेआउट",
     components: "कम्पोनेंट्स",
-
     projectRoadmap: "प्रोजेक्ट डिलीवरी रोडमैप",
     timeframe: "समय सीमा",
     owner: "ऑनर (जिम्मेदार)",
     tasks: "टास्क्स",
-
     executiveSummary: "एग्जीक्यूटिव समरी",
     techStack: "टेक स्टैक",
     keyObjectives: "मुख्य उद्देश्य",
     digitalMaturity: "डिजिटल मैच्योरिटी",
     aiReadiness: "AI रेडीनेस",
     estBudget: "अनुमानित बजट",
-    actionPlan: "स्टेप-बाय-स्टेप एक्शन प्लान"
+    financialBudget: "अनुमानित बजट",
+    actionPlan: "स्टेप-बाय-स्टेप एक्शन प्लान",
+    statusReady: "स्थिति: तैयार",
+    targetMvp: "लक्ष्य MVP डिलीवरी",
+    resourceAllocation: "संसाधन आवंटन और आवश्यक टीम भूमिकाएं"
   },
-  "Español": {
+  "Spanish": {
     inputPlaceholder: "Describe tu idea de negocio o arrastra un documento aquí...",
     supportsDesc: "Soporta .pdf, .docx, .txt, .md, .brd",
     pressEnter: "Presiona Enter para enviar",
@@ -204,13 +188,11 @@ export const translations = {
     attached: "Adjunto",
     parsing: "analizando contenido y construyendo arquitectura...",
     success: "Aquí tienes tu plan de acción detallado.",
-    
     tabDashboard: "Tablero",
     tabGuide: "Guía",
     tabDatabase: "Base de Datos",
     tabWireframe: "Wireframes",
     tabRoadmap: "Hoja de Ruta",
-
     exportReport: "Exportar Reporte",
     allInOne: "Reporte Completo (.pdf)",
     allInOneDesc: "Todo combinado",
@@ -225,11 +207,9 @@ export const translations = {
     rawData: "FORMATOS DE DATOS",
     markdown: "Markdown (.md)",
     rawJson: "Arquitectura Raw (.json)",
-
     stepByStepGuide: "Guía del Proyecto Paso a Paso",
     role: "Rol",
     duration: "Duración",
-
     dbSchema: "Esquema de BD",
     tablesCount: "Tablas",
     column: "Columna",
@@ -240,25 +220,26 @@ export const translations = {
     method: "Método",
     endpointRoute: "Ruta",
     descAuth: "Descripción y Auth",
-
     uiWireframes: "Especificaciones Wireframe",
     layout: "Diseño",
     components: "Componentes",
-
     projectRoadmap: "Hoja de Ruta del Proyecto",
     timeframe: "Plazo",
     owner: "Propietario",
     tasks: "Tareas",
-
     executiveSummary: "Resumen Ejecutivo",
     techStack: "Pila Tecnológica",
     keyObjectives: "Objetivos Clave",
     digitalMaturity: "Madurez Digital",
     aiReadiness: "Preparación IA",
     estBudget: "Presupuesto",
-    actionPlan: "Plan de Acción"
+    financialBudget: "Presupuesto",
+    actionPlan: "Plan de Acción",
+    statusReady: "ESTADO: LISTO",
+    targetMvp: "ENTREGA OBJETIVO MVP",
+    resourceAllocation: "Asignación de Recursos y Roles de Equipo"
   },
-  "Français": {
+  "French": {
     inputPlaceholder: "Décrivez votre idée ou glissez-déposez un document ici...",
     supportsDesc: "Prend en charge .pdf, .docx, .txt, .md, .brd",
     pressEnter: "Appuyez sur Entrée pour envoyer",
@@ -267,13 +248,11 @@ export const translations = {
     attached: "Joint",
     parsing: "analyse du contenu et construction...",
     success: "Voici votre plan d'action détaillé.",
-    
     tabDashboard: "Tableau",
     tabGuide: "Guide",
     tabDatabase: "Base de Données",
     tabWireframe: "Maquettes",
     tabRoadmap: "Feuille de Route",
-
     exportReport: "Exporter",
     allInOne: "Rapport Complet (.pdf)",
     allInOneDesc: "Tout combiné",
@@ -288,11 +267,9 @@ export const translations = {
     rawData: "DONNÉES BRUTES",
     markdown: "Markdown (.md)",
     rawJson: "Architecture Brute (.json)",
-
     stepByStepGuide: "Guide du Projet",
     role: "Rôle",
     duration: "Durée",
-
     dbSchema: "Schéma de Base de Données",
     tablesCount: "Tables",
     column: "Colonne",
@@ -303,25 +280,26 @@ export const translations = {
     method: "Méthode",
     endpointRoute: "Route",
     descAuth: "Description & Auth",
-
     uiWireframes: "Spécifications Maquettes",
     layout: "Mise en page",
     components: "Composants",
-
     projectRoadmap: "Feuille de Route",
     timeframe: "Délai",
     owner: "Propriétaire",
     tasks: "Tâches",
-
     executiveSummary: "Résumé",
     techStack: "Pile Tech",
     keyObjectives: "Objectifs Clés",
     digitalMaturity: "Maturité Numérique",
     aiReadiness: "Préparation IA",
     estBudget: "Budget",
-    actionPlan: "Plan d'Action"
+    financialBudget: "Budget",
+    actionPlan: "Plan d'Action",
+    statusReady: "STATUT : PRÊT",
+    targetMvp: "LIVRAISON MVP CIBLE",
+    resourceAllocation: "Allocation des Ressources & Rôles d'Équipe"
   },
-  "Deutsch": {
+  "German": {
     inputPlaceholder: "Beschreiben Sie Ihre Geschäftsidee oder ziehen Sie ein Dokument hierher...",
     supportsDesc: "Unterstützt .pdf, .docx, .txt, .md, .brd",
     pressEnter: "Drücken Sie Enter zum Senden",
@@ -330,13 +308,11 @@ export const translations = {
     attached: "Angehängt",
     parsing: "Inhalt wird analysiert...",
     success: "Hier ist Ihr detaillierter Aktionsplan.",
-    
     tabDashboard: "Dashboard",
     tabGuide: "Leitfaden",
     tabDatabase: "Datenbank",
     tabWireframe: "Wireframes",
     tabRoadmap: "Roadmap",
-
     exportReport: "Exportieren",
     allInOne: "Gesamtbericht (.pdf)",
     allInOneDesc: "Alles kombiniert",
@@ -351,11 +327,9 @@ export const translations = {
     rawData: "ROHDATEN",
     markdown: "Markdown (.md)",
     rawJson: "Roharchitektur (.json)",
-
     stepByStepGuide: "Projektleitfaden",
     role: "Rolle",
     duration: "Dauer",
-
     dbSchema: "Datenbankschema",
     tablesCount: "Tabellen",
     column: "Spalte",
@@ -366,27 +340,29 @@ export const translations = {
     method: "Methode",
     endpointRoute: "Route",
     descAuth: "Beschreibung & Auth",
-
     uiWireframes: "Wireframe-Spezifikationen",
     layout: "Layout",
     components: "Komponenten",
-
     projectRoadmap: "Projekt-Roadmap",
     timeframe: "Zeitrahmen",
     owner: "Eigentümer",
     tasks: "Aufgaben",
-
     executiveSummary: "Zusammenfassung",
     techStack: "Tech-Stack",
     keyObjectives: "Hauptziele",
     digitalMaturity: "Digitale Reife",
     aiReadiness: "KI-Bereitschaft",
     estBudget: "Budget",
-    actionPlan: "Aktionsplan"
+    financialBudget: "Budget",
+    actionPlan: "Aktionsplan",
+    statusReady: "STATUS: BEREIT",
+    targetMvp: "ZIEL MVP BEREITSTELLUNG",
+    resourceAllocation: "Ressourcenallokation & Teamrollen"
   }
 }
 
-export function getTranslation(language: string, key: keyof typeof translations["English"]): string {
+export function getTranslation(language: string, key?: keyof typeof translations["English"]): any {
   const langKey = translations[language as keyof typeof translations] ? language : "English"
-  return translations[langKey as keyof typeof translations][key] || translations["English"][key]
+  const dict = translations[langKey as keyof typeof translations] || translations["English"]
+  return key ? (dict[key] || translations["English"][key]) : dict
 }

@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { Bot, Send, Paperclip, Lightbulb, FileText, X } from "lucide-react"
+import { getTranslation } from "@/lib/i18n"
+import { Bot, Send, Paperclip, Lightbulb, FileText, X} from "lucide-react"
 import { quickPrompts } from "@/lib/blueprint-data"
 
 export type ChatMessage = {
@@ -16,6 +17,7 @@ export function CompanionPanel({
   generating,
   onSubmit,
   onUpload,
+  targetLanguage = "English",
 }: {
   messages: ChatMessage[]
   generating: boolean
@@ -229,4 +231,6 @@ export function CompanionPanel({
     </section>
   )
 }
+
+
 

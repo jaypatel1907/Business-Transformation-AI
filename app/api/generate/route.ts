@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
@@ -404,63 +404,63 @@ export async function POST(req: NextRequest) {
       const l = lang.toLowerCase();
       if (l.includes("gu") || l.includes("gujarat")) {
         return {
-          titlePrefix: "પ્રોજેક્ટ પ્લાન",
-          step1: { title: "૧. ડિઝાઇન અને હોમપેજ (Design)", desc: "સૌથી પહેલા આપણે યુઝર્સ માટે એક સુંદર અને આકર્ષક હોમપેજ બનાવીશું." },
-          step2: { title: "૨. પ્રોડક્ટ અને ફીચર્સ (Features)", desc: "ત્યારબાદ આપણે તેમાં જરૂરી ફીચર્સ અને પ્રોડક્ટ કેટેલોગ એડ કરીશું." },
-          step3: { title: "૩. ડેટાબેઝ અને સિસ્ટમ (Database)", desc: "પછી આપણે બધો ડેટા સાચવવા માટે પાછળની સિસ્ટમ (બેકએન્ડ) સેટ કરીશું." },
-          step4: { title: "૪. ટેસ્ટિંગ અને લાઈવ (Launch)", desc: "છેલ્લે આપણે બધું ચેક કરીને વેબસાઈટને ઈન્ટરનેટ પર લાઈવ કરીશું!" },
-          initiative1: "મુખ્ય પ્રોસેસ ડિજિટાઈઝેશન",
-          initiative2: "AI ઇન્ટેલિજન્સ એકીકરણ",
-          riskTitle: "ડેટા સુરક્ષા",
-          riskMitigation: "યુઝરનો ડેટા સુરક્ષિત રાખવા માટે બેઝિક સિક્યોરિટી નિયમો લગાવો.",
+          titlePrefix: "àªªà«àª°à«‹àªœà«‡àª•à«àªŸ àªªà«àª²àª¾àª¨",
+          step1: { title: "à«§. àª¡àª¿àªàª¾àª‡àª¨ àª…àª¨à«‡ àª¹à«‹àª®àªªà«‡àªœ (Design)", desc: "àª¸à«Œàª¥à«€ àªªàª¹à«‡àª²àª¾ àª†àªªàª£à«‡ àª¯à«àªàª°à«àª¸ àª®àª¾àªŸà«‡ àªàª• àª¸à«àª‚àª¦àª° àª…àª¨à«‡ àª†àª•àª°à«àª·àª• àª¹à«‹àª®àªªà«‡àªœ àª¬àª¨àª¾àªµà«€àª¶à«àª‚." },
+          step2: { title: "à«¨. àªªà«àª°à«‹àª¡àª•à«àªŸ àª…àª¨à«‡ àª«à«€àªšàª°à«àª¸ (Features)", desc: "àª¤à«àª¯àª¾àª°àª¬àª¾àª¦ àª†àªªàª£à«‡ àª¤à«‡àª®àª¾àª‚ àªœàª°à«‚àª°à«€ àª«à«€àªšàª°à«àª¸ àª…àª¨à«‡ àªªà«àª°à«‹àª¡àª•à«àªŸ àª•à«‡àªŸà«‡àª²à«‹àª— àªàª¡ àª•àª°à«€àª¶à«àª‚." },
+          step3: { title: "à«©. àª¡à«‡àªŸàª¾àª¬à«‡àª àª…àª¨à«‡ àª¸àª¿àª¸à«àªŸàª® (Database)", desc: "àªªàª›à«€ àª†àªªàª£à«‡ àª¬àª§à«‹ àª¡à«‡àªŸàª¾ àª¸àª¾àªšàªµàªµàª¾ àª®àª¾àªŸà«‡ àªªàª¾àª›àª³àª¨à«€ àª¸àª¿àª¸à«àªŸàª® (àª¬à«‡àª•àªàª¨à«àª¡) àª¸à«‡àªŸ àª•àª°à«€àª¶à«àª‚." },
+          step4: { title: "à«ª. àªŸà«‡àª¸à«àªŸàª¿àª‚àª— àª…àª¨à«‡ àª²àª¾àªˆàªµ (Launch)", desc: "àª›à«‡àª²à«àª²à«‡ àª†àªªàª£à«‡ àª¬àª§à«àª‚ àªšà«‡àª• àª•àª°à«€àª¨à«‡ àªµà«‡àª¬àª¸àª¾àªˆàªŸàª¨à«‡ àªˆàª¨à«àªŸàª°àª¨à«‡àªŸ àªªàª° àª²àª¾àªˆàªµ àª•àª°à«€àª¶à«àª‚!" },
+          initiative1: "àª®à«àª–à«àª¯ àªªà«àª°à«‹àª¸à«‡àª¸ àª¡àª¿àªœàª¿àªŸàª¾àªˆàªà«‡àª¶àª¨",
+          initiative2: "AI àª‡àª¨à«àªŸà«‡àª²àª¿àªœàª¨à«àª¸ àªàª•à«€àª•àª°àª£",
+          riskTitle: "àª¡à«‡àªŸàª¾ àª¸à«àª°àª•à«àª·àª¾",
+          riskMitigation: "àª¯à«àªàª°àª¨à«‹ àª¡à«‡àªŸàª¾ àª¸à«àª°àª•à«àª·àª¿àª¤ àª°àª¾àª–àªµàª¾ àª®àª¾àªŸà«‡ àª¬à«‡àªàª¿àª• àª¸àª¿àª•à«àª¯à«‹àª°àª¿àªŸà«€ àª¨àª¿àª¯àª®à«‹ àª²àª—àª¾àªµà«‹.",
         };
       }
       if (l.includes("hi") || l.includes("hindi")) {
         return {
-          titlePrefix: "उद्यम समाधान वास्तुकला",
-          step1: { title: "१. डेटा सेवन और अंतर्ग्रहण", desc: "उपयोगकर्ता इनपुट, दस्तावेज़ और व्यावसायिक संकेत एकत्र करना।" },
-          step2: { title: "२. AI विश्लेषण और सत्यापन", desc: "व्यावसायिक नियमों, अनुमतियों और नीति मिलान को मान्य करना।" },
-          step3: { title: "३. निष्पादन और वर्कफ़्लो ऑर्केस्ट्रेशन", desc: "माइक्रोसर्विसेज, डेटाबेस और बाहरी APIs का समन्वय।" },
-          step4: { title: "४. फीडबैक और निरंतर सीखना", desc: "टेलीमेट्री लॉगिंग, ऑडिट मेट्रिक्स और अलर्ट ट्रिगर करना।" },
-          initiative1: "मुख्य प्रक्रिया डिजिटलीकरण",
-          initiative2: "AI इंटेलिजेंस एकीकरण",
-          riskTitle: "डेटा सुरक्षा और किरायेदार अलगाव",
-          riskMitigation: "Supabase RLS सुरक्षा नीतियां और JWT प्रमाणीकरण लागू करें।",
+          titlePrefix: "à¤‰à¤¦à¥à¤¯à¤® à¤¸à¤®à¤¾à¤§à¤¾à¤¨ à¤µà¤¾à¤¸à¥à¤¤à¥à¤•à¤²à¤¾",
+          step1: { title: "à¥§. à¤¡à¥‡à¤Ÿà¤¾ à¤¸à¥‡à¤µà¤¨ à¤”à¤° à¤…à¤‚à¤¤à¤°à¥à¤—à¥à¤°à¤¹à¤£", desc: "à¤‰à¤ªà¤¯à¥‹à¤—à¤•à¤°à¥à¤¤à¤¾ à¤‡à¤¨à¤ªà¥à¤Ÿ, à¤¦à¤¸à¥à¤¤à¤¾à¤µà¥‡à¤œà¤¼ à¤”à¤° à¤µà¥à¤¯à¤¾à¤µà¤¸à¤¾à¤¯à¤¿à¤• à¤¸à¤‚à¤•à¥‡à¤¤ à¤à¤•à¤¤à¥à¤° à¤•à¤°à¤¨à¤¾à¥¤" },
+          step2: { title: "à¥¨. AI à¤µà¤¿à¤¶à¥à¤²à¥‡à¤·à¤£ à¤”à¤° à¤¸à¤¤à¥à¤¯à¤¾à¤ªà¤¨", desc: "à¤µà¥à¤¯à¤¾à¤µà¤¸à¤¾à¤¯à¤¿à¤• à¤¨à¤¿à¤¯à¤®à¥‹à¤‚, à¤…à¤¨à¥à¤®à¤¤à¤¿à¤¯à¥‹à¤‚ à¤”à¤° à¤¨à¥€à¤¤à¤¿ à¤®à¤¿à¤²à¤¾à¤¨ à¤•à¥‹ à¤®à¤¾à¤¨à¥à¤¯ à¤•à¤°à¤¨à¤¾à¥¤" },
+          step3: { title: "à¥©. à¤¨à¤¿à¤·à¥à¤ªà¤¾à¤¦à¤¨ à¤”à¤° à¤µà¤°à¥à¤•à¤«à¤¼à¥à¤²à¥‹ à¤‘à¤°à¥à¤•à¥‡à¤¸à¥à¤Ÿà¥à¤°à¥‡à¤¶à¤¨", desc: "à¤®à¤¾à¤‡à¤•à¥à¤°à¥‹à¤¸à¤°à¥à¤µà¤¿à¤¸à¥‡à¤œ, à¤¡à¥‡à¤Ÿà¤¾à¤¬à¥‡à¤¸ à¤”à¤° à¤¬à¤¾à¤¹à¤°à¥€ APIs à¤•à¤¾ à¤¸à¤®à¤¨à¥à¤µà¤¯à¥¤" },
+          step4: { title: "à¥ª. à¤«à¥€à¤¡à¤¬à¥ˆà¤• à¤”à¤° à¤¨à¤¿à¤°à¤‚à¤¤à¤° à¤¸à¥€à¤–à¤¨à¤¾", desc: "à¤Ÿà¥‡à¤²à¥€à¤®à¥‡à¤Ÿà¥à¤°à¥€ à¤²à¥‰à¤—à¤¿à¤‚à¤—, à¤‘à¤¡à¤¿à¤Ÿ à¤®à¥‡à¤Ÿà¥à¤°à¤¿à¤•à¥à¤¸ à¤”à¤° à¤…à¤²à¤°à¥à¤Ÿ à¤Ÿà¥à¤°à¤¿à¤—à¤° à¤•à¤°à¤¨à¤¾à¥¤" },
+          initiative1: "à¤®à¥à¤–à¥à¤¯ à¤ªà¥à¤°à¤•à¥à¤°à¤¿à¤¯à¤¾ à¤¡à¤¿à¤œà¤¿à¤Ÿà¤²à¥€à¤•à¤°à¤£",
+          initiative2: "AI à¤‡à¤‚à¤Ÿà¥‡à¤²à¤¿à¤œà¥‡à¤‚à¤¸ à¤à¤•à¥€à¤•à¤°à¤£",
+          riskTitle: "à¤¡à¥‡à¤Ÿà¤¾ à¤¸à¥à¤°à¤•à¥à¤·à¤¾ à¤”à¤° à¤•à¤¿à¤°à¤¾à¤¯à¥‡à¤¦à¤¾à¤° à¤…à¤²à¤—à¤¾à¤µ",
+          riskMitigation: "Supabase RLS à¤¸à¥à¤°à¤•à¥à¤·à¤¾ à¤¨à¥€à¤¤à¤¿à¤¯à¤¾à¤‚ à¤”à¤° JWT à¤ªà¥à¤°à¤®à¤¾à¤£à¥€à¤•à¤°à¤£ à¤²à¤¾à¤—à¥‚ à¤•à¤°à¥‡à¤‚à¥¤",
         };
       }
       if (l.includes("es") || l.includes("span")) {
         return {
           titlePrefix: "Arquitectura Empresarial de Soluciones",
-          step1: { title: "1. Ingesta y Captura de Datos", desc: "Capturar entradas de usuarios, documentos y señales operativas." },
-          step2: { title: "2. Análisis y Verificación de IA", desc: "Validar reglas comerciales, permisos y cumplimiento normativo." },
-          step3: { title: "3. Ejecución y Orquestación de Flujos", desc: "Coordinar microservicios, escrituras en base de datos y APIs externas." },
-          step4: { title: "4. Retroalimentación y Aprendizaje Continuo", desc: "Registrar telemetría, métricas de auditoría y alertas proactivas." },
-          initiative1: "Digitalización de Procesos Clave",
-          initiative2: "Integración de Inteligencia Artificial",
+          step1: { title: "1. Ingesta y Captura de Datos", desc: "Capturar entradas de usuarios, documentos y seÃ±ales operativas." },
+          step2: { title: "2. AnÃ¡lisis y VerificaciÃ³n de IA", desc: "Validar reglas comerciales, permisos y cumplimiento normativo." },
+          step3: { title: "3. EjecuciÃ³n y OrquestaciÃ³n de Flujos", desc: "Coordinar microservicios, escrituras en base de datos y APIs externas." },
+          step4: { title: "4. RetroalimentaciÃ³n y Aprendizaje Continuo", desc: "Registrar telemetrÃ­a, mÃ©tricas de auditorÃ­a y alertas proactivas." },
+          initiative1: "DigitalizaciÃ³n de Procesos Clave",
+          initiative2: "IntegraciÃ³n de Inteligencia Artificial",
           riskTitle: "Seguridad de Datos y Aislamiento Multinquilino",
-          riskMitigation: "Implementar políticas de Row-Level Security (RLS) en Supabase.",
+          riskMitigation: "Implementar polÃ­ticas de Row-Level Security (RLS) en Supabase.",
         };
       }
       if (l.includes("fr") || l.includes("french")) {
         return {
           titlePrefix: "Architecture de Solution d'Entreprise",
-          step1: { title: "1. Ingestion et Capture de Données", desc: "Capturer les données utilisateurs, documents et flux métier." },
-          step2: { title: "2. Analyse IA et Vérification", desc: "Valider les règles d'entreprise, permissions et conformité." },
-          step3: { title: "3. Exécution et Orchestration des Flux", desc: "Coordonner les microservices, écritures base de données et APIs." },
-          step4: { title: "4. Rétroaction et Apprentissage Continu", desc: "Journaliser la télémétrie, métriques d'audit et alertes." },
-          initiative1: "Numérisation des Processus Clés",
-          initiative2: "Intégration de l'Intelligence Artificielle",
-          riskTitle: "Sécurité des Données & Isolation Multi-Locataire",
-          riskMitigation: "Mettre en œuvre les politiques de sécurité au niveau des lignes (RLS).",
+          step1: { title: "1. Ingestion et Capture de DonnÃ©es", desc: "Capturer les donnÃ©es utilisateurs, documents et flux mÃ©tier." },
+          step2: { title: "2. Analyse IA et VÃ©rification", desc: "Valider les rÃ¨gles d'entreprise, permissions et conformitÃ©." },
+          step3: { title: "3. ExÃ©cution et Orchestration des Flux", desc: "Coordonner les microservices, Ã©critures base de donnÃ©es et APIs." },
+          step4: { title: "4. RÃ©troaction et Apprentissage Continu", desc: "Journaliser la tÃ©lÃ©mÃ©trie, mÃ©triques d'audit et alertes." },
+          initiative1: "NumÃ©risation des Processus ClÃ©s",
+          initiative2: "IntÃ©gration de l'Intelligence Artificielle",
+          riskTitle: "SÃ©curitÃ© des DonnÃ©es & Isolation Multi-Locataire",
+          riskMitigation: "Mettre en Å“uvre les politiques de sÃ©curitÃ© au niveau des lignes (RLS).",
         };
       }
       if (l.includes("de") || l.includes("german")) {
         return {
-          titlePrefix: "Unternehmens-Lösungsarchitektur",
-          step1: { title: "1. Datenaufnahme & Erfassung", desc: "Erfassung von Benutzereingaben, Dokumenten und Geschäftssignalen." },
-          step2: { title: "2. KI-Analyse & Verifikation", desc: "Validierung von Geschäftsregeln, Berechtigungen und Richtlinien." },
-          step3: { title: "3. Ausführung & Workflow-Orchestrierung", desc: "Koordination von Microservices, Datenbanktransaktionen und APIs." },
-          step4: { title: "4. Feedback & Kontinuierliches Lernen", desc: "Protokollierung von Telemetrie, Prüfmetriken und Warnungen." },
+          titlePrefix: "Unternehmens-LÃ¶sungsarchitektur",
+          step1: { title: "1. Datenaufnahme & Erfassung", desc: "Erfassung von Benutzereingaben, Dokumenten und GeschÃ¤ftssignalen." },
+          step2: { title: "2. KI-Analyse & Verifikation", desc: "Validierung von GeschÃ¤ftsregeln, Berechtigungen und Richtlinien." },
+          step3: { title: "3. AusfÃ¼hrung & Workflow-Orchestrierung", desc: "Koordination von Microservices, Datenbanktransaktionen und APIs." },
+          step4: { title: "4. Feedback & Kontinuierliches Lernen", desc: "Protokollierung von Telemetrie, PrÃ¼fmetriken und Warnungen." },
           initiative1: "Digitalisierung der Kernprozesse",
           initiative2: "KI-Intelligenz-Integration",
           riskTitle: "Datensicherheit und Mandantentrennung",
@@ -486,7 +486,7 @@ export async function POST(req: NextRequest) {
       const domainData = getDomainSpecificSchemaAndApis(p);
       const loc = getLocalizedStrings(targetLangStr);
 
-      // ── 1. DIGITAL MATURITY SCORE ──────────────────────────────────────────
+      // â”€â”€ 1. DIGITAL MATURITY SCORE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       // Reflects HOW digitally mature the target INDUSTRY is today in real world
       // Low = traditional/manual industries, High = already tech-native
       let maturityScore = 55; // default: medium-low
@@ -505,11 +505,11 @@ export async function POST(req: NextRequest) {
       else if (lower.match(/manufacture|factory|production|assembly|plant/))       maturityScore = 44;
       else if (lower.match(/gym|fitness|sport|yoga|wellness/))                     maturityScore = 55;
       else if (lower.match(/travel|hotel|booking|tourism|ticket/))                 maturityScore = 70;
-      // Add ±3 based on role for slight variation
+      // Add Â±3 based on role for slight variation
       if (activeRole === "Admin") maturityScore = Math.min(maturityScore + 2, 92);
       if (activeRole === "Employee") maturityScore = Math.max(maturityScore - 3, 28);
 
-      // ── 2. AI ADOPTION READINESS ────────────────────────────────────────────
+      // â”€â”€ 2. AI ADOPTION READINESS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       // Reflects HOW MUCH AI can practically help in this domain right now
       let aiReadinessScore = 60;
       if (lower.match(/ai|machine learning|ml|nlp|vision|model|llm|predict/))      aiReadinessScore = 92;
@@ -526,7 +526,7 @@ export async function POST(req: NextRequest) {
       else if (lower.match(/agriculture|pest|yield|weather|satellite/))            aiReadinessScore = 68;
       else if (lower.match(/manufacture|quality|defect|inspection|sensor/))        aiReadinessScore = 71;
 
-      // ── 3. TIMELINE — based on real project complexity ──────────────────────
+      // â”€â”€ 3. TIMELINE â€” based on real project complexity â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       // Simple CRUD app = 4-6w, Medium complexity = 8-12w, Complex AI/Enterprise = 14-20w
       let weeksTimeline = 8;
       const wordCount = p.trim().split(/\s+/).length;
@@ -545,7 +545,7 @@ export async function POST(req: NextRequest) {
       else if (wordCount <= 6)           weeksTimeline = 6;  // simple idea
       else                               weeksTimeline = 8;
 
-      // ── 4. FINANCIAL BUDGET — real market rates ─────────────────────────────
+      // â”€â”€ 4. FINANCIAL BUDGET â€” real market rates â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       // India freelance/agency rates: $25-45/hr, US/Global: $65-120/hr
       // We target mid-range startup budget
       const hourlyRate = 75;
@@ -585,12 +585,70 @@ export async function POST(req: NextRequest) {
 
       const isGuj = targetLangStr.toLowerCase().includes("gu");
       const isHindi = targetLangStr.toLowerCase().includes("hi");
+      const isEs = targetLangStr.toLowerCase().includes("es") || targetLangStr.toLowerCase().includes("span");
+      const isFr = targetLangStr.toLowerCase().includes("fr") || targetLangStr.toLowerCase().includes("fren");
+      const isDe = targetLangStr.toLowerCase().includes("de") || targetLangStr.toLowerCase().includes("germ");
 
       const chatReply = isGuj
-        ? `નમસ્તે! મેં તમારા **"${p}"** આઈડિયાનું ઊંડાણપૂર્વક વિશ્લેષણ કરીને સંપૂર્ણ સોલ્યુશન આર્કિટેક્ચર બ્લૂપ્રિન્ટ તૈયાર કરી છે.\n\n🎯 **મુખ્ય સિસ્ટમ હાઇલાઇટ્સ:**\n• **ઉદ્યોગ પરિપક્વતા:** ${maturityScore}% | **AI એડોપ્શન સંભાવના:** ${aiReadinessScore}%\n• **લક્ષિત ડિલિવરી:** ${weeksTimeline} અઠવાડિયા (અંદાજિત બજેટ: $${minBudget.toLocaleString()} - $${maxBudget.toLocaleString()})\n• **ટેક આર્કિટેક્ચર:** ${fStack.join(", ")} (ફ્રન્ટએન્ડ) + ${bStack.join(", ")} (બેકએન્ડ Gateway) + PostgreSQL (Supabase RLS)\n• **ડેટા મોડેલ & APIs:** ${domainData.tables.length} કસ્ટમ ટેબલ્સ અને ${domainData.endpoints.length} પ્રોડક્શન-રેડી REST APIs ડિઝાઈન કર્યા છે.\n\n👉 **કેનવાસ પ્લાન જુઓ:**\nજમણી બાજુના Tabs પર ક્લિક કરીને **Process Workflow**, **Live Database Schema**, **Interactive Wireframes**, અને **Sprint Roadmap** તપાસો. કોઈ સુધારો કરવો હોય તો મને જણાવો!`
+        ? `નમસ્તે! મેં તમારી રિક્વાયરમેન્ટ **"${p}"** માટે એક સંપૂર્ણ આર્કિટેક્ચર બ્લુપ્રિન્ટ તૈયાર કર્યો છે.
+
+✨ **હાઈલાઈટ્સ:**
+• **ડિજિટલ મેચ્યોરિટી:** ${maturityScore}% | **AI રેડીનેસ:** ${aiReadinessScore}%
+• **ટાર્ગેટ ડિલિવરી:** ${weeksTimeline} અઠવાડિયા (બજેટ: ${minBudget.toLocaleString()} - ${maxBudget.toLocaleString()})
+• **ટેક સ્ટેક:** ${fStack.join(", ")} + ${bStack.join(", ")} + PostgreSQL
+• **ડેટાબેઝ & APIs:** ${domainData.tables.length} ટેબલ્સ અને ${domainData.endpoints.length} REST APIs.
+
+🚀 **કેનવાસ જુઓ:** જમણી બાજુના Tabs પર ક્લિક કરી વધુ માહિતી જુઓ.`
         : isHindi
-        ? `नमस्ते! मैंने आपके **"${p}"** विचार का संपूर्ण समाधान आर्किटेक्चर ब्लूप्रिंट तैयार किया है।\n\n🎯 **मुख्य सिस्टम हाइलाइट्स:**\n• **उद्योग परिपक्वता:** ${maturityScore}% | **AI अपनाने की तत्परता:** ${aiReadinessScore}%\n• **लक्षित डिलीवरी:** ${weeksTimeline} सप्ताह (अनुमानित बजट: $${minBudget.toLocaleString()} - $${maxBudget.toLocaleString()})\n• **अनुशंसित टेक स्टैक:** ${fStack.join(", ")} + ${bStack.join(", ")} + PostgreSQL (Supabase RLS)\n• **डेटाबेस और APIs:** ${domainData.tables.length} रिलेशनल टेबल और ${domainData.endpoints.length} REST endpoints तैयार किए हैं।\n\n👉 **दाईं ओर के Tabs देखें:**\nProcess Map, DB & APIs, UX Wireframe और Roadmap का निरीक्षण करें। यदि कोई परिवर्तन करना हो तो बताएं!`
-        : `Hello! I've analyzed your business requirement for **"${p}"** and generated a complete enterprise architecture blueprint.\n\n🎯 **Executive Strategy & Architecture Highlights:**\n• **Digital Maturity:** ${maturityScore}% | **AI Adoption Readiness:** ${aiReadinessScore}%\n• **Target MVP Delivery:** ${weeksTimeline} Weeks (Estimated Budget: $${minBudget.toLocaleString()} – $${maxBudget.toLocaleString()})\n• **Recommended Tech Stack:** ${fStack.join(", ")} (Client) + ${bStack.join(", ")} (Gateway) + PostgreSQL (Supabase RLS)\n• **Data & API Layer:** Engineered ${domainData.tables.length} domain-specific relational tables with ${domainData.endpoints.length} production REST endpoints.\n\n👉 **Explore Your Solution Canvas:**\nClick through the tabs on the right to inspect the interactive **Process Map**, **Database Schemas & APIs**, **UX Wireframe Components**, and **Sprint Roadmap**. Feel free to ask any questions or refine specific requirements!`;
+        ? `नमस्ते! मैंने **"${p}"** के लिए आपकी आवश्यकता का विश्लेषण किया है और एक पूरा ब्लूप्रिंट तैयार किया है।
+
+✨ **मुख्य अंश:**
+• **डिजिटल परिपक्वता:** ${maturityScore}% | **AI तत्परता:** ${aiReadinessScore}%
+• **डिलीवरी:** ${weeksTimeline} सप्ताह (बजट: ${minBudget.toLocaleString()} - ${maxBudget.toLocaleString()})
+• **टेक स्टैक:** ${fStack.join(", ")} + ${bStack.join(", ")} + PostgreSQL
+• **डेटाबेस और APIs:** ${domainData.tables.length} टेबल्स और ${domainData.endpoints.length} REST APIs।
+
+🚀 **डैशबोर्ड देखें:** अधिक जानकारी के लिए दाईं ओर दिए गए टैब देखें।`
+        : isEs
+        ? `¡Hola! He analizado los requisitos para **"${p}"** y he generado un plan de arquitectura completo.
+
+✨ **Destacados:**
+• **Madurez Digital:** ${maturityScore}% | **Preparación IA:** ${aiReadinessScore}%
+• **Entrega MVP:** ${weeksTimeline} Semanas (Presupuesto: ${minBudget.toLocaleString()} - ${maxBudget.toLocaleString()})
+• **Stack Tecnológico:** ${fStack.join(", ")} + ${bStack.join(", ")} + PostgreSQL
+• **Base de Datos & APIs:** ${domainData.tables.length} tablas y ${domainData.endpoints.length} APIs REST.
+
+🚀 **Explorar Tablero:** Haz clic en las pestañas de la derecha.`
+        : isFr
+        ? `Bonjour ! J'ai analysé vos exigences pour **"${p}"** et généré un plan complet.
+
+✨ **Points forts :**
+• **Maturité Numérique :** ${maturityScore}% | **Préparation IA :** ${aiReadinessScore}%
+• **Livraison MVP :** ${weeksTimeline} Semaines (Budget : ${minBudget.toLocaleString()} - ${maxBudget.toLocaleString()})
+• **Pile Tech :** ${fStack.join(", ")} + ${bStack.join(", ")} + PostgreSQL
+• **BDD & APIs :** ${domainData.tables.length} tables et ${domainData.endpoints.length} APIs REST.
+
+🚀 **Explorer :** Cliquez sur les onglets à droite.`
+        : isDe
+        ? `Hallo! Ich habe Ihre Anforderungen für **"${p}"** analysiert und einen Plan erstellt.
+
+✨ **Highlights:**
+• **Digitale Reife:** ${maturityScore}% | **KI-Bereitschaft:** ${aiReadinessScore}%
+• **MVP-Lieferung:** ${weeksTimeline} Wochen (Budget: ${minBudget.toLocaleString()} - ${maxBudget.toLocaleString()})
+• **Tech-Stack:** ${fStack.join(", ")} + ${bStack.join(", ")} + PostgreSQL
+• **DB & APIs:** ${domainData.tables.length} Tabellen und ${domainData.endpoints.length} REST-APIs.
+
+🚀 **Erkunden:** Klicken Sie auf die Registerkarten rechts.`
+        : `Hello! I've analyzed your business requirement for **"${p}"** and generated a complete enterprise architecture blueprint.
+
+✨ **Executive Strategy & Architecture Highlights:**
+• **Digital Maturity:** ${maturityScore}% | **AI Adoption Readiness:** ${aiReadinessScore}%
+• **Target MVP Delivery:** ${weeksTimeline} Weeks (Estimated Budget: ${minBudget.toLocaleString()} - ${maxBudget.toLocaleString()})
+• **Recommended Tech Stack:** ${fStack.join(", ")} (Client) + ${bStack.join(", ")} (Gateway) + PostgreSQL (Supabase RLS)
+• **Data & API Layer:** Engineered ${domainData.tables.length} domain-specific relational tables with ${domainData.endpoints.length} production REST endpoints.
+
+🚀 **Explore Your Solution Canvas:**
+Click through the tabs on the right to inspect the interactive **Process Map**, **Database Schemas & APIs**, **UX Wireframe Components**, and **Sprint Roadmap**. Feel free to ask any questions or refine specific requirements!`;
 
       return {
         project_title: dynamicEntity + " | " + dynamicTitle,
@@ -644,55 +702,111 @@ export async function POST(req: NextRequest) {
           `${domainData.tables[0]?.table_name || "users"} -> ${domainData.tables[2]?.table_name || "details"}`
         ],
         api_endpoints: domainData.endpoints,
-        wireframe_sections: [
+        wireframe_sections: isGuj ? [
+          { title: `${dynamicEntity} કસ્ટમર સ્ટોરફ્રન્ટ`, components: [`${dynamicEntity} કેટલોગ`, "સર્ચ અને ફિલ્ટર્સ", "શોપિંગ કાર્ટ", "ચેકઆઉટ ફ્લો"] },
+          { title: `${dynamicEntity} એડમિન ડેશબોર્ડ`, components: ["લાઈવ સેલ્સ એનાલિટિક્સ", "ઇન્વેન્ટરી મેનેજમેન્ટ", "ઓર્ડર હિસ્ટ્રી", "સ્ટેટસ બેજ"] },
+          { title: `${dynamicEntity} સેટિંગ્સ`, components: ["પ્રોફાઈલ માહિતી", "પેમેન્ટ પદ્ધતિઓ", "ઓર્ડર ટ્રેકિંગ"] }
+        ] : isHindi ? [
+          { title: `${dynamicEntity} कस्टमर स्टोरफ्रंट`, components: [`${dynamicEntity} कैटलॉग`, "खोज और फ़िल्टर", "शॉपिंग कार्ट", "चेकआउट"] },
+          { title: `${dynamicEntity} एडमिन डैशबोर्ड`, components: ["लाइव सेल्स", "इन्वेंटरी मैनेजमेंट", "ऑर्डर हिस्ट्री", "स्टेटस"] },
+          { title: `${dynamicEntity} सेटिंग्स`, components: ["प्रोफाइल", "भुगतान के तरीके", "ऑर्डर ट्रैकिंग"] }
+        ] : isEs ? [
+          { title: `${dynamicEntity} Escaparate de Clientes`, components: [`${dynamicEntity} Catálogo`, "Búsqueda y Filtros", "Carrito de Compras", "Pago Seguro"] },
+          { title: `${dynamicEntity} Panel de Administración`, components: ["Análisis de Ventas", "Gestión de Inventario", "Historial de Pedidos", "Insignias de Estado"] },
+          { title: `${dynamicEntity} Configuraciones`, components: ["Perfil de Usuario", "Métodos de Pago", "Seguimiento de Pedido"] }
+        ] : isFr ? [
+          { title: `${dynamicEntity} Vitrine Client`, components: [`${dynamicEntity} Catalogue`, "Recherche et Filtres", "Panier", "Paiement Sécurisé"] },
+          { title: `${dynamicEntity} Tableau de Bord Admin`, components: ["Analyses des Ventes", "Gestion des Stocks", "Historique des Commandes", "Statuts"] },
+          { title: `${dynamicEntity} Paramètres`, components: ["Profil Utilisateur", "Méthodes de Paiement", "Suivi de Commande"] }
+        ] : isDe ? [
+          { title: `${dynamicEntity} Kunden-Schaufenster`, components: [`${dynamicEntity} Katalog`, "Suche & Filter", "Warenkorb", "Sicherer Checkout"] },
+          { title: `${dynamicEntity} Admin-Dashboard`, components: ["Verkaufsanalysen", "Bestandsverwaltung", "Bestellhistorie", "Status-Badges"] },
+          { title: `${dynamicEntity} Einstellungen`, components: ["Benutzerprofil", "Zahlungsmethoden", "Bestellverfolgung"] }
+        ] : [
           { title: `${dynamicEntity} Customer Storefront`, components: [`${dynamicEntity} Catalog Grid`, "Advanced Search & Filters", "Shopping Cart Drawer", "Secure Checkout Flow"] },
           { title: `${dynamicEntity} Admin Dashboard`, components: ["Live Sales Analytics", "Inventory Management Table", "Customer Order History", "Status Badges"] },
           { title: `User & ${dynamicEntity} Settings`, components: ["User Profile Details", "Payment Methods", "Order Tracking Module"] }
         ],
-          roadmap_sprints: [
-            {
-              timeframe: "Week 1 (Days 1-7)",
-              phase: "Client/UI & Architecture Setup",
-              tech_stack: fStack,
-              ai_tools: aiToolFront,
-              owner: "Lead Frontend/Mobile Developer",
-              platform: platformFront,
-              tasks: [
-                `Initialize repository and set up branching strategy for ${dynamicEntity}.`,
-                `Configure project build tools and package manager dependencies.`,
-                `Build main user interfaces and responsive layout components using ${fStack[0]}.`,
-                `Implement state management and local caching strategies.`
-              ]
-            },
-            {
-              timeframe: "Week 2 (Days 8-14)",
-              phase: "Backend, Database & Core Logic",
-              tech_stack: bStack,
-              ai_tools: aiToolBack,
-              owner: "Backend Data Engineer",
-              platform: platformBack,
-              tasks: [
-                `Design and provision database tables for the ${dynamicEntity} domain.`,
-                `Write secure REST/GraphQL API endpoints with JWT authentication.`,
-                `Implement core business logic and third-party integrations (e.g. payments).`,
-                `Set up Row-Level Security (RLS) policies for data isolation.`
-              ]
-            },
-            {
-              timeframe: "Week 3 (Days 15-21)",
-              phase: "Testing, QA & Production Deployment",
-              tech_stack: ["GitHub Actions", "Docker", "Jest/Cypress"],
-              ai_tools: ["Claude 3.5 Sonnet (for Tests)", "Gemini (Code Review)"],
-              owner: "DevOps / Full-Stack Engineer",
-              platform: ["Cloud Infrastructure (AWS EC2/Vercel)"],
-              tasks: [
-                `Write unit and integration tests for critical API paths.`,
-                `Configure CI/CD pipelines in GitHub Actions for automated deployment.`,
-                `Deploy to production environment and configure custom domains/SSL.`,
-                `Conduct final QA, performance audits, and release to end-users.`
-              ]
-            }
-          ],
+        roadmap_sprints: [
+          {
+            timeframe: isGuj ? "અઠવાડિયું 1 (દિવસ 1-7)" : isHindi ? "सप्ताह 1 (दिन 1-7)" : isEs ? "Semana 1 (Días 1-7)" : isFr ? "Semaine 1 (Jours 1-7)" : isDe ? "Woche 1 (Tage 1-7)" : "Week 1 (Days 1-7)",
+            phase: isGuj ? "UI અને આર્કિટેક્ચર સેટઅપ" : isHindi ? "UI और आर्किटेक्चर सेटअप" : isEs ? "Configuración de Interfaz y Arquitectura" : isFr ? "Configuration UI & Architecture" : isDe ? "UI & Architektur Setup" : "Client/UI & Architecture Setup",
+            tech_stack: fStack,
+            ai_tools: aiToolFront,
+            owner: isGuj ? "લીડ ફ્રન્ટએન્ડ ડેવલપર" : isHindi ? "लीड फ्रंटएंड डेवलपर" : isEs ? "Desarrollador Frontend" : isFr ? "Développeur Frontend" : isDe ? "Frontend Entwickler" : "Lead Frontend/Mobile Developer",
+            platform: platformFront,
+            tasks: isGuj ? [
+              `${dynamicEntity} માટે પ્રોજેક્ટ શરૂ કરો.`,
+              `બિલ્ડ ટૂલ્સ અને પેકેજ કન્ફિગર કરો.`,
+              `મુખ્ય UI લેઆઉટ ${fStack[0]} નો ઉપયોગ કરીને બનાવો.`,
+              `સ્ટેટ મેનેજમેન્ટ અને લોકલ કેશિંગ ગોઠવો.`
+            ] : isHindi ? [
+              `${dynamicEntity} के लिए प्रोजेक्ट प्रारंभ करें।`,
+              `बिल्ड टूल्स और पैकेज कॉन्फ़िगर करें।`,
+              `${fStack[0]} का उपयोग करके मुख्य UI लेआउट बनाएं।`,
+              `स्टेट मैनेजमेंट और लोकल कैशिंग सेट करें।`
+            ] : isEs ? [
+              `Iniciar repositorio para ${dynamicEntity}.`,
+              `Configurar herramientas de construcción.`,
+              `Crear componentes UI principales usando ${fStack[0]}.`,
+              `Implementar gestión de estado.`
+            ] : isFr ? [
+              `Initialiser le dépôt pour ${dynamicEntity}.`,
+              `Configurer les outils de construction.`,
+              `Créer les composants UI avec ${fStack[0]}.`,
+              `Implémenter la gestion d'état.`
+            ] : isDe ? [
+              `Repository für ${dynamicEntity} initialisieren.`,
+              `Build-Tools konfigurieren.`,
+              `Haupt-UI-Komponenten mit ${fStack[0]} erstellen.`,
+              `Zustandsverwaltung implementieren.`
+            ] : [
+              `Initialize repository and set up branching strategy for ${dynamicEntity}.`,
+              `Configure project build tools and package manager dependencies.`,
+              `Build main user interfaces and responsive layout components using ${fStack[0]}.`,
+              `Implement state management and local caching strategies.`
+            ]
+          },
+          {
+            timeframe: isGuj ? "અઠવાડિયું 2 (દિવસ 8-14)" : isHindi ? "सप्ताह 2 (दिन 8-14)" : isEs ? "Semana 2 (Días 8-14)" : isFr ? "Semaine 2 (Jours 8-14)" : isDe ? "Woche 2 (Tage 8-14)" : "Week 2 (Days 8-14)",
+            phase: isGuj ? "બેકએન્ડ અને ડેટાબેઝ" : isHindi ? "बैकएंड और डेटाबेस" : isEs ? "Backend y Base de Datos" : isFr ? "Backend et Base de données" : isDe ? "Backend & Datenbank" : "Backend, Database & Core Logic",
+            tech_stack: bStack,
+            ai_tools: aiToolBack,
+            owner: isGuj ? "બેકએન્ડ એન્જિનિયર" : isHindi ? "बैकएंड इंजीनियर" : isEs ? "Ingeniero Backend" : isFr ? "Ingénieur Backend" : isDe ? "Backend Ingenieur" : "Backend Data Engineer",
+            platform: platformBack,
+            tasks: isGuj ? [
+              `ડેટાબેઝ ટેબલ્સ ડિઝાઇન કરો.`,
+              `સિક્યોર REST APIs બનાવો.`,
+              `મુખ્ય બિઝનેસ લોજિક જોડો.`,
+              `API સિક્યોરિટી અને ટેસ્ટિંગ પૂરું કરો.`
+            ] : isHindi ? [
+              `डेटाबेस टेबल्स डिज़ाइन करें।`,
+              `सुरक्षित REST APIs बनाएं।`,
+              `मुख्य बिजनेस लॉजिक जोड़ें।`,
+              `API सुरक्षा और परीक्षण पूरा करें।`
+            ] : isEs ? [
+              `Diseñar tablas de base de datos.`,
+              `Escribir APIs REST seguras.`,
+              `Implementar lógica de negocio.`,
+              `Completar pruebas de API.`
+            ] : isFr ? [
+              `Concevoir les tables de base de données.`,
+              `Écrire des APIs REST sécurisées.`,
+              `Implémenter la logique métier.`,
+              `Terminer les tests de l'API.`
+            ] : isDe ? [
+              `Datenbanktabellen entwerfen.`,
+              `Sichere REST-APIs schreiben.`,
+              `Geschäftslogik implementieren.`,
+              `API-Tests abschließen.`
+            ] : [
+              `Design and provision database tables for the ${dynamicEntity} domain.`,
+              `Write secure REST/GraphQL API endpoints with JWT authentication.`,
+              `Implement core business logic and third-party integrations (e.g. payments).`,
+              `Write automated unit/integration tests for the backend pipeline.`
+            ]
+          }
+        ],
         planning: {
           effortHours: `${totalHours}`,
           cloudCost: `$${isEnterprise ? 280 : hasAI ? 180 : 120}/mo`,
