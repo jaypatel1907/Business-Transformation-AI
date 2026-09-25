@@ -128,7 +128,12 @@ export function Canvas({
             />
           </TabsContent>
           <TabsContent value="dashboard" className="mt-0 outline-none">
-            <SafeDashboardTab generated={generated} data={data} targetLanguage={targetLanguage} />
+            <SafeDashboardTab
+              generated={generated}
+              data={data}
+              targetLanguage={targetLanguage}
+              onNavigateTab={(tab: TabId) => onChange(tab)}
+            />
           </TabsContent>
           <TabsContent value="process" className="mt-0 outline-none">
             <SafeProcessTab generated={generated} data={data} targetLanguage={targetLanguage} />
