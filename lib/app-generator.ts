@@ -1,4 +1,5 @@
 import { GeneratedFile, BuildValidationResult } from "./project-store";
+import { classifyApplicationDomain, ApplicationRequirementContext } from "./domain-intelligence";
 
 export interface GenerationPipelineResult {
   project_id: string;
@@ -27,7 +28,6 @@ export function generateApplicationFromBlueprint(
   const rawTitle = blueprint.project_title || "Enterprise Solution";
   const cleanTitle = rawTitle.includes("|") ? rawTitle.split("|")[0].trim() : rawTitle.replace(/^.*?:/, "").trim();
   const domainPrompt = blueprint.user_problem || "Business Solution";
-  const lower = domainPrompt.toLowerCase();
 
   addLog(`Parsing approved blueprint specifications for: "${cleanTitle}"`);
 
@@ -142,61 +142,58 @@ function generateDynamicExecutableHtml(
   const initiatives = blueprint.initiatives || [];
   const tables = blueprint.database_tables || [];
   const apis = blueprint.api_endpoints || [];
-  const lower = (prompt + " " + title).toLowerCase();
 
-  const isFood = /food|restaurant|dine|table|cafe|pizza|burger|menu|order|kitchen|zomato|swiggy|dish|biryani|tea|coffee/.test(lower);
-  const isHealthcare = /hospital|clinic|health|doctor|patient|medical|appointment|medicine|pharma|care/.test(lower);
-  const isEcommerce = /store|shop|cart|product|retail|buy|sell|ecommerce|fashion|cloth|item/.test(lower);
-  const isBookingDomain = isFood || isHealthcare || /book|reservation|ticket|hotel|appointment|schedule|event|travel/.test(lower);
+  // Classify business domain & extract rich context
+  const domainCtx = classifyApplicationDomain(prompt, title);
 
-  // Dynamic Item Generation from Initiatives & Blueprint with Domain-Aware Icons & Prices
-  const getIconForInit = (initTitle: string, idx: number): string => {
-    const t = initTitle.toLowerCase();
-    if (/order|cart|checkout|buy/.test(t)) return "🛒";
-    if (/table|book|reserv|schedule|appointment/.test(t)) return "📅";
-    if (/menu|dish|food|pizza|burger|kitchen|drink/.test(t)) return "🍲";
-    if (/pay|bill|wallet|invoice|money|checkout/.test(t)) return "💳";
-    if (/user|auth|login|profile|account/.test(t)) return "👤";
-    if (/admin|dashboard|manage|control|report/.test(t)) return "🛡️";
-    if (/doctor|patient|health|clinic|medical/.test(t)) return "🩺";
-    if (/delivery|track|courier|ship/.test(t)) return "🚚";
-    if (/chat|ai|bot|assistant|support/.test(t)) return "🤖";
-    if (/review|rating|feedback|star/.test(t)) return "⭐";
-    if (/noti|alert|message|sms/.test(t)) return "🔔";
-    if (/analytic|report|metric|insight/.test(t)) return "📊";
-    const fallbackIcons = ["💎", "🚀", "⚡", "✨", "🎁", "🔥", "📋", "🌟", "🎯", "📦"];
-    return fallbackIcons[idx % fallbackIcons.length];
-  };
-
-  const getPriceForInit = (idx: number): number => {
-    if (isFood) return 149 + (idx % 6) * 70;
-    if (isHealthcare) return 499 + (idx % 5) * 200;
-    if (isEcommerce) return 299 + (idx % 8) * 150;
-    return 199 + idx * 100;
-  };
-
+  // Build items from domain intelligence and blueprint initiatives
   const items: any[] = [];
-  if (initiatives.length > 0) {
+  if (domainCtx.items && domainCtx.items.length > 0) {
+    domainCtx.items.forEach((item, idx) => {
+      items.push({
+        id: item.id || idx + 1,
+        name: item.name,
+        desc: item.desc,
+        category: item.category,
+        badge: item.badge,
+        rating: item.rating || "4.9",
+        icon: item.icon,
+        metaLabel: item.metaLabel,
+        metaValue: item.metaValue,
+        actionLabel: item.actionLabel,
+      });
+    });
+  } else if (initiatives.length > 0) {
     initiatives.forEach((init: any, idx: number) => {
       items.push({
         id: idx + 1,
-        name: init.title || `Feature Module ${idx + 1}`,
+        name: init.title || `Capability Module ${idx + 1}`,
         desc: init.desc || "Automated enterprise capability module tailored to user requirements.",
         category: init.impact || "Core Capability",
-        price: getPriceForInit(idx),
+        badge: init.impact || "Active",
         rating: (4.7 + (idx % 3) * 0.1).toFixed(1),
-        image: getIconForInit(init.title || "", idx),
-        tag: init.impact || "Active",
+        icon: "⚡",
+        metaLabel: "Module Status",
+        metaValue: "Operational",
+        actionLabel: domainCtx.primaryAction.label,
       });
     });
   } else {
-    items.push(
-      { id: 1, name: "Core Business Service", desc: "Primary service module designed from user requirements.", category: "Core Feature", price: 299, rating: "4.9", image: "⭐", tag: "Primary" },
-      { id: 2, name: "Automated Workflow Engine", desc: "Automated pipeline processing user requests in real time.", category: "AI Module", price: 499, rating: "4.8", image: "⚡", tag: "Automated" },
-      { id: 3, name: "Client Gateway Integration", desc: "Interactive customer interaction portal with live status syncing.", category: "Integration", price: 399, rating: "4.8", image: "🚀", tag: "Essential" }
-    );
+    items.push({
+      id: 1,
+      name: "Core Operational Gateway",
+      desc: "Primary operational workflow engine processing real-time events.",
+      category: "Core Capability",
+      badge: "Active",
+      rating: "4.9",
+      icon: "⚡",
+      metaLabel: "Status",
+      metaValue: "Online",
+      actionLabel: domainCtx.primaryAction.label,
+    });
   }
 
+  const serializedDomainCtx = JSON.stringify(domainCtx);
   const serializedItems = JSON.stringify(items);
   const serializedTables = JSON.stringify(tables);
   const serializedApis = JSON.stringify(apis);
@@ -206,7 +203,7 @@ function generateDynamicExecutableHtml(
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${title} — Live Production Application</title>
+  <title>${title} — ${domainCtx.domainLabel}</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -223,29 +220,29 @@ function generateDynamicExecutableHtml(
   <!-- Top Announcement Bar -->
   <div id="topAnnouncementBar" class="bg-indigo-600 text-white text-xs py-1.5 px-4 text-center font-medium flex items-center justify-center gap-2">
     <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 badge-pulse"></span>
-    <span id="announcementText">Live Production Instance generated by <strong>BlueprintAI Engine</strong></span>
-    <span class="bg-indigo-700/80 px-2 py-0.5 rounded text-[10px] ml-2 font-mono">v1.0.0 • Production</span>
+    <span id="announcementText">Live Production Instance: <strong>${domainCtx.domainLabel}</strong> powered by BlueprintAI Engine</span>
+    <span class="bg-indigo-700/80 px-2 py-0.5 rounded text-[10px] ml-2 font-mono">v1.0.0 • Verified</span>
   </div>
 
   <!-- Main Navigation -->
   <header class="glass-nav border-b border-slate-200 sticky top-0 z-30 px-4 sm:px-8 py-3 flex items-center justify-between shadow-xs">
     <div class="flex items-center gap-3">
       <div id="appLogoBadge" class="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-extrabold text-lg shadow-sm shadow-indigo-200">
-        ${title.charAt(0)}
+        ${domainCtx.domainIcon || title.charAt(0)}
       </div>
       <div>
         <div class="flex items-center gap-2">
           <h1 id="appNavTitle" class="text-base sm:text-lg font-bold text-slate-900 leading-tight">${title}</h1>
           <span class="text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-200">Live Active</span>
         </div>
-        <p id="appNavSubtitle" class="text-[11px] text-slate-500 hidden sm:block">Engineered with ${initiatives.length} Features • ${tables.length} DB Tables • ${apis.length} APIs</p>
+        <p id="appNavSubtitle" class="text-[11px] text-slate-500 hidden sm:block">${domainCtx.domainLabel} • Actor: ${domainCtx.primaryActor}</p>
       </div>
     </div>
 
     <!-- Navigation Tab Buttons & Actions -->
     <div class="flex items-center gap-2 sm:gap-2.5">
-      <button onclick="switchView('storefront')" id="navStorefrontBtn" class="px-3 py-1.5 rounded-xl text-xs font-bold transition bg-indigo-600 text-white shadow-xs">
-        🏪 Storefront
+      <button onclick="switchView('main')" id="navMainBtn" class="px-3 py-1.5 rounded-xl text-xs font-bold transition bg-indigo-600 text-white shadow-xs">
+        ${domainCtx.mainViewIcon} ${domainCtx.mainViewLabel}
       </button>
 
       <button onclick="switchView('database')" id="navDatabaseBtn" class="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition flex items-center gap-1">
@@ -260,14 +257,14 @@ function generateDynamicExecutableHtml(
         <span>🛡️ Admin</span>
       </button>
 
-      <!-- Cart Button -->
-      <button onclick="openActionModal()" id="cartNavBtn" class="relative flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm transition cursor-pointer">
-        <span>🛒</span>
-        <span id="cartCountBadge" class="w-4 h-4 rounded-full bg-slate-900 text-emerald-300 flex items-center justify-center text-[10px] font-bold">0</span>
+      <!-- Primary Domain Action Trigger Button -->
+      <button onclick="openActionModal()" id="primaryActionNavBtn" class="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold shadow-sm transition cursor-pointer">
+        <span>${domainCtx.primaryAction.icon}</span>
+        <span>${domainCtx.primaryAction.label}</span>
       </button>
 
       <!-- LIVE CUSTOMIZE BUTTON -->
-      <button onclick="openLiveCustomizer()" class="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-extrabold shadow-sm shadow-purple-200 transition cursor-pointer animate-in fade-in">
+      <button onclick="openLiveCustomizer()" class="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-extrabold shadow-sm shadow-purple-200 transition cursor-pointer">
         <span>✏️ Edit Web</span>
       </button>
     </div>
@@ -277,50 +274,46 @@ function generateDynamicExecutableHtml(
   <div id="toastContainer" class="fixed top-20 right-5 z-50 flex flex-col gap-2"></div>
 
   <!-- ========================================== -->
-  <!-- 1. STOREFRONT VIEW                         -->
+  <!-- 1. DYNAMIC DOMAIN MAIN VIEW                -->
   <!-- ========================================== -->
-  <main id="storefrontView" class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-8 space-y-8">
+  <main id="mainPortalView" class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-8 space-y-8">
     <!-- Hero Banner -->
     <div id="heroBannerBox" class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 text-white p-6 sm:p-10 shadow-xl">
       <div class="relative z-10 max-w-3xl space-y-3">
         <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-emerald-300 text-xs font-semibold border border-white/10">
-          ✨ Production Instance
+          ✨ ${domainCtx.domainLabel}
         </span>
-        <h2 id="heroHeadline" class="text-2xl sm:text-4xl font-extrabold tracking-tight">${title}</h2>
-        <p id="heroSubtext" class="text-slate-300 text-xs sm:text-sm leading-relaxed">${prompt}</p>
+        <h2 id="heroHeadline" class="text-2xl sm:text-4xl font-extrabold tracking-tight">${domainCtx.heroHeadline}</h2>
+        <p id="heroSubtext" class="text-slate-300 text-xs sm:text-sm leading-relaxed">${domainCtx.heroSubtext}</p>
         
         <div class="pt-2 flex flex-wrap items-center gap-3">
-          <button onclick="document.getElementById('catalogGrid')?.scrollIntoView({ behavior: 'smooth' })" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs px-5 py-2.5 rounded-xl shadow-md transition">
-            Explore Capabilities (${items.length}) ↓
+          <button onclick="openActionModal()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs px-5 py-2.5 rounded-xl shadow-md transition flex items-center gap-1.5">
+            <span>${domainCtx.primaryAction.icon}</span>
+            <span>${domainCtx.primaryAction.label}</span>
           </button>
-          <button id="heroBookingBtn" onclick="openBookingModal()" class="${isBookingDomain ? '' : 'hidden '}bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition">
-            📅 Book Reservation / Appointment
+          <button onclick="document.getElementById('catalogGrid')?.scrollIntoView({ behavior: 'smooth' })" class="bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition">
+            View All (${items.length}) ↓
           </button>
           <button id="heroAiBtn" onclick="openAIChatModal()" class="bg-indigo-500/30 hover:bg-indigo-500/50 border border-indigo-300/30 text-indigo-100 font-semibold text-xs px-4 py-2.5 rounded-xl transition flex items-center gap-1.5">
             🤖 Ask AI Assistant
           </button>
           <button onclick="openLiveCustomizer()" class="bg-purple-500/30 hover:bg-purple-500/50 border border-purple-300/40 text-purple-100 font-semibold text-xs px-4 py-2.5 rounded-xl transition flex items-center gap-1.5">
-            ✏️ Customize Content
+            ✏️ Customize Portal
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Filter & Search Bar -->
+    <!-- Category Filter Bar -->
     <div class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
       <div class="w-full sm:w-80 relative">
-        <input type="text" id="searchInput" oninput="renderCatalog()" placeholder="Search requirements, modules, services..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500">
+        <input type="text" id="searchInput" oninput="renderCatalog()" placeholder="Search ${domainCtx.mainViewLabel.toLowerCase()}..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500">
         <span class="absolute left-3 top-2.5 text-slate-400 text-xs">🔍</span>
       </div>
-      <div class="flex items-center gap-3 text-xs text-slate-500 font-medium">
-        <span>Showing <strong id="catalogCountText">${items.length}</strong> live items</span>
-        <button onclick="openLiveCustomizer()" class="text-purple-600 hover:text-purple-800 font-bold underline flex items-center gap-1">
-          <span>+ Add / Edit Items</span>
-        </button>
-      </div>
+      <div class="flex items-center gap-2 overflow-x-auto w-full sm:w-auto" id="categoryFilterContainer"></div>
     </div>
 
-    <!-- Initiatives Catalog Grid -->
+    <!-- Domain Catalog Grid -->
     <div id="catalogGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
   </main>
 
@@ -334,7 +327,7 @@ function generateDynamicExecutableHtml(
           <h2 class="text-xl font-bold text-slate-900">PostgreSQL Database Schema & Live Tables</h2>
           <span class="bg-blue-50 text-blue-700 text-xs font-bold px-2 py-0.5 rounded border border-blue-200">${tables.length} Tables Active</span>
         </div>
-        <p class="text-xs text-slate-500 mt-1">Directly compiled from your approved blueprint database models with Row-Level Security.</p>
+        <p class="text-xs text-slate-500 mt-1">Directly compiled for ${domainCtx.domainLabel} with Row-Level Security.</p>
       </div>
       <button onclick="openAddRecordModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-xs">
         <span>➕ Insert Record</span>
@@ -347,7 +340,7 @@ function generateDynamicExecutableHtml(
     <!-- Active Table Viewer -->
     <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
       <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-        <h3 id="activeTableName" class="font-mono font-bold text-slate-900 text-xs">table: users</h3>
+        <h3 id="activeTableName" class="font-mono font-bold text-slate-900 text-xs">table: records</h3>
         <span class="text-[11px] font-mono text-slate-500">Engine: Supabase PostgreSQL (RLS Enabled)</span>
       </div>
       <div class="overflow-x-auto">
@@ -368,7 +361,7 @@ function generateDynamicExecutableHtml(
         <h2 class="text-xl font-bold text-slate-900">Interactive REST API Gateway & Swagger Tester</h2>
         <span class="bg-purple-50 text-purple-700 text-xs font-bold px-2 py-0.5 rounded border border-purple-200">${apis.length} Endpoints</span>
       </div>
-      <p class="text-xs text-slate-500 mt-1">Test live REST endpoints generated for your architecture blueprint.</p>
+      <p class="text-xs text-slate-500 mt-1">Live REST endpoints for ${domainCtx.domainLabel}.</p>
     </div>
 
     <!-- API List -->
@@ -382,125 +375,61 @@ function generateDynamicExecutableHtml(
     <div class="flex items-center justify-between bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
       <div>
         <div class="flex items-center gap-2">
-          <h2 class="text-xl font-bold text-slate-900">Live Admin Operations & Telemetry</h2>
-          <span class="bg-rose-50 text-rose-700 text-xs font-bold px-2 py-0.5 rounded border border-rose-200">Management Workbench</span>
+          <h2 class="text-xl font-bold text-slate-900">${domainCtx.adminActor} Control Center</h2>
+          <span class="bg-rose-50 text-rose-700 text-xs font-bold px-2 py-0.5 rounded border border-rose-200">Management Console</span>
         </div>
-        <p class="text-xs text-slate-500 mt-1">Real-time incoming orders, client submissions, and cloud telemetry.</p>
+        <p class="text-xs text-slate-500 mt-1">Real-time incoming submissions, activity telemetry, and administrative records.</p>
       </div>
-      <button onclick="switchView('storefront')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition">
-        ← Back to Storefront
+      <button onclick="switchView('main')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition">
+        ← Back to Portal
       </button>
     </div>
 
     <!-- Admin KPI Cards -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-        <span class="text-[11px] font-bold text-slate-500 uppercase">Total Revenue</span>
-        <p id="kpiRevenue" class="text-2xl font-extrabold text-slate-900 mt-1">₹0</p>
-      </div>
-      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-        <span class="text-[11px] font-bold text-slate-500 uppercase">Live Submissions</span>
-        <p id="kpiOrders" class="text-2xl font-extrabold text-indigo-600 mt-1">0</p>
-      </div>
-      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-        <span class="text-[11px] font-bold text-slate-500 uppercase">PostgreSQL Tables</span>
-        <p class="text-2xl font-extrabold text-blue-600 mt-1">${tables.length}</p>
-      </div>
-      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-        <span class="text-[11px] font-bold text-slate-500 uppercase">REST Endpoints</span>
-        <p class="text-2xl font-extrabold text-purple-600 mt-1">${apis.length}</p>
-      </div>
-    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="adminKpiCardsContainer"></div>
 
-    <!-- Live Orders Table -->
+    <!-- Live Management Table -->
     <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
       <div class="p-4 border-b border-slate-100 flex items-center justify-between">
-        <h3 class="font-bold text-slate-900 text-sm">Real-Time Ingested Orders & Submissions</h3>
-        <button onclick="clearOrders()" class="text-xs text-rose-600 font-semibold hover:underline">Clear Logs</button>
+        <h3 class="font-bold text-slate-900 text-sm" id="adminTableHeading">${domainCtx.managementTableTitle}</h3>
+        <button onclick="clearActivityLedger()" class="text-xs text-rose-600 font-semibold hover:underline">Reset Data</button>
       </div>
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs text-slate-600">
-          <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200">
-            <tr>
-              <th class="p-3.5">Submission ID</th>
-              <th class="p-3.5">Customer & Items</th>
-              <th class="p-3.5">Total Amount</th>
-              <th class="p-3.5">Payment</th>
-              <th class="p-3.5">Status</th>
-              <th class="p-3.5">Action</th>
-            </tr>
-          </thead>
-          <tbody id="adminOrdersTableBody" class="divide-y divide-slate-100"></tbody>
+          <thead class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200" id="adminTableHeader"></thead>
+          <tbody id="adminTableBody" class="divide-y divide-slate-100"></tbody>
         </table>
       </div>
     </div>
   </main>
 
-  <!-- 1. CART / CHECKOUT MODAL -->
+  <!-- ========================================== -->
+  <!-- DYNAMIC PRIMARY ACTION MODAL               -->
+  <!-- ========================================== -->
   <div id="actionModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between border-b border-slate-100 pb-4">
-        <h3 class="text-lg font-bold text-slate-900">🛒 Checkout & Order Placement</h3>
+        <div class="flex items-center gap-2">
+          <span class="text-xl">${domainCtx.primaryAction.icon}</span>
+          <h3 class="text-lg font-bold text-slate-900">${domainCtx.primaryAction.modalTitle}</h3>
+        </div>
         <button onclick="closeActionModal()" class="text-slate-400 hover:text-slate-600 text-lg font-bold">✕</button>
       </div>
 
-      <div id="cartItemsList" class="space-y-3"></div>
+      <p class="text-xs text-slate-500 leading-relaxed">${domainCtx.primaryAction.modalDesc}</p>
 
-      <!-- Coupon Box -->
-      <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-bold text-slate-700">🎁 Promo / Coupon Code</span>
-          <span class="text-[10px] text-indigo-600 font-semibold font-mono">SAVE20, WELCOME50</span>
-        </div>
-        <div class="flex gap-2">
-          <input type="text" id="couponInput" placeholder="Enter coupon..." class="flex-1 px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs uppercase font-mono font-bold text-slate-800">
-          <button onclick="applyCoupon()" class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition">Apply</button>
-        </div>
-        <p id="couponMsg" class="text-[11px] font-medium hidden"></p>
-      </div>
+      <form id="primaryActionForm" onsubmit="handlePrimaryActionSubmit(event)" class="space-y-4">
+        <div id="dynamicFormFieldsContainer" class="space-y-3"></div>
 
-      <div class="space-y-2 pt-2 border-t border-slate-100 text-xs">
-        <div class="flex justify-between text-slate-500"><span>Subtotal:</span><span id="subtotalText">₹0</span></div>
-        <div class="flex justify-between text-emerald-600 font-medium"><span>Discount:</span><span id="discountText">-₹0</span></div>
-        <div class="flex justify-between text-slate-500"><span>Platform Processing:</span><span>₹30</span></div>
-        <div class="flex justify-between text-base font-extrabold text-slate-900 pt-1 border-t border-slate-100">
-          <span>Final Total:</span>
-          <span id="finalTotalText" class="text-indigo-600">₹30</span>
-        </div>
-      </div>
-
-      <div class="space-y-3 pt-2">
-        <input type="text" id="custName" placeholder="Your Full Name" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
-        <input type="tel" id="custPhone" placeholder="Phone Number" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
-        <input type="text" id="custAddress" placeholder="Delivery Address / Notes" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
-      </div>
-
-      <button onclick="submitOrder()" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold text-sm rounded-xl shadow-lg transition">
-        Confirm & Place Order 🚀
-      </button>
+        <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+          <span>${domainCtx.primaryAction.icon}</span>
+          <span>${domainCtx.primaryAction.submitText}</span>
+        </button>
+      </form>
     </div>
   </div>
 
-  <!-- 2. BOOKING / RESERVATION MODAL -->
-  <div id="bookingModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
-      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-        <h3 class="text-base font-bold text-slate-900">📅 Schedule Reservation / Appointment</h3>
-        <button onclick="closeBookingModal()" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
-      </div>
-      <div class="space-y-3 text-xs">
-        <div><label class="font-bold text-slate-700">Date & Time:</label><input type="datetime-local" id="bookDateTime" class="w-full mt-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl"></div>
-        <div><label class="font-bold text-slate-700">Service / Category:</label><input type="text" id="bookService" value="${initiatives[0]?.title || 'Core Service'}" class="w-full mt-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl"></div>
-        <div><label class="font-bold text-slate-700">Name:</label><input type="text" id="bookName" placeholder="Your Name" class="w-full mt-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl"></div>
-        <div><label class="font-bold text-slate-700">Phone:</label><input type="tel" id="bookPhone" placeholder="Mobile Number" class="w-full mt-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl"></div>
-      </div>
-      <button onclick="confirmBooking()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md transition">
-        Confirm Booking Now
-      </button>
-    </div>
-  </div>
-
-  <!-- 3. AI ASSISTANT COPILOT MODAL -->
+  <!-- AI ASSISTANT COPILOT MODAL -->
   <div id="aiModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
       <div class="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -512,17 +441,17 @@ function generateDynamicExecutableHtml(
       </div>
       <div id="aiChatHistory" class="space-y-2 max-h-60 overflow-y-auto p-2 bg-slate-50 rounded-xl text-xs">
         <div class="p-2.5 bg-indigo-50 text-indigo-900 rounded-lg">
-          Hello! I am your AI assistant for <strong>${title}</strong>. Ask me for recommendations, feature overview, or system details!
+          Hello! I am your AI assistant for <strong>${title}</strong> (${domainCtx.domainLabel}). How can I assist you today?
         </div>
       </div>
       <div class="flex gap-2">
-        <input type="text" id="aiInput" placeholder="Ask AI anything..." class="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none">
+        <input type="text" id="aiInput" placeholder="Ask question..." class="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none">
         <button onclick="askAI()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition">Send</button>
       </div>
     </div>
   </div>
 
-  <!-- 4. INSERT DB RECORD MODAL -->
+  <!-- INSERT DB RECORD MODAL -->
   <div id="addRecordModal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
       <div class="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -536,9 +465,9 @@ function generateDynamicExecutableHtml(
     </div>
   </div>
 
-  <!-- 5. LIVE VISUAL CUSTOMIZER MODAL -->
+  <!-- LIVE VISUAL CUSTOMIZER MODAL -->
   <div id="liveCustomizerModal" class="hidden fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 font-sans">
-    <div class="bg-white rounded-3xl max-w-3xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <div class="bg-white rounded-3xl max-w-3xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
       
       <!-- Customizer Header -->
       <div class="p-4 sm:p-5 border-b border-slate-200 bg-gradient-to-r from-purple-50 via-white to-indigo-50 flex items-center justify-between">
@@ -548,10 +477,10 @@ function generateDynamicExecutableHtml(
           </div>
           <div>
             <div class="flex items-center gap-2">
-              <h3 class="text-base font-extrabold text-slate-900">Live Web Customizer & Content Editor</h3>
-              <span class="bg-purple-100 text-purple-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-purple-200">No-Code Editor</span>
+              <h3 class="text-base font-extrabold text-slate-900">Live Portal Customizer & Content Editor</h3>
+              <span class="bg-purple-100 text-purple-800 text-[10px] font-bold px-2 py-0.5 rounded-full border border-purple-200">Live Engine</span>
             </div>
-            <p class="text-xs text-slate-500">Edit titles, items, pricing, branding, and feature toggles in real-time.</p>
+            <p class="text-xs text-slate-500">Edit branding, titles, hero section, items, and color themes in real time.</p>
           </div>
         </div>
         <button onclick="closeLiveCustomizer()" class="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition font-bold">
@@ -565,10 +494,7 @@ function generateDynamicExecutableHtml(
           🏷️ Branding & Hero
         </button>
         <button onclick="switchCustomizerTab('items')" id="custTabItems" class="px-3.5 py-2 border-b-2 border-transparent text-slate-600 hover:text-slate-900 transition">
-          📦 Catalog & Items (<span id="custItemBadge">0</span>)
-        </button>
-        <button onclick="switchCustomizerTab('promos')" id="custTabPromos" class="px-3.5 py-2 border-b-2 border-transparent text-slate-600 hover:text-slate-900 transition">
-          🎟️ Coupons & Fees
+          📦 Items & Services (<span id="custItemBadge">0</span>)
         </button>
         <button onclick="switchCustomizerTab('toggles')" id="custTabToggles" class="px-3.5 py-2 border-b-2 border-transparent text-slate-600 hover:text-slate-900 transition">
           ⚙️ Feature Toggles
@@ -577,167 +503,93 @@ function generateDynamicExecutableHtml(
 
       <!-- Customizer Body -->
       <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 text-xs">
-        
         <!-- 1. BRANDING & HERO TAB -->
         <div id="custPanelBranding" class="space-y-4">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="font-bold text-slate-700 block mb-1">Application / Store Name:</label>
-              <input type="text" id="custAppTitle" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:ring-2 focus:ring-purple-500/20">
+              <label class="font-bold text-slate-700 block mb-1">Application Title:</label>
+              <input type="text" id="custAppTitle" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900">
             </div>
             <div>
-              <label class="font-bold text-slate-700 block mb-1">Top Announcement Banner:</label>
-              <input type="text" id="custAnnouncement" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 focus:ring-2 focus:ring-purple-500/20">
+              <label class="font-bold text-slate-700 block mb-1">Announcement Banner:</label>
+              <input type="text" id="custAnnouncement" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800">
             </div>
           </div>
 
           <div>
             <label class="font-bold text-slate-700 block mb-1">Hero Section Headline:</label>
-            <input type="text" id="custHeroHeadline" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:ring-2 focus:ring-purple-500/20">
+            <input type="text" id="custHeroHeadline" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900">
           </div>
 
           <div>
             <label class="font-bold text-slate-700 block mb-1">Hero Subtitle / Description:</label>
-            <textarea id="custHeroSubtext" rows="2" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:ring-2 focus:ring-purple-500/20"></textarea>
+            <textarea id="custHeroSubtext" rows="2" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-700"></textarea>
           </div>
 
           <!-- Background & Theme Palette -->
           <div>
-            <label class="font-bold text-slate-700 block mb-1.5">🎨 Page Background & Theme Mode:</label>
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2" id="bgThemeContainer">
-              <button type="button" onclick="selectPageBgTheme('light')" class="p-2.5 rounded-xl border text-left font-bold transition flex items-center gap-2 bg-white border-slate-300 text-slate-900 shadow-2xs hover:border-purple-500">
+            <label class="font-bold text-slate-700 block mb-1.5">🎨 Page Theme & Mode:</label>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <button type="button" onclick="selectPageBgTheme('light')" class="p-2.5 rounded-xl border text-left font-bold transition flex items-center gap-2 bg-white border-slate-300 text-slate-900 shadow-2xs">
                 <span>☀️</span> <span>Light Slate</span>
               </button>
-              <button type="button" onclick="selectPageBgTheme('dark')" class="p-2.5 rounded-xl border text-left font-bold transition flex items-center gap-2 bg-slate-900 border-slate-700 text-white shadow-2xs hover:border-purple-500">
+              <button type="button" onclick="selectPageBgTheme('dark')" class="p-2.5 rounded-xl border text-left font-bold transition flex items-center gap-2 bg-slate-900 border-slate-700 text-white shadow-2xs">
                 <span>🌙</span> <span>Dark Mode</span>
               </button>
-              <button type="button" onclick="selectPageBgTheme('navy')" class="p-2.5 rounded-xl border text-left font-bold transition flex items-center gap-2 bg-indigo-950 border-indigo-800 text-indigo-100 shadow-2xs hover:border-purple-500">
+              <button type="button" onclick="selectPageBgTheme('navy')" class="p-2.5 rounded-xl border text-left font-bold transition flex items-center gap-2 bg-indigo-950 border-indigo-800 text-indigo-100 shadow-2xs">
                 <span>🌌</span> <span>Deep Navy</span>
               </button>
-              <button type="button" onclick="selectPageBgTheme('emerald')" class="p-2.5 rounded-xl border text-left font-bold transition flex items-center gap-2 bg-emerald-950 border-emerald-800 text-emerald-100 shadow-2xs hover:border-purple-500">
+              <button type="button" onclick="selectPageBgTheme('emerald')" class="p-2.5 rounded-xl border text-left font-bold transition flex items-center gap-2 bg-emerald-950 border-emerald-800 text-emerald-100 shadow-2xs">
                 <span>🌲</span> <span>Emerald</span>
               </button>
-              <button type="button" onclick="selectPageBgTheme('crimson')" class="p-2.5 rounded-xl border text-left font-bold transition flex items-center gap-2 bg-rose-950 border-rose-800 text-rose-100 shadow-2xs hover:border-purple-500">
+              <button type="button" onclick="selectPageBgTheme('crimson')" class="p-2.5 rounded-xl border text-left font-bold transition flex items-center gap-2 bg-rose-950 border-rose-800 text-rose-100 shadow-2xs">
                 <span>🍷</span> <span>Crimson</span>
               </button>
-              <button type="button" onclick="selectPageBgTheme('amber')" class="p-2.5 rounded-xl border text-left font-bold transition flex items-center gap-2 bg-amber-50 border-amber-300 text-amber-900 shadow-2xs hover:border-purple-500">
-                <span>🍯</span> <span>Warm Sand</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Hero Banner Background Gradient -->
-          <div>
-            <label class="font-bold text-slate-700 block mb-1.5">✨ Hero Banner Gradient Style:</label>
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              <button type="button" onclick="selectHeroGradient('indigo')" class="p-2 rounded-xl bg-gradient-to-r from-indigo-900 to-slate-900 text-white font-bold text-[11px] border border-white/20">Indigo Twilight</button>
-              <button type="button" onclick="selectHeroGradient('emerald')" class="p-2 rounded-xl bg-gradient-to-r from-emerald-900 to-slate-900 text-white font-bold text-[11px] border border-white/20">Emerald Forest</button>
-              <button type="button" onclick="selectHeroGradient('purple')" class="p-2 rounded-xl bg-gradient-to-r from-purple-900 to-slate-900 text-white font-bold text-[11px] border border-white/20">Royal Purple</button>
-              <button type="button" onclick="selectHeroGradient('rose')" class="p-2 rounded-xl bg-gradient-to-r from-rose-900 to-slate-900 text-white font-bold text-[11px] border border-white/20">Sunset Crimson</button>
-              <button type="button" onclick="selectHeroGradient('dark')" class="p-2 rounded-xl bg-gradient-to-r from-slate-900 to-black text-white font-bold text-[11px] border border-white/20">Dark Minimalist</button>
-              <button type="button" onclick="selectHeroGradient('amber')" class="p-2 rounded-xl bg-gradient-to-r from-amber-900 to-slate-900 text-white font-bold text-[11px] border border-white/20">Golden Amber</button>
-            </div>
-          </div>
-
-          <!-- Catalog Card Layout -->
-          <div>
-            <label class="font-bold text-slate-700 block mb-1.5">📐 Card Display Layout:</label>
-            <div class="flex flex-wrap gap-2">
-              <button type="button" onclick="selectCardLayout('grid-3')" class="px-3.5 py-1.5 rounded-xl border border-slate-300 font-bold bg-white text-slate-800">🧱 3-Col Grid (Standard)</button>
-              <button type="button" onclick="selectCardLayout('grid-4')" class="px-3.5 py-1.5 rounded-xl border border-slate-300 font-bold bg-white text-slate-800">🔲 4-Col Grid (Compact)</button>
-              <button type="button" onclick="selectCardLayout('grid-2')" class="px-3.5 py-1.5 rounded-xl border border-slate-300 font-bold bg-white text-slate-800">📑 2-Col Wide</button>
-              <button type="button" onclick="selectCardLayout('list')" class="px-3.5 py-1.5 rounded-xl border border-slate-300 font-bold bg-white text-slate-800">📋 List Rows</button>
             </div>
           </div>
         </div>
 
-        <!-- 2. CATALOG & ITEMS TAB -->
+        <!-- 2. ITEMS TAB -->
         <div id="custPanelItems" class="hidden space-y-4">
           <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-            <span class="font-bold text-slate-700">Manage Storefront Items & Capabilities:</span>
+            <span class="font-bold text-slate-700">Manage Domain Items:</span>
             <button onclick="addNewCustomItem()" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold flex items-center gap-1">
               ➕ Add New Item
             </button>
           </div>
-
           <div id="customizerItemsList" class="space-y-3 max-h-80 overflow-y-auto pr-1"></div>
         </div>
 
-        <!-- 3. COUPONS & PROMOS TAB -->
-        <div id="custPanelPromos" class="hidden space-y-4">
-          <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
-            <span class="font-bold text-slate-800 block">Active Promotional Discounts:</span>
-            <div class="space-y-2">
-              <div class="flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-200">
-                <div>
-                  <span class="font-mono font-bold text-indigo-600">SAVE20</span>
-                  <p class="text-[11px] text-slate-500">20% Discount on entire cart order</p>
-                </div>
-                <span class="bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded text-[10px]">20% OFF</span>
-              </div>
-              <div class="flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-200">
-                <div>
-                  <span class="font-mono font-bold text-indigo-600">WELCOME50</span>
-                  <p class="text-[11px] text-slate-500">Flat ₹50 Discount on first order</p>
-                </div>
-                <span class="bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded text-[10px]">₹50 OFF</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="font-bold text-slate-700 block mb-1">Currency Symbol:</label>
-              <input type="text" id="custCurrency" value="₹" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold">
-            </div>
-            <div>
-              <label class="font-bold text-slate-700 block mb-1">Platform / Delivery Fee:</label>
-              <input type="number" id="custDeliveryFee" value="30" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold">
-            </div>
-          </div>
-        </div>
-
-        <!-- 4. FEATURE TOGGLES TAB -->
+        <!-- 3. TOGGLES TAB -->
         <div id="custPanelToggles" class="hidden space-y-3">
           <label class="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-200 cursor-pointer">
             <div>
-              <span class="font-bold text-slate-800 block">🛒 Online Ordering & Cart</span>
-              <p class="text-[11px] text-slate-500">Allow customers to add items to cart and place orders</p>
+              <span class="font-bold text-slate-800 block">${domainCtx.primaryAction.label} Action</span>
+              <p class="text-[11px] text-slate-500">Enable users to trigger primary action modal</p>
             </div>
-            <input type="checkbox" id="toggleCart" checked class="w-4 h-4 accent-purple-600">
+            <input type="checkbox" id="togglePrimaryAction" checked class="w-4 h-4 accent-purple-600">
           </label>
-
           <label class="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-200 cursor-pointer">
             <div>
-              <span class="font-bold text-slate-800 block">📅 Table / Appointment Booking</span>
-              <p class="text-[11px] text-slate-500">Show the appointment and reservation scheduling button</p>
-            </div>
-            <input type="checkbox" id="toggleBooking" checked class="w-4 h-4 accent-purple-600">
-          </label>
-
-          <label class="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-slate-200 cursor-pointer">
-            <div>
-              <span class="font-bold text-slate-800 block">🤖 AI Copilot Assistant</span>
-              <p class="text-[11px] text-slate-500">Interactive conversational bot for recommendations</p>
+              <span class="font-bold text-slate-800 block">🤖 AI Assistant Copilot</span>
+              <p class="text-[11px] text-slate-500">Enable interactive domain chat assistant</p>
             </div>
             <input type="checkbox" id="toggleAi" checked class="w-4 h-4 accent-purple-600">
           </label>
         </div>
-
       </div>
 
-      <!-- Customizer Footer Actions -->
+      <!-- Customizer Footer -->
       <div class="p-4 sm:p-5 border-t border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-3 text-xs font-bold">
         <button onclick="resetCustomizerToDefault()" class="text-rose-600 hover:text-rose-800 underline">
           ↺ Reset to Defaults
         </button>
-
         <div class="flex items-center gap-2">
           <button onclick="closeLiveCustomizer()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl transition">
             Cancel
           </button>
-          <button onclick="saveAndApplyLiveCustomization()" class="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl shadow-md shadow-purple-200 transition flex items-center gap-1.5">
-            <span>💾 Save & Apply Changes</span>
+          <button onclick="saveAndApplyLiveCustomization()" class="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl shadow-md shadow-purple-200 transition">
+            💾 Save & Apply Changes
           </button>
         </div>
       </div>
@@ -745,87 +597,25 @@ function generateDynamicExecutableHtml(
   </div>
 
   <script>
-    // State
+    // Domain Intelligence Context & State
+    const domainContext = ${serializedDomainCtx};
     let allItems = ${serializedItems};
     const dbTables = ${serializedTables};
     const restApis = ${serializedApis};
 
-    let cart = [];
-    let discountAmount = 0;
-    let appliedCoupon = "";
-    let ordersList = JSON.parse(localStorage.getItem("${title}_orders") || "[]");
-    let activeTableIndex = 0;
-    let selectedTheme = "indigo";
+    let selectedCategory = "All";
     let selectedBgTheme = "light";
     let selectedHeroGradient = "indigo";
-    let selectedCardLayout = "grid-3";
+    let activeTableIndex = 0;
 
-    // Load Live Customizations from LocalStorage
-    const customConfigKey = "${title}_custom_web_config";
-    let customConfig = JSON.parse(localStorage.getItem(customConfigKey) || "null");
-
-    // Theme & Style Functions
-    function selectPageBgTheme(theme) {
-      selectedBgTheme = theme;
-      applyBgTheme(theme);
-      renderCatalog();
-      showToast("Theme changed to " + theme, "info");
+    // Load LocalStorage persisted ledger rows
+    const storageKey = "${title}_domain_ledger";
+    let ledgerRows = JSON.parse(localStorage.getItem(storageKey) || "null");
+    if (!ledgerRows) {
+      ledgerRows = domainContext.managementTableRows || [];
     }
 
-    function applyBgTheme(theme) {
-      const b = document.body;
-      if (!b) return;
-      b.className = "min-h-screen flex flex-col transition-colors duration-300 ";
-      if (theme === "dark") {
-        b.className += "bg-slate-950 text-slate-100";
-      } else if (theme === "navy") {
-        b.className += "bg-slate-900 text-indigo-50";
-      } else if (theme === "emerald") {
-        b.className += "bg-emerald-950 text-emerald-50";
-      } else if (theme === "crimson") {
-        b.className += "bg-rose-950 text-rose-50";
-      } else if (theme === "amber") {
-        b.className += "bg-amber-50 text-amber-950";
-      } else {
-        b.className += "bg-slate-50 text-slate-900";
-      }
-    }
-
-    function selectHeroGradient(grad) {
-      selectedHeroGradient = grad;
-      applyHeroGradient(grad);
-      showToast("Hero banner style updated!", "info");
-    }
-
-    function applyHeroGradient(grad) {
-      const hb = document.getElementById("heroBannerBox");
-      if (!hb) return;
-      let base = "relative overflow-hidden rounded-3xl text-white p-6 sm:p-10 shadow-xl transition-all duration-300 ";
-      if (grad === "emerald") hb.className = base + "bg-gradient-to-r from-emerald-900 via-teal-800 to-slate-900";
-      else if (grad === "purple") hb.className = base + "bg-gradient-to-r from-purple-900 via-violet-800 to-slate-900";
-      else if (grad === "rose") hb.className = base + "bg-gradient-to-r from-rose-900 via-pink-800 to-slate-900";
-      else if (grad === "dark") hb.className = base + "bg-gradient-to-r from-slate-900 via-zinc-900 to-black";
-      else if (grad === "amber") hb.className = base + "bg-gradient-to-r from-amber-900 via-orange-800 to-slate-900";
-      else hb.className = base + "bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900";
-    }
-
-    function selectCardLayout(layout) {
-      selectedCardLayout = layout;
-      applyCardLayout(layout);
-      renderCatalog();
-      showToast("Layout set to " + layout, "info");
-    }
-
-    function applyCardLayout(layout) {
-      const grid = document.getElementById("catalogGrid");
-      if (!grid) return;
-      if (layout === "grid-4") grid.className = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4";
-      else if (layout === "grid-2") grid.className = "grid grid-cols-1 sm:grid-cols-2 gap-6";
-      else if (layout === "list") grid.className = "grid grid-cols-1 gap-4";
-      else grid.className = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6";
-    }
-
-    // Database Mock State
+    // Database Mock Storage
     let dbData = JSON.parse(localStorage.getItem("${title}_db_data") || "{}");
     dbTables.forEach((t, i) => {
       if (!dbData[t.table_name]) {
@@ -836,57 +626,21 @@ function generateDynamicExecutableHtml(
       }
     });
 
-    // Apply Saved Customizations if exist
-    if (customConfig) {
-      if (customConfig.items && Array.isArray(customConfig.items)) allItems = customConfig.items;
-      if (customConfig.bgTheme) {
-        selectedBgTheme = customConfig.bgTheme;
-        applyBgTheme(selectedBgTheme);
-      }
-      if (customConfig.heroGradient) {
-        selectedHeroGradient = customConfig.heroGradient;
-        applyHeroGradient(selectedHeroGradient);
-      }
-      if (customConfig.cardLayout) {
-        selectedCardLayout = customConfig.cardLayout;
-        applyCardLayout(selectedCardLayout);
-      }
-      if (customConfig.title) {
-        document.title = customConfig.title + " — Live Application";
-        const navT = document.getElementById("appNavTitle");
-        if (navT) navT.innerText = customConfig.title;
-        const logoB = document.getElementById("appLogoBadge");
-        if (logoB) logoB.innerText = customConfig.title.charAt(0);
-      }
-      if (customConfig.heroHeadline) {
-        const hH = document.getElementById("heroHeadline");
-        if (hH) hH.innerText = customConfig.heroHeadline;
-      }
-      if (customConfig.heroSubtext) {
-        const hS = document.getElementById("heroSubtext");
-        if (hS) hS.innerText = customConfig.heroSubtext;
-      }
-      if (customConfig.announcement) {
-        const ann = document.getElementById("announcementText");
-        if (ann) ann.innerText = customConfig.announcement;
-      }
-    }
-
     // 1. Navigation Switcher
     function switchView(viewName) {
-      document.getElementById('storefrontView').classList.add('hidden');
+      document.getElementById('mainPortalView').classList.add('hidden');
       document.getElementById('databaseView').classList.add('hidden');
       document.getElementById('apisView').classList.add('hidden');
       document.getElementById('adminView').classList.add('hidden');
 
-      ['navStorefrontBtn', 'navDatabaseBtn', 'navApisBtn', 'navAdminBtn'].forEach(id => {
+      ['navMainBtn', 'navDatabaseBtn', 'navApisBtn', 'navAdminBtn'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.className = "px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition";
       });
 
-      if (viewName === 'storefront') {
-        document.getElementById('storefrontView').classList.remove('hidden');
-        document.getElementById('navStorefrontBtn').className = "px-3 py-1.5 rounded-xl text-xs font-bold transition bg-indigo-600 text-white shadow-xs";
+      if (viewName === 'main') {
+        document.getElementById('mainPortalView').classList.remove('hidden');
+        document.getElementById('navMainBtn').className = "px-3 py-1.5 rounded-xl text-xs font-bold transition bg-indigo-600 text-white shadow-xs";
         renderCatalog();
       } else if (viewName === 'database') {
         document.getElementById('databaseView').classList.remove('hidden');
@@ -899,21 +653,40 @@ function generateDynamicExecutableHtml(
       } else if (viewName === 'admin') {
         document.getElementById('adminView').classList.remove('hidden');
         document.getElementById('navAdminBtn').className = "px-3 py-1.5 rounded-xl text-xs font-bold transition bg-rose-600 text-white shadow-xs";
-        renderAdminOrders();
+        renderAdminDashboard();
       }
     }
 
-    // 2. Catalog Rendering
+    // 2. Category Filters & Catalog Rendering
+    function renderCategoryFilters() {
+      const container = document.getElementById("categoryFilterContainer");
+      if (!container) return;
+      const categories = ["All", ...(domainContext.categories || [])];
+      container.innerHTML = categories.map(cat => \`
+        <button onclick="selectCategory('\${cat}')" class="px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap \${selectedCategory === cat ? 'bg-indigo-600 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
+          \${cat}
+        </button>
+      \`).join('');
+    }
+
+    function selectCategory(cat) {
+      selectedCategory = cat;
+      renderCategoryFilters();
+      renderCatalog();
+    }
+
     function renderCatalog() {
       const grid = document.getElementById("catalogGrid");
       const search = (document.getElementById("searchInput")?.value || "").toLowerCase();
-      const countEl = document.getElementById("catalogCountText");
-      
-      const filtered = allItems.filter(item => item.name.toLowerCase().includes(search) || item.desc.toLowerCase().includes(search));
-      if (countEl) countEl.innerText = filtered.length;
+
+      const filtered = allItems.filter(item => {
+        const matchesCat = selectedCategory === "All" || item.category === selectedCategory || selectedCategory.includes(item.category);
+        const matchesSearch = item.name.toLowerCase().includes(search) || item.desc.toLowerCase().includes(search);
+        return matchesCat && matchesSearch;
+      });
 
       if (filtered.length === 0) {
-        grid.innerHTML = '<div class="col-span-full py-12 text-center text-slate-400">No components found matching your search. Click "Edit Web" above to add items!</div>';
+        grid.innerHTML = '<div class="col-span-full py-12 text-center text-slate-400">No items found matching criteria. Click "Edit Web" above to add items!</div>';
         return;
       }
 
@@ -921,30 +694,151 @@ function generateDynamicExecutableHtml(
       const cardBg = isDarkTheme ? "bg-slate-900/90 border-slate-800 text-slate-100 shadow-md" : "bg-white border-slate-200 text-slate-900";
       const titleColor = isDarkTheme ? "text-white" : "text-slate-900";
       const descColor = isDarkTheme ? "text-slate-400" : "text-slate-500";
-      const priceColor = isDarkTheme ? "text-emerald-400" : "text-slate-900";
+      const metaValColor = isDarkTheme ? "text-emerald-400" : "text-slate-900";
 
       grid.innerHTML = filtered.map(item => \`
         <div class="\${cardBg} rounded-2xl border p-5 flex flex-col justify-between hover:shadow-xl transition-all duration-200 hover:border-indigo-400">
           <div>
             <div class="flex items-start justify-between">
-              <span class="text-4xl p-2.5 bg-slate-500/10 rounded-2xl border border-slate-500/20">\${item.image}</span>
-              <span class="text-xs font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">★ \${item.rating}</span>
+              <span class="text-4xl p-2.5 bg-slate-500/10 rounded-2xl border border-slate-500/20">\${item.icon || '⭐'}</span>
+              <span class="text-xs font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">★ \${item.rating || '4.9'}</span>
             </div>
             <h3 class="font-bold \${titleColor} text-base mt-3">\${item.name}</h3>
-            <span class="inline-block text-[10px] uppercase font-bold text-indigo-500 bg-indigo-500/10 px-2 py-0.5 rounded mt-1">\${item.tag}</span>
+            <span class="inline-block text-[10px] uppercase font-bold text-indigo-500 bg-indigo-500/10 px-2 py-0.5 rounded mt-1">\${item.badge || item.category}</span>
             <p class="text-xs \${descColor} mt-2 line-clamp-2 leading-relaxed">\${item.desc}</p>
           </div>
           <div class="flex items-center justify-between mt-5 pt-4 border-t border-slate-500/10">
-            <span class="text-lg font-extrabold \${priceColor}">₹\${item.price}</span>
-            <button onclick="addToCart(\${item.id})" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition shadow-xs cursor-pointer">
-              + Add to Order
+            <div>
+              <div class="text-[10px] text-slate-400 uppercase font-semibold">\${item.metaLabel || 'Specification'}</div>
+              <span class="text-sm font-extrabold \${metaValColor}">\${item.metaValue || 'Active'}</span>
+            </div>
+            <button onclick="openActionModalWithPrefill('\${item.name.replace(/'/g, "\\\\'")}')" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition shadow-xs cursor-pointer">
+              \${item.actionLabel || domainContext.primaryAction.label}
             </button>
           </div>
         </div>
       \`).join('');
     }
 
-    // 3. Database View Rendering
+    // 3. Primary Action Modal Form
+    function openActionModal() {
+      renderPrimaryActionFields();
+      document.getElementById('actionModal').classList.remove('hidden');
+    }
+
+    function openActionModalWithPrefill(itemName) {
+      renderPrimaryActionFields(itemName);
+      document.getElementById('actionModal').classList.remove('hidden');
+    }
+
+    function closeActionModal() {
+      document.getElementById('actionModal').classList.add('hidden');
+    }
+
+    function renderPrimaryActionFields(prefillValue) {
+      const container = document.getElementById("dynamicFormFieldsContainer");
+      const fields = domainContext.primaryAction.fields || [];
+
+      container.innerHTML = fields.map(f => {
+        if (f.type === "select") {
+          return \`
+            <div>
+              <label class="font-bold text-slate-700 text-xs block mb-1">\${f.label}:</label>
+              <select name="\${f.name}" id="field_\${f.name}" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:ring-2 focus:ring-indigo-500/30">
+                \${(f.options || []).map(opt => \`<option value="\${opt}">\${opt}</option>\`).join('')}
+              </select>
+            </div>
+          \`;
+        } else if (f.type === "textarea") {
+          return \`
+            <div>
+              <label class="font-bold text-slate-700 text-xs block mb-1">\${f.label}:</label>
+              <textarea name="\${f.name}" id="field_\${f.name}" rows="2" placeholder="\${f.placeholder}" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:ring-2 focus:ring-indigo-500/30"></textarea>
+            </div>
+          \`;
+        } else {
+          return \`
+            <div>
+              <label class="font-bold text-slate-700 text-xs block mb-1">\${f.label}:</label>
+              <input type="\${f.type}" name="\${f.name}" id="field_\${f.name}" placeholder="\${f.placeholder}" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:ring-2 focus:ring-indigo-500/30">
+            </div>
+          \`;
+        }
+      }).join('');
+    }
+
+    function handlePrimaryActionSubmit(e) {
+      e.preventDefault();
+      const form = document.getElementById("primaryActionForm");
+      const formData = new FormData(form);
+      const values = [];
+
+      for (let [key, val] of formData.entries()) {
+        values.push(val || "—");
+      }
+
+      // Format a new table row
+      const firstVal = values[0] || "User Submission";
+      const secondVal = values[1] || "Standard Service";
+      const thirdVal = values[2] || "Today";
+      const fourthVal = values[3] || "Slot A";
+
+      const newRow = [firstVal, secondVal, thirdVal, fourthVal, "Confirmed"];
+      ledgerRows.unshift(newRow);
+      localStorage.setItem(storageKey, JSON.stringify(ledgerRows));
+
+      closeActionModal();
+      showToast(domainContext.primaryAction.successMessage, "success");
+      renderAdminDashboard();
+    }
+
+    // 4. Admin Dashboard Rendering
+    function renderAdminDashboard() {
+      // KPI Cards
+      const kpiContainer = document.getElementById("adminKpiCardsContainer");
+      const stats = domainContext.managementStats || [];
+      kpiContainer.innerHTML = stats.map(s => \`
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold text-slate-500 uppercase">\${s.label}</span>
+            <span class="text-base">\${s.icon || '📊'}</span>
+          </div>
+          <p class="text-2xl font-extrabold text-slate-900 mt-1">\${s.value}</p>
+          <span class="text-[10px] font-semibold text-emerald-600 mt-1 block">\${s.change}</span>
+        </div>
+      \`).join('');
+
+      // Ledger Table Header
+      const headerEl = document.getElementById("adminTableHeader");
+      const cols = domainContext.managementTableColumns || ["Entity", "Details", "Timestamp", "Status"];
+      headerEl.innerHTML = \`<tr>\${cols.map(c => \`<th class="p-3.5">\${c}</th>\`).join('')}</tr>\`;
+
+      // Ledger Table Body
+      const bodyEl = document.getElementById("adminTableBody");
+      if (ledgerRows.length === 0) {
+        bodyEl.innerHTML = \`<tr><td colspan="\${cols.length}" class="p-8 text-center text-slate-400">No records logged yet. Trigger an action from the portal!</td></tr>\`;
+        return;
+      }
+
+      bodyEl.innerHTML = ledgerRows.map((row, idx) => \`
+        <tr class="hover:bg-slate-50">
+          \${row.map((cell, cIdx) => {
+            if (cIdx === 0) return \`<td class="p-3.5 font-bold text-slate-900">\${cell}</td>\`;
+            if (cIdx === row.length - 1) return \`<td class="p-3.5"><span class="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded font-bold text-[10px] border border-emerald-200">\${cell}</span></td>\`;
+            return \`<td class="p-3.5 text-slate-600">\${cell}</td>\`;
+          }).join('')}
+        </tr>
+      \`).join('');
+    }
+
+    function clearActivityLedger() {
+      ledgerRows = domainContext.managementTableRows || [];
+      localStorage.removeItem(storageKey);
+      renderAdminDashboard();
+      showToast("Activity ledger reset to defaults", "info");
+    }
+
+    // 5. Database View Rendering
     function renderDatabaseView() {
       const selector = document.getElementById("dbTableSelector");
       if (dbTables.length === 0) {
@@ -991,8 +885,8 @@ function generateDynamicExecutableHtml(
       const curTable = dbTables[activeTableIndex] || dbTables[0];
       const container = document.getElementById("addRecordFormFields");
       container.innerHTML = \`
-        <div><label class="font-bold text-slate-700">Entity / Record Name:</label><input type="text" id="newRecName" placeholder="Enter entity name..." class="w-full mt-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl"></div>
-        <div><label class="font-bold text-slate-700">Initial Status:</label><select id="newRecStatus" class="w-full mt-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl"><option>active</option><option>pending</option><option>verified</option></select></div>
+        <div><label class="font-bold text-slate-700">Record Name:</label><input type="text" id="newRecName" placeholder="Enter entity name..." class="w-full mt-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl"></div>
+        <div><label class="font-bold text-slate-700">Status:</label><select id="newRecStatus" class="w-full mt-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl"><option>active</option><option>pending</option><option>verified</option></select></div>
       \`;
       document.getElementById("addRecordModal").classList.remove("hidden");
     }
@@ -1020,7 +914,7 @@ function generateDynamicExecutableHtml(
       showToast(\`Inserted new record into \${curTable.table_name}!\`, "success");
     }
 
-    // 4. API View Rendering & Live Testing
+    // 6. REST API Testing
     function renderApisView() {
       const container = document.getElementById("apisListContainer");
       if (restApis.length === 0) {
@@ -1060,192 +954,18 @@ function generateDynamicExecutableHtml(
           method: api.method,
           response: {
             success: true,
+            domain: domainContext.domain,
             message: "Successfully processed " + api.path,
-            data: { timestamp: new Date().toISOString(), tenant_id: "prod_01" }
+            data: { timestamp: new Date().toISOString(), tenant: "${title}" }
           }
         }, null, 2);
         showToast(\`\${api.method} \${api.path} returned 200 OK!\`, "success");
       }, 400);
     }
 
-    // 5. Cart & Orders
-    function addToCart(id) {
-      const item = allItems.find(i => i.id === id);
-      if (!item) return;
-      cart.push(item);
-      updateCartUI();
-      showToast(\`Added "\${item.name}" to cart!\`, "success");
-    }
-
-    function updateCartUI() {
-      document.getElementById("cartCountBadge").innerText = cart.length;
-      const list = document.getElementById("cartItemsList");
-      if (cart.length === 0) {
-        list.innerHTML = '<p class="text-center py-6 text-xs text-slate-400">Your cart is currently empty.</p>';
-        document.getElementById("subtotalText").innerText = "₹0";
-        document.getElementById("discountText").innerText = "-₹0";
-        document.getElementById("finalTotalText").innerText = "₹0";
-        return;
-      }
-
-      list.innerHTML = cart.map((item, idx) => \`
-        <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs">
-          <div class="flex items-center gap-2">
-            <span>\${item.image}</span>
-            <span class="font-bold text-slate-800">\${item.name}</span>
-          </div>
-          <div class="flex items-center gap-3">
-            <span class="font-semibold text-slate-900">₹\${item.price}</span>
-            <button onclick="removeFromCart(\${idx})" class="text-rose-500 hover:text-rose-700 font-bold">✕</button>
-          </div>
-        </div>
-      \`).join('');
-
-      const subtotal = cart.reduce((acc, cur) => acc + cur.price, 0);
-      const taxes = subtotal > 0 ? 30 : 0;
-      const finalTotal = Math.max(0, subtotal - discountAmount + taxes);
-
-      document.getElementById("subtotalText").innerText = "₹" + subtotal;
-      document.getElementById("discountText").innerText = "-₹" + discountAmount;
-      document.getElementById("finalTotalText").innerText = "₹" + finalTotal;
-    }
-
-    function removeFromCart(index) {
-      cart.splice(index, 1);
-      updateCartUI();
-    }
-
-    function applyCoupon() {
-      const code = (document.getElementById("couponInput")?.value || "").trim().toUpperCase();
-      const msg = document.getElementById("couponMsg");
-      const subtotal = cart.reduce((acc, cur) => acc + cur.price, 0);
-
-      if (code === "SAVE20") {
-        discountAmount = Math.round(subtotal * 0.20);
-        appliedCoupon = "SAVE20 (20% OFF)";
-        msg.className = "text-[11px] font-bold text-emerald-600 block";
-        msg.innerText = "✓ Coupon SAVE20 applied! 20% discount saved.";
-      } else if (code === "WELCOME50") {
-        discountAmount = 50;
-        appliedCoupon = "WELCOME50 (₹50 OFF)";
-        msg.className = "text-[11px] font-bold text-emerald-600 block";
-        msg.innerText = "✓ Coupon WELCOME50 applied! ₹50 discount saved.";
-      } else {
-        discountAmount = 0;
-        appliedCoupon = "";
-        msg.className = "text-[11px] font-bold text-rose-600 block";
-        msg.innerText = "✕ Invalid promo code. Try SAVE20 or WELCOME50";
-      }
-      updateCartUI();
-    }
-
-    function submitOrder() {
-      if (cart.length === 0) {
-        showToast("Cart is empty! Add items first.", "error");
-        return;
-      }
-      const name = document.getElementById("custName")?.value.trim() || "Guest Customer";
-      const phone = document.getElementById("custPhone")?.value.trim() || "9876543210";
-      const subtotal = cart.reduce((acc, cur) => acc + cur.price, 0);
-      const finalAmount = Math.max(0, subtotal - discountAmount + 30);
-
-      const orderRecord = {
-        id: "ORD-" + Math.floor(100000 + Math.random() * 900000),
-        customer: name,
-        phone: phone,
-        items: cart.map(i => i.name).join(", "),
-        total: finalAmount,
-        coupon: appliedCoupon || "None",
-        status: "Processing",
-        timestamp: new Date().toLocaleTimeString(),
-      };
-
-      ordersList.unshift(orderRecord);
-      localStorage.setItem("${title}_orders", JSON.stringify(ordersList));
-
-      cart = [];
-      discountAmount = 0;
-      updateCartUI();
-      closeActionModal();
-      renderAdminOrders();
-
-      showToast(\`Order #\${orderRecord.id} placed successfully!\`, "success");
-    }
-
-    function renderAdminOrders() {
-      const tbody = document.getElementById("adminOrdersTableBody");
-      const revEl = document.getElementById("kpiRevenue");
-      const ordEl = document.getElementById("kpiOrders");
-
-      const totalRev = ordersList.reduce((acc, o) => acc + (o.total || 0), 0);
-      if (revEl) revEl.innerText = "₹" + totalRev.toLocaleString();
-      if (ordEl) ordEl.innerText = ordersList.length;
-
-      if (!tbody) return;
-      if (ordersList.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-slate-400">No orders placed yet. Add items from the storefront!</td></tr>';
-        return;
-      }
-
-      tbody.innerHTML = ordersList.map((ord, idx) => \`
-        <tr class="hover:bg-slate-50">
-          <td class="p-3.5 font-mono font-bold text-indigo-600">\${ord.id}</td>
-          <td class="p-3.5"><strong class="text-slate-900">\${ord.customer}</strong><div class="text-[11px] text-slate-400">\${ord.items}</div></td>
-          <td class="p-3.5 font-bold text-slate-900">₹\${ord.total}</td>
-          <td class="p-3.5"><span class="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded font-bold text-[10px]">Paid Online</span></td>
-          <td class="p-3.5"><span class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded font-bold text-[10px]">\${ord.status}</span></td>
-          <td class="p-3.5">
-            <button onclick="advanceOrderStatus(\${idx})" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded font-bold text-[10px]">
-              Update Status
-            </button>
-          </td>
-        </tr>
-      \`).join('');
-    }
-
-    function advanceOrderStatus(idx) {
-      if (!ordersList[idx]) return;
-      const current = ordersList[idx].status;
-      if (current === "Processing") ordersList[idx].status = "Preparing";
-      else if (current === "Preparing") ordersList[idx].status = "Completed";
-      else ordersList[idx].status = "Delivered";
-      
-      localStorage.setItem("${title}_orders", JSON.stringify(ordersList));
-      renderAdminOrders();
-      showToast(\`Order \${ordersList[idx].id} updated to \${ordersList[idx].status}\`, "success");
-    }
-
-    function clearOrders() {
-      ordersList = [];
-      localStorage.removeItem("${title}_orders");
-      renderAdminOrders();
-      showToast("Order history cleared", "info");
-    }
-
-    // Modal helpers
-    function openModal(id) {
-      const el = document.getElementById(id);
-      if (el) el.classList.remove('hidden');
-    }
-    function closeModal(id) {
-      const el = document.getElementById(id);
-      if (el) el.classList.add('hidden');
-    }
-
-    function openActionModal() { openModal('actionModal'); updateCartUI(); }
-    function closeActionModal() { closeModal('actionModal'); }
-    function openBookingModal() { openModal('bookingModal'); }
-    function closeBookingModal() { closeModal('bookingModal'); }
-    function openAIChatModal() { openModal('aiModal'); }
-    function closeAIChatModal() { closeModal('aiModal'); }
-
-    function confirmBooking() {
-      const name = document.getElementById("bookName")?.value || "Guest Customer";
-      const dt = document.getElementById("bookDateTime")?.value || "Tonight 8:00 PM";
-      const srv = document.getElementById("bookService")?.value || "Service Booking";
-      closeBookingModal();
-      showToast(\`Booking confirmed for \${name} (\${srv}) on \${dt}!\`, "success");
-    }
+    // 7. AI Assistant
+    function openAIChatModal() { document.getElementById("aiModal").classList.remove("hidden"); }
+    function closeAIChatModal() { document.getElementById("aiModal").classList.add("hidden"); }
 
     function askAI() {
       const inp = document.getElementById("aiInput");
@@ -1259,35 +979,33 @@ function generateDynamicExecutableHtml(
       if (inp) inp.value = "";
       setTimeout(() => {
         if (hist) {
-          hist.innerHTML += \`<div class="p-2.5 bg-indigo-50 text-indigo-900 rounded-lg">🤖 Based on your requirement for <strong>${title}</strong>, I recommend exploring our configured capabilities or testing the live database tables!</div>\`;
+          hist.innerHTML += \`<div class="p-2.5 bg-indigo-50 text-indigo-900 rounded-lg">🤖 Based on your requirement for <strong>${title}</strong> (${domainCtx.domainLabel}), you can trigger the primary action "${domainCtx.primaryAction.label}" or explore live database tables!</div>\`;
           hist.scrollTop = hist.scrollHeight;
         }
       }, 400);
     }
 
-    // 6. LIVE VISUAL CUSTOMIZER ENGINE
+    // 8. Customizer Engine
     function openLiveCustomizer() {
       const titleEl = document.getElementById("custAppTitle");
       if (titleEl) titleEl.value = document.getElementById("appNavTitle")?.innerText || "${title}";
       const annEl = document.getElementById("custAnnouncement");
-      if (annEl) annEl.value = document.getElementById("announcementText")?.innerText || "Live Production Instance generated by BlueprintAI Engine";
+      if (annEl) annEl.value = document.getElementById("announcementText")?.innerText || "";
       const headEl = document.getElementById("custHeroHeadline");
-      if (headEl) headEl.value = document.getElementById("heroHeadline")?.innerText || "${title}";
+      if (headEl) headEl.value = document.getElementById("heroHeadline")?.innerText || "";
       const subEl = document.getElementById("custHeroSubtext");
-      if (subEl) subEl.value = document.getElementById("heroSubtext")?.innerText || "${prompt}";
+      if (subEl) subEl.value = document.getElementById("heroSubtext")?.innerText || "";
       const badgeEl = document.getElementById("custItemBadge");
       if (badgeEl) badgeEl.innerText = allItems.length;
 
       renderCustomizerItemsList();
-      openModal('liveCustomizerModal');
+      document.getElementById("liveCustomizerModal").classList.remove("hidden");
     }
 
-    function closeLiveCustomizer() {
-      closeModal('liveCustomizerModal');
-    }
+    function closeLiveCustomizer() { document.getElementById("liveCustomizerModal").classList.add("hidden"); }
 
     function switchCustomizerTab(tab) {
-      ['branding', 'items', 'promos', 'toggles'].forEach(t => {
+      ['branding', 'items', 'toggles'].forEach(t => {
         const btn = document.getElementById("custTab" + t.charAt(0).toUpperCase() + t.slice(1));
         const pnl = document.getElementById("custPanel" + t.charAt(0).toUpperCase() + t.slice(1));
         if (t === tab) {
@@ -1304,24 +1022,21 @@ function generateDynamicExecutableHtml(
       const container = document.getElementById("customizerItemsList");
       document.getElementById("custItemBadge").innerText = allItems.length;
       if (allItems.length === 0) {
-        container.innerHTML = '<p class="text-center py-6 text-slate-400">No items configured yet. Click "Add New Item" above.</p>';
+        container.innerHTML = '<p class="text-center py-6 text-slate-400">No items configured yet.</p>';
         return;
       }
 
       container.innerHTML = allItems.map((item, idx) => \`
         <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div class="flex items-center gap-2 flex-1 w-full">
-            <input type="text" value="\${item.image}" onchange="updateCustomItemField(\${idx}, 'image', this.value)" class="w-10 text-center py-1 bg-white border border-slate-200 rounded-lg text-lg">
+            <input type="text" value="\${item.icon || '⭐'}" onchange="updateCustomItemField(\${idx}, 'icon', this.value)" class="w-10 text-center py-1 bg-white border border-slate-200 rounded-lg text-lg">
             <div class="flex-1 space-y-1">
               <input type="text" value="\${item.name}" onchange="updateCustomItemField(\${idx}, 'name', this.value)" class="w-full font-bold text-xs bg-white border border-slate-200 rounded-lg px-2 py-1">
               <input type="text" value="\${item.desc}" onchange="updateCustomItemField(\${idx}, 'desc', this.value)" class="w-full text-[11px] text-slate-500 bg-white border border-slate-200 rounded-lg px-2 py-1">
             </div>
           </div>
           <div class="flex items-center gap-2 w-full sm:w-auto justify-between">
-            <div class="flex items-center gap-1">
-              <span class="text-slate-400 font-bold">₹</span>
-              <input type="number" value="\${item.price}" onchange="updateCustomItemField(\${idx}, 'price', Number(this.value))" class="w-20 font-extrabold text-xs bg-white border border-slate-200 rounded-lg px-2 py-1 text-slate-900">
-            </div>
+            <input type="text" value="\${item.metaValue}" onchange="updateCustomItemField(\${idx}, 'metaValue', this.value)" class="w-28 font-bold text-xs bg-white border border-slate-200 rounded-lg px-2 py-1 text-slate-900">
             <button onclick="deleteCustomItem(\${idx})" class="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition" title="Delete Item">
               🗑️
             </button>
@@ -1331,22 +1046,22 @@ function generateDynamicExecutableHtml(
     }
 
     function updateCustomItemField(idx, field, value) {
-      if (allItems[idx]) {
-        allItems[idx][field] = value;
-      }
+      if (allItems[idx]) allItems[idx][field] = value;
     }
 
     function addNewCustomItem() {
       const newId = allItems.length > 0 ? Math.max(...allItems.map(i => i.id)) + 1 : 1;
       allItems.unshift({
         id: newId,
-        name: "New Custom Service / Product",
+        name: "New Service / Offering",
         desc: "Custom service description added via Live Customizer.",
         category: "Custom Item",
-        price: 249,
+        badge: "New",
         rating: "4.9",
-        image: "⭐",
-        tag: "New",
+        icon: "⭐",
+        metaLabel: "Details",
+        metaValue: "Standard",
+        actionLabel: domainContext.primaryAction.label,
       });
       renderCustomizerItemsList();
     }
@@ -1356,89 +1071,51 @@ function generateDynamicExecutableHtml(
       renderCustomizerItemsList();
     }
 
-    function selectThemeColor(color) {
-      selectedTheme = color;
-      showToast("Theme set to " + color + "! Click Save & Apply to persist.", "info");
+    function selectPageBgTheme(theme) {
+      selectedBgTheme = theme;
+      applyBgTheme(theme);
+      renderCatalog();
+      showToast("Theme changed to " + theme, "info");
+    }
+
+    function applyBgTheme(theme) {
+      const b = document.body;
+      if (!b) return;
+      b.className = "min-h-screen flex flex-col transition-colors duration-300 ";
+      if (theme === "dark") b.className += "bg-slate-950 text-slate-100";
+      else if (theme === "navy") b.className += "bg-slate-900 text-indigo-50";
+      else if (theme === "emerald") b.className += "bg-emerald-950 text-emerald-50";
+      else if (theme === "crimson") b.className += "bg-rose-950 text-rose-50";
+      else b.className += "bg-slate-50 text-slate-900";
     }
 
     function saveAndApplyLiveCustomization() {
       const newTitle = document.getElementById("custAppTitle")?.value.trim() || "${title}";
-      const newAnn = document.getElementById("custAnnouncement")?.value.trim() || "Live Production Application";
+      const newAnn = document.getElementById("custAnnouncement")?.value.trim() || "";
       const newHeroHead = document.getElementById("custHeroHeadline")?.value.trim() || newTitle;
-      const newHeroSub = document.getElementById("custHeroSubtext")?.value.trim() || "${prompt}";
+      const newHeroSub = document.getElementById("custHeroSubtext")?.value.trim() || "";
 
-      const isCartActive = document.getElementById("toggleCart")?.checked ?? true;
-      const isBookingActive = document.getElementById("toggleBooking")?.checked ?? true;
-      const isAiActive = document.getElementById("toggleAi")?.checked ?? true;
-
-      // Update Live UI
       document.title = newTitle + " — Live Application";
       const navT = document.getElementById("appNavTitle");
       if (navT) navT.innerText = newTitle;
-      const logoB = document.getElementById("appLogoBadge");
-      if (logoB) logoB.innerText = newTitle.charAt(0);
-
       const annEl = document.getElementById("announcementText");
       if (annEl) annEl.innerText = newAnn;
-
       const hH = document.getElementById("heroHeadline");
       if (hH) hH.innerText = newHeroHead;
-
       const hS = document.getElementById("heroSubtext");
       if (hS) hS.innerText = newHeroSub;
 
-      const cartBtn = document.getElementById("cartNavBtn");
-      if (cartBtn) cartBtn.style.display = isCartActive ? "flex" : "none";
-
-      const bookBtn = document.getElementById("heroBookingBtn");
-      if (bookBtn) {
-        if (isBookingActive) bookBtn.classList.remove("hidden");
-        else bookBtn.classList.add("hidden");
-      }
-
-      const aiBtn = document.getElementById("heroAiBtn");
-      if (aiBtn) {
-        if (isAiActive) aiBtn.classList.remove("hidden");
-        else aiBtn.classList.add("hidden");
-      }
-
-      // Persist to LocalStorage
-      const newConfig = {
-        title: newTitle,
-        announcement: newAnn,
-        heroHeadline: newHeroHead,
-        heroSubtext: newHeroSub,
-        bgTheme: selectedBgTheme,
-        heroGradient: selectedHeroGradient,
-        cardLayout: selectedCardLayout,
-        items: allItems,
-        toggles: { cart: isCartActive, booking: isBookingActive, ai: isAiActive }
-      };
-      localStorage.setItem(customConfigKey, JSON.stringify(newConfig));
-
-      applyBgTheme(selectedBgTheme);
-      applyHeroGradient(selectedHeroGradient);
-      applyCardLayout(selectedCardLayout);
       renderCatalog();
       closeLiveCustomizer();
-      showToast("✓ Live Web Customizations & Styling Saved & Applied!", "success");
+      showToast("✓ Live Customizations Saved & Applied!", "success");
     }
 
     function resetCustomizerToDefault() {
-      localStorage.removeItem(customConfigKey);
       allItems = ${serializedItems};
       selectedBgTheme = "light";
-      selectedHeroGradient = "indigo";
-      selectedCardLayout = "grid-3";
-      document.getElementById("custAppTitle").value = "${title}";
-      document.getElementById("custAnnouncement").value = "Live Production Instance generated by BlueprintAI Engine";
-      document.getElementById("custHeroHeadline").value = "${title}";
-      document.getElementById("custHeroSubtext").value = "${prompt}";
       applyBgTheme("light");
-      applyHeroGradient("indigo");
-      applyCardLayout("grid-3");
       saveAndApplyLiveCustomization();
-      showToast("Reset to Blueprint original defaults", "info");
+      showToast("Reset to Blueprint defaults", "info");
     }
 
     function showToast(msg, type) {
@@ -1451,12 +1128,10 @@ function generateDynamicExecutableHtml(
       setTimeout(() => { t.remove(); }, 3500);
     }
 
-    // Init
-    applyBgTheme(selectedBgTheme);
-    applyHeroGradient(selectedHeroGradient);
-    applyCardLayout(selectedCardLayout);
+    // Initialization
+    renderCategoryFilters();
     renderCatalog();
-    renderAdminOrders();
+    renderAdminDashboard();
   </script>
 </body>
 </html>`;

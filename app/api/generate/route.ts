@@ -714,29 +714,29 @@ Click through the tabs on the right to inspect the interactive **Process Map**, 
         ],
         api_endpoints: domainData.endpoints,
         wireframe_sections: isGuj ? [
-          { title: `${dynamicEntity} કસ્ટમર સ્ટોરફ્રન્ટ`, components: [`${dynamicEntity} કેટલોગ`, "સર્ચ અને ફિલ્ટર્સ", "શોપિંગ કાર્ટ", "ચેકઆઉટ ફ્લો"] },
-          { title: `${dynamicEntity} એડમિન ડેશબોર્ડ`, components: ["લાઈવ સેલ્સ એનાલિટિક્સ", "ઇન્વેન્ટરી મેનેજમેન્ટ", "ઓર્ડર હિસ્ટ્રી", "સ્ટેટસ બેજ"] },
-          { title: `${dynamicEntity} સેટિંગ્સ`, components: ["પ્રોફાઈલ માહિતી", "પેમેન્ટ પદ્ધતિઓ", "ઓર્ડર ટ્રેકિંગ"] }
+          { title: `${dynamicEntity} પોર્ટલ (${domainData.tables[0]?.table_name || "મેઇન"})`, components: [`${dynamicEntity} લિસ્ટિંગ અને વિગતો`, "સ્માર્ટ સર્ચ અને ફિલ્ટર્સ", "પ્રાથમિક એક્શન મોડલ", "લાઇવ સ્ટેટસ મોનિટરિંગ"] },
+          { title: `${dynamicEntity} એડમિન ડેશબોર્ડ`, components: ["લાઇવ ઓપરેશનલ એનાલિટિક્સ", "રેકોર્ડ્સ મેનેજમેન્ટ ટેબલ", "એક્ટિવિટી લોગ્સ", "સ્ટેટસ બેજ"] },
+          { title: `${dynamicEntity} સિસ્ટમ સેટિંગ્સ`, components: ["પ્રોફાઈલ માહિતી", "API અને વેબહૂક કન્ફિગરેશન", "નોટિફિકેશન પ્રેફરન્સ"] }
         ] : isHindi ? [
-          { title: `${dynamicEntity} कस्टमर स्टोरफ्रंट`, components: [`${dynamicEntity} कैटलॉग`, "खोज और फ़िल्टर", "शॉपिंग कार्ट", "चेकआउट"] },
-          { title: `${dynamicEntity} एडमिन डैशबोर्ड`, components: ["लाइव सेल्स", "इन्वेंटरी मैनेजमेंट", "ऑर्डर हिस्ट्री", "स्टेटस"] },
-          { title: `${dynamicEntity} सेटिंग्स`, components: ["प्रोफाइल", "भुगतान के तरीके", "ऑर्डर ट्रैकिंग"] }
+          { title: `${dynamicEntity} पोर्टल (${domainData.tables[0]?.table_name || "मेन"})`, components: [`${dynamicEntity} लिस्टिंग एवं विवरण`, "खोज और फ़िल्टर", "प्राथमिक एक्शन मोडल", "लाइव स्टेटस ट्रैकिंग"] },
+          { title: `${dynamicEntity} एडमिन डैशबोर्ड`, components: ["लाइव एनालिटिक्स", "रिकॉर्ड्स मैनेजमेंट टेबल", "एक्टिविटी लॉग्स", "स्टेटस"] },
+          { title: `${dynamicEntity} सेटिंग्स`, components: ["प्रोफाइल", "API व वेबहुक कॉन्फ़िगरेशन", "सूचना प्राथमिकताएं"] }
         ] : isEs ? [
-          { title: `${dynamicEntity} Escaparate de Clientes`, components: [`${dynamicEntity} Catálogo`, "Búsqueda y Filtros", "Carrito de Compras", "Pago Seguro"] },
-          { title: `${dynamicEntity} Panel de Administración`, components: ["Análisis de Ventas", "Gestión de Inventario", "Historial de Pedidos", "Insignias de Estado"] },
-          { title: `${dynamicEntity} Configuraciones`, components: ["Perfil de Usuario", "Métodos de Pago", "Seguimiento de Pedido"] }
+          { title: `Portal de ${dynamicEntity}`, components: [`Directorio de ${dynamicEntity}`, "Búsqueda y Filtros", "Formulario de Acción Principal", "Detalles y Estado en Vivo"] },
+          { title: `Panel de Control de ${dynamicEntity}`, components: ["Métricas Operativas", "Tabla de Gestión de Registros", "Registro de Actividad", "Insignias de Estado"] },
+          { title: `Configuraciones del Sistema`, components: ["Perfil de Organización", "Integraciones de API", "Preferencias de Alertas"] }
         ] : isFr ? [
-          { title: `${dynamicEntity} Vitrine Client`, components: [`${dynamicEntity} Catalogue`, "Recherche et Filtres", "Panier", "Paiement Sécurisé"] },
-          { title: `${dynamicEntity} Tableau de Bord Admin`, components: ["Analyses des Ventes", "Gestion des Stocks", "Historique des Commandes", "Statuts"] },
-          { title: `${dynamicEntity} Paramètres`, components: ["Profil Utilisateur", "Méthodes de Paiement", "Suivi de Commande"] }
+          { title: `Portail ${dynamicEntity}`, components: [`Répertoire ${dynamicEntity}`, "Recherche et Filtres", "Formulaire d'Action Principale", "Détails et Statut en Direct"] },
+          { title: `Tableau de Bord Opérationnel`, components: ["Indicateurs Clés (KPI)", "Table de Gestion des Dossiers", "Journal d'Activité", "Badges de Statut"] },
+          { title: `Paramètres Système`, components: ["Profil Utilisateur", "Intégrations API & Webhooks", "Préférences de Notifications"] }
         ] : isDe ? [
-          { title: `${dynamicEntity} Kunden-Schaufenster`, components: [`${dynamicEntity} Katalog`, "Suche & Filter", "Warenkorb", "Sicherer Checkout"] },
-          { title: `${dynamicEntity} Admin-Dashboard`, components: ["Verkaufsanalysen", "Bestandsverwaltung", "Bestellhistorie", "Status-Badges"] },
-          { title: `${dynamicEntity} Einstellungen`, components: ["Benutzerprofil", "Zahlungsmethoden", "Bestellverfolgung"] }
+          { title: `${dynamicEntity} Portal`, components: [`${dynamicEntity} Übersicht`, "Suche & Filter", "Hauptaktions-Formular", "Live-Status-Tracking"] },
+          { title: `${dynamicEntity} Steuerungs-Dashboard`, components: ["Betriebs-KPIs", "Datensatz-Verwaltungstabelle", "Aktivitätsprotokoll", "Status-Badges"] },
+          { title: `Systemeinstellungen`, components: ["Organisationsprofil", "API-Integrationen", "Benachrichtigungseinstellungen"] }
         ] : [
-          { title: `${dynamicEntity} Customer Storefront`, components: [`${dynamicEntity} Catalog Grid`, "Advanced Search & Filters", "Shopping Cart Drawer", "Secure Checkout Flow"] },
-          { title: `${dynamicEntity} Admin Dashboard`, components: ["Live Sales Analytics", "Inventory Management Table", "Customer Order History", "Status Badges"] },
-          { title: `User & ${dynamicEntity} Settings`, components: ["User Profile Details", "Payment Methods", "Order Tracking Module"] }
+          { title: `${dynamicEntity} Portal & Operations`, components: [`${dynamicEntity} Directory & Modules`, "Advanced Search & Filters", "Primary Action Dispatcher", "Real-Time Telemetry & Status Drawer"] },
+          { title: `${dynamicEntity} Admin Management Center`, components: ["Live Operational KPIs", "Records Management Ledger", "Audit Trail & Logs", "Status Badges"] },
+          { title: `System & Integration Settings`, components: ["User & Tenant Profile", "API Gateway & Webhook Settings", "Notification Preferences"] }
         ],
         roadmap_sprints: [
           {
