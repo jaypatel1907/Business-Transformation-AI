@@ -1,5 +1,4 @@
-"use client"
-
+"use client";
 import { useRole } from "@/lib/role-context"
 import { getTranslation } from "@/lib/i18n"
 import {
@@ -293,4 +292,5 @@ export function DashboardTab({
     </div>
   )
 }
+
 

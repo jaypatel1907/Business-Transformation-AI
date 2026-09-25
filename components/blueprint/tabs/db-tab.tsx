@@ -1,5 +1,4 @@
-"use client"
-
+"use client";
 import { useState } from "react"
 import { getTranslation } from "@/lib/i18n"
 import { Database, Network, Download, Copy, Check, ArrowRight } from "lucide-react"
@@ -226,5 +225,6 @@ export function DbTab({ generated, data }: { generated: boolean; data?: any }) {
     </div>
   )
 }
+
 
 
