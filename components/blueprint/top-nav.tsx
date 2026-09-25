@@ -20,6 +20,8 @@ import {
   MessageSquare,
   Sparkles,
   LogOut,
+  Rocket,
+  History,
 } from "lucide-react"
 
 export function TopNav({
@@ -30,6 +32,8 @@ export function TopNav({
   onExportChatPDF,
   onExportMarkdown,
   onExportJSON,
+  onOpenApproveBuild,
+  onOpenHistory,
   targetLanguage,
   onLanguageChange,
   generating,
@@ -42,6 +46,8 @@ export function TopNav({
   onExportChatPDF: () => void
   onExportMarkdown: () => void
   onExportJSON: () => void
+  onOpenApproveBuild?: () => void
+  onOpenHistory?: () => void
   targetLanguage: string
   onLanguageChange: (lang: string) => void
   generating: boolean
@@ -136,12 +142,40 @@ export function TopNav({
 
 
 
+        {/* Project History Button */}
+        {onOpenHistory && (
+          <button
+            onClick={onOpenHistory}
+            title="View Generated Applications & Version History"
+            className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition shadow-2xs cursor-pointer"
+          >
+            <History className="h-3.5 w-3.5 text-indigo-600" />
+            <span className="hidden sm:inline">Build History</span>
+          </button>
+        )}
+
+        {/* Primary Approve & Build Button */}
+        {onOpenApproveBuild && (
+          <button
+            onClick={onOpenApproveBuild}
+            disabled={!hasBlueprintData || generating}
+            className={`flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-extrabold text-white transition shadow-sm cursor-pointer ${
+              hasBlueprintData && !generating
+                ? "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-emerald-600/20 animate-pulse"
+                : "bg-slate-400 opacity-40 cursor-not-allowed"
+            }`}
+          >
+            <Rocket className="h-3.5 w-3.5" />
+            <span>Approve & Build App</span>
+          </button>
+        )}
+
         {/* Multi-Format Export Dropdown */}
         <div className="relative">
           <button
             onClick={() => setShowExportMenu(!showExportMenu)}
             disabled={!hasBlueprintData || generating}
-            className="flex items-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-1.5 text-xs font-bold text-white transition hover:bg-indigo-700 disabled:opacity-40 shadow-sm cursor-pointer"
+            className="flex items-center gap-1.5 rounded-xl bg-indigo-600 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-indigo-700 disabled:opacity-40 shadow-sm cursor-pointer"
           >
             <Download className="h-3.5 w-3.5" />
             <span>{t("exportReport")}</span>

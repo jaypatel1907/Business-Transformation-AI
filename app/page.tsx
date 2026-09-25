@@ -9,7 +9,12 @@ import { Canvas, type TabId } from "@/components/blueprint/canvas"
 import { samplePrompt } from "@/lib/blueprint-data"
 import { saveBlueprintLocally, getLocalBlueprints } from "@/lib/supabase"
 import { exportCleanPDF, exportExecutiveReportPDF } from "@/lib/pdf-exporter"
-import { Check, Copy, Share2, X } from "lucide-react"
+import { BlueprintEditorModal } from "@/components/blueprint/blueprint-editor-modal"
+import { BuildProgressModal } from "@/components/blueprint/build-progress-modal"
+import { LiveSuccessModal } from "@/components/blueprint/live-success-modal"
+import { ProjectHistoryModal } from "@/components/blueprint/project-history-modal"
+import { ProjectRecord, saveProjectRecord, getLocalProjects } from "@/lib/project-store"
+import { Check, Copy, Share2, X, Rocket, Sparkles, ArrowRight } from "lucide-react"
 import { getTranslation } from "@/lib/i18n"
 
 const nextId = () => `msg-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`
@@ -83,6 +88,15 @@ export default function Page() {
   const [shareUrl, setShareUrl] = useState("")
   const [copied, setCopied] = useState(false)
 
+  // Application Generation & Deployment Workflow States
+  const [showEditorModal, setShowEditorModal] = useState(false)
+  const [showBuildModal, setShowBuildModal] = useState(false)
+  const [showLiveSuccessModal, setShowLiveSuccessModal] = useState(false)
+  const [showHistoryModal, setShowHistoryModal] = useState(false)
+  const [currentProject, setCurrentProject] = useState<ProjectRecord | null>(null)
+  const [buildError, setBuildError] = useState<string | null>(null)
+  const [isBuilding, setIsBuilding] = useState(false)
+
   // Restore saved blueprint if URL has blueprintId parameter
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -103,6 +117,151 @@ export default function Page() {
         }
       }
     }
+  }, [])
+
+  const handleApproveAndBuild = useCallback(
+    async (approvedBp: any) => {
+      setShowEditorModal(false)
+      setBlueprintData(approvedBp)
+      setShowBuildModal(true)
+      setIsBuilding(true)
+      setBuildError(null)
+
+      try {
+        const res = await fetch("/api/build", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            blueprint: approvedBp,
+            projectId: currentProject?.id,
+            version: currentProject ? currentProject.version + 1 : 1,
+            userRole: role || "Manager",
+            changeSummary: currentProject ? `Incremental update ${currentProject.version + 1}` : "Initial Build from Blueprint",
+          }),
+        })
+
+        const data = await res.json()
+        if (data.success && data.project) {
+          const saved = saveProjectRecord(data.project)
+          setCurrentProject(saved)
+        } else {
+          setBuildError(data.error || "Application build failed")
+        }
+      } catch (err: any) {
+        setBuildError(err.message || "Network error during compilation")
+      }
+    },
+    [currentProject, role]
+  )
+
+  const handleBuildComplete = useCallback(() => {
+    setShowBuildModal(false)
+    setIsBuilding(false)
+    setShowLiveSuccessModal(true)
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: nextId(),
+        role: "ai",
+        label: "Live Deployment Engine",
+        content: (
+          <FormattedMessage
+            text={`🎉 **Application Generated & Deployed Live!**\n\nYour full-stack application has passed all automated unit checks, database DDL validations, and is now running live.\n\n👉 **Live Preview:** Click **Open Live App** to test interactive orders, cart, booking, and live admin management!`}
+          />
+        ),
+      },
+    ])
+  }, [])
+
+  const handleEditRequirements = useCallback(() => {
+    setShowLiveSuccessModal(false)
+    setShowEditorModal(true)
+  }, [])
+
+  const handleRegenerateFromSuccess = useCallback(() => {
+    setShowLiveSuccessModal(false)
+    if (blueprintData) {
+      handleApproveAndBuild(blueprintData)
+    }
+  }, [blueprintData, handleApproveAndBuild])
+
+  const handleDeployAgain = useCallback(async () => {
+    if (!currentProject) return
+    try {
+      const res = await fetch("/api/deploy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          projectId: currentProject.id,
+          projectName: currentProject.project_name,
+        }),
+      })
+      const result = await res.json()
+      if (result.success) {
+        setShowLiveSuccessModal(true)
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  }, [currentProject])
+
+  const handleAIRefine = useCallback(
+    async (refinePromptText: string) => {
+      if (!blueprintData) return
+      setShowLiveSuccessModal(false)
+      setShowBuildModal(true)
+      setIsBuilding(true)
+      setBuildError(null)
+
+      const updatedBlueprint = {
+        ...blueprintData,
+        user_problem: `${blueprintData.user_problem || "App"} | Refinement: ${refinePromptText}`,
+        initiatives: [
+          ...(blueprintData.initiatives || []),
+          {
+            title: refinePromptText.length > 30 ? refinePromptText.slice(0, 30) + "..." : refinePromptText,
+            impact: "AI Refinement",
+            desc: `User refined capability: ${refinePromptText}`,
+          },
+        ],
+      }
+      setBlueprintData(updatedBlueprint)
+
+      try {
+        const nextVer = currentProject ? currentProject.version + 1 : 2
+        const res = await fetch("/api/build", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            blueprint: updatedBlueprint,
+            projectId: currentProject?.id,
+            version: nextVer,
+            userRole: role || "Manager",
+            changeSummary: `AI Refinement: ${refinePromptText}`,
+          }),
+        })
+
+        const data = await res.json()
+        if (data.success && data.project) {
+          const saved = saveProjectRecord(data.project)
+          setCurrentProject(saved)
+        } else {
+          setBuildError(data.error || "Application build failed")
+        }
+      } catch (err: any) {
+        setBuildError(err.message || "Network error during compilation")
+      }
+    },
+    [blueprintData, currentProject, role]
+  )
+
+  const handleSelectProjectFromHistory = useCallback((project: ProjectRecord) => {
+    setCurrentProject(project)
+    if (project.approved_blueprint) {
+      setBlueprintData(project.approved_blueprint)
+      setGenerated(true)
+    }
+    setShowLiveSuccessModal(true)
   }, [])
 
   const runGeneration = useCallback(
@@ -351,7 +510,7 @@ ${blueprintData.api_endpoints?.map((e: any) => `- \`${e.method} ${e.path}\`: ${e
 
   // If authenticated, render full Workspace
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-slate-50 text-slate-900 font-sans">
+    <div className="flex h-screen flex-col overflow-hidden bg-slate-50 text-slate-900 font-sans relative">
       <TopNav
         onExportExecutivePDF={handleExportExecutivePDF}
         onExportGuideRoadmapPDF={handleExportGuideRoadmapPDF}
@@ -360,11 +519,37 @@ ${blueprintData.api_endpoints?.map((e: any) => `- \`${e.method} ${e.path}\`: ${e
         onExportChatPDF={handleExportChatPDF}
         onExportMarkdown={handleExportMarkdown}
         onExportJSON={handleExportJSON}
+        onOpenApproveBuild={() => setShowEditorModal(true)}
+        onOpenHistory={() => setShowHistoryModal(true)}
         targetLanguage={targetLanguage}
         onLanguageChange={handleLanguageChange}
         generating={generating}
         hasBlueprintData={!!blueprintData}
       />
+
+      {/* Floating Blueprint Approval Call-to-Action Bar */}
+      {blueprintData && !generating && (
+        <div className="bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 text-white px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3 shadow-md z-10 border-b border-indigo-700/60 animate-in slide-in-from-top duration-300">
+          <div className="flex items-center gap-2 text-xs">
+            <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-ping"></span>
+            <span className="font-bold text-emerald-300">Architecture Blueprint Ready:</span>
+            <span className="text-slate-300 hidden sm:inline truncate max-w-md">
+              {blueprintData.project_title || "Solution Architecture"}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowEditorModal(true)}
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-extrabold text-xs shadow-md transition cursor-pointer"
+            >
+              <Rocket className="w-3.5 h-3.5" />
+              <span>Review, Approve & Build Live App</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
 
       <main className="flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
         <CompanionPanel targetLanguage={targetLanguage}
@@ -382,6 +567,50 @@ ${blueprintData.api_endpoints?.map((e: any) => `- \`${e.method} ${e.path}\`: ${e
           targetLanguage={targetLanguage}
         />
       </main>
+
+      {/* 1. Blueprint Review & Approval Modal */}
+      <BlueprintEditorModal
+        isOpen={showEditorModal}
+        onClose={() => setShowEditorModal(false)}
+        blueprint={blueprintData}
+        onApproveAndBuild={handleApproveAndBuild}
+        onRegenerate={() => {
+          setShowEditorModal(false)
+          runGeneration(undefined, lastPrompt, lastDocText)
+        }}
+        generating={generating}
+      />
+
+      {/* 2. Application Generation Build Progress Modal */}
+      <BuildProgressModal
+        isOpen={showBuildModal}
+        projectName={blueprintData?.project_title || "Enterprise App"}
+        onComplete={handleBuildComplete}
+        onRetry={() => handleApproveAndBuild(blueprintData)}
+        onCancel={() => {
+          setShowBuildModal(false)
+          setIsBuilding(false)
+        }}
+        buildError={buildError}
+      />
+
+      {/* 3. Live Success Result Modal */}
+      <LiveSuccessModal
+        isOpen={showLiveSuccessModal}
+        onClose={() => setShowLiveSuccessModal(false)}
+        project={currentProject}
+        onEditRequirements={handleEditRequirements}
+        onRegenerate={handleRegenerateFromSuccess}
+        onDeployAgain={handleDeployAgain}
+        onAIRefine={handleAIRefine}
+      />
+
+      {/* 4. Project Builds & Version History Modal */}
+      <ProjectHistoryModal
+        isOpen={showHistoryModal}
+        onClose={() => setShowHistoryModal(false)}
+        onSelectProject={handleSelectProjectFromHistory}
+      />
 
       {/* Share Modal */}
       {showShareModal && (

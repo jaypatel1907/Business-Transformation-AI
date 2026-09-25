@@ -1,4 +1,4 @@
-﻿export const translations = {
+export const translations = {
   "English": {
     inputPlaceholder: "Describe your business idea or drag & drop SOP/BRD document here...",
     supportsDesc: "Supports .pdf, .docx, .txt, .md, .brd",

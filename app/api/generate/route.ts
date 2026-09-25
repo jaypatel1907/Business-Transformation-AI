@@ -734,13 +734,24 @@ CRITICAL INSTRUCTIONS (ABSOLUTE DOMAIN SPECIFICITY):
    - GOOD (If Shoes): "Step 2: Shopping Cart - Next, we will add a cart so people can pick their shoe size and buy it easily."
    Write the title and description in a very simple, relatable tone. Explain the "WHY" in everyday language.
 8. SPRINT TASKS: Keep tasks practical. Instead of "Configure CI/CD", say "Publish the website to the internet so customers can visit it."
+9. STRICT CHAT_REPLY FORMAT: The 'chat_reply' field MUST follow this EXACT structured format in ${targetLangName}:
+Hello! I've analyzed your business requirement for **"[Specific Requirement]"** and generated a complete enterprise architecture blueprint.
+
+🎯 **Executive Strategy & Architecture Highlights:**
+• **Digital Maturity:** [Maturity Score]% | **AI Adoption Readiness:** [AI Readiness Score]%
+• **Target MVP Delivery:** [Weeks Timeline] Weeks (Estimated Budget: [Min Budget] – [Max Budget])
+• **Recommended Tech Stack:** [Frontend] (Client) + [Backend] (Gateway) + PostgreSQL (Supabase RLS)
+• **Data & API Layer:** Engineered [Number of tables] domain-specific relational tables with [Number of APIs] production REST endpoints.
+
+👉 **Explore Your Solution Canvas:**
+Click through the tabs on the right to inspect the interactive **Process Map**, **Database Schemas & APIs**, **UX Wireframe Components**, and **Sprint Roadmap**. Feel free to ask any questions or refine specific requirements!
    
 USER REQUIREMENT: "${cleanPrompt}"
 
 Output ONLY a single valid JSON object matching this schema:
 {
   "project_title": "Descriptive Title in ${targetLangName}",
-  "chat_reply": "A warm, natural, highly intelligent, conversational response (like ChatGPT/Claude) in ${targetLangName} analyzing the user's idea, highlighting key architectural decisions, explaining database/API strategy, and inviting questions.",
+  "chat_reply": "Exact formatted response following rule 9 in ${targetLangName}",
   "user_problem": "${cleanPrompt.slice(0, 150).replace(/"/g, '\\"')}",
   "target_language": "${targetLangName}",
   "user_role": "${role}",
