@@ -151,6 +151,67 @@ export async function exportCleanPDF({ elementId, filename }: ExportPdfOptions) 
 }
 
 /**
+ * Helper to robustly parse column definitions (strings or objects) into a clean name, type, desc
+ */
+export function parseTableColumn(col: any): { name: string; type: string; desc: string } {
+  if (!col) return { name: "field", type: "VARCHAR", desc: "" }
+  if (typeof col === "string") {
+    const match = col.match(/^([a-zA-Z0-9_]+)\s*\((.*?)\)(.*)$/)
+    if (match) {
+      return {
+        name: match[1].trim(),
+        type: match[2].trim(),
+        desc: match[3]?.replace(/^[\s:-]+/, "").trim() || "Entity attribute"
+      }
+    }
+    const simpleMatch = col.match(/^([a-zA-Z0-9_]+)\s+(VARCHAR|TEXT|UUID|BOOLEAN|INTEGER|INT|BIGINT|NUMERIC|DECIMAL|TIMESTAMP|TIMESTAMPTZ|JSONB|DATE|FLOAT|DOUBLE)(.*)$/i)
+    if (simpleMatch) {
+      return {
+        name: simpleMatch[1].trim(),
+        type: simpleMatch[2].trim().toUpperCase(),
+        desc: simpleMatch[3]?.trim() || "Entity attribute"
+      }
+    }
+    const parts = col.trim().split(/\s+/)
+    if (parts.length >= 2) {
+      return {
+        name: parts[0],
+        type: parts.slice(1).join(" "),
+        desc: "Entity attribute"
+      }
+    }
+    return { name: col, type: "VARCHAR", desc: "Entity attribute" }
+  } else if (typeof col === "object") {
+    const name = col.name || col.column || col.column_name || col.field || "id"
+    const type = col.type || col.data_type || col.datatype || "VARCHAR"
+    const desc = col.description || col.desc || col.constraint || "Entity attribute"
+    return { name, type, desc }
+  }
+  return { name: String(col), type: "VARCHAR", desc: "" }
+}
+
+/**
+ * Helper to robustly parse API endpoint definitions into method, path, desc, auth
+ */
+export function parseApiEndpoint(api: any): { method: string; path: string; desc: string; auth: string } {
+  if (!api) return { method: "GET", path: "/api/v1/resource", desc: "API handler", auth: "Bearer JWT" }
+  if (typeof api === "string") {
+    const parts = api.trim().split(/\s+/)
+    return {
+      method: parts[0]?.toUpperCase() || "GET",
+      path: parts[1] || api,
+      desc: "Production REST endpoint handler",
+      auth: "Bearer JWT"
+    }
+  }
+  const method = (api.method || "GET").toUpperCase()
+  const path = api.path || api.endpoint || api.url || "/api/v1/resource"
+  const desc = api.desc || api.description || api.summary || "Production REST endpoint handler"
+  const auth = api.auth || "Bearer JWT"
+  return { method, path, desc, auth }
+}
+
+/**
  * Generates and exports a complete, professional Executive Blueprint Report PDF
  */
 export async function exportExecutiveReportPDF(data: any, language: string = "English") {
@@ -172,9 +233,22 @@ export async function exportExecutiveReportPDF(data: any, language: string = "En
   container.style.boxSizing = "border-box"
   container.style.zIndex = "-1000"
 
-  const tablesCount = data.database_schema?.tables?.length || 0
-  const apisCount = data.database_schema?.api_endpoints?.length || 0
-  const wireframesCount = data.wireframe_specs?.pages?.length || 0
+  const tables = data.database_tables || data.database_schema?.tables || []
+  const apis = data.api_endpoints || data.database_schema?.api_endpoints || []
+  const bpmnSteps = data.bpmn_steps || data.process_map?.steps || []
+  const sprints = data.roadmap_sprints || data.roadmap?.sprints || data.project_roadmap?.sprints || []
+  const wireframes = data.wireframe_sections || data.wireframe_specs?.pages || []
+
+  const digitalMaturity = data.digital_maturity || data.business_analysis?.digital_maturity?.overall_score || data.scores?.digital_maturity || 78
+  const aiReadiness = data.ai_adoption || data.business_analysis?.ai_readiness?.overall_score || data.scores?.ai_readiness || 84
+  const targetDelivery = data.timeline || data.scores?.target_mvp || "6-8 Weeks"
+  const estBudget = data.financial_estimation ? `${data.financial_estimation.min_budget} – ${data.financial_estimation.max_budget}` : (data.scores?.financial_budget || "$18,000 – $34,000")
+
+  const techStackList = Array.isArray(data.tech_stack)
+    ? data.tech_stack
+    : typeof data.tech_stack === "object" && data.tech_stack !== null
+    ? Object.values(data.tech_stack).filter(Boolean)
+    : ["Next.js 16", "TypeScript", "Tailwind CSS", "Supabase PostgreSQL", "Gemini 2.5 Pro"]
 
   container.innerHTML = `
     <!-- Header -->
@@ -182,15 +256,15 @@ export async function exportExecutiveReportPDF(data: any, language: string = "En
       <div>
         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
           <div style="width: 14px; height: 14px; background: #4f46e5; border-radius: 4px;"></div>
-          <span style="font-size: 11px; font-weight: 800; letter-spacing: 0.1em; color: #4f46e5; text-transform: uppercase;">Futurrizon Business Transformation AI</span>
+          <span style="font-size: 11px; font-weight: 800; letter-spacing: 0.1em; color: #4f46e5; text-transform: uppercase;">BlueprintAI Executive Architecture Report</span>
         </div>
         <h1 style="font-size: 24px; font-weight: 800; color: #0f172a; margin: 0 0 4px 0; line-height: 1.2;">${data.project_title || "Enterprise Architecture Blueprint"}</h1>
-        <p style="font-size: 13px; color: #64748b; margin: 0;">${data.project_subtitle || "Complete Modernization & Transformation Report"}</p>
+        <p style="font-size: 13px; color: #64748b; margin: 0;">${data.user_problem || "End-to-End Business Transformation & Architecture Specifications"}</p>
       </div>
       <div style="text-align: right; font-size: 11px; color: #64748b; border-left: 1px solid #e2e8f0; padding-left: 12px;">
         <div><strong>Date:</strong> ${new Date().toLocaleDateString()}</div>
         <div><strong>Language:</strong> ${language}</div>
-        <div><strong>Status:</strong> Approved / Active</div>
+        <div><strong>Status:</strong> Approved / Production Ready</div>
       </div>
     </div>
 
@@ -198,213 +272,129 @@ export async function exportExecutiveReportPDF(data: any, language: string = "En
     <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; page-break-inside: avoid;">
       <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; text-align: center;">
         <div style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">Digital Maturity</div>
-        <div style="font-size: 20px; font-weight: 800; color: #4f46e5; margin-top: 4px;">${data.scores?.digital_maturity || 78}/100</div>
+        <div style="font-size: 20px; font-weight: 800; color: #4f46e5; margin-top: 4px;">${digitalMaturity}/100</div>
       </div>
       <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; text-align: center;">
         <div style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">AI Readiness</div>
-        <div style="font-size: 20px; font-weight: 800; color: #10b981; margin-top: 4px;">${data.scores?.ai_readiness || 84}%</div>
+        <div style="font-size: 20px; font-weight: 800; color: #10b981; margin-top: 4px;">${aiReadiness}%</div>
       </div>
       <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; text-align: center;">
         <div style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">Target Delivery</div>
-        <div style="font-size: 20px; font-weight: 800; color: #0284c7; margin-top: 4px;">${data.scores?.target_mvp || "12 Weeks"}</div>
+        <div style="font-size: 16px; font-weight: 800; color: #0284c7; margin-top: 6px;">${targetDelivery}</div>
       </div>
       <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; text-align: center;">
         <div style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">Est. Budget</div>
-        <div style="font-size: 20px; font-weight: 800; color: #f59e0b; margin-top: 4px;">${data.scores?.financial_budget || "$145,000"}</div>
+        <div style="font-size: 16px; font-weight: 800; color: #f59e0b; margin-top: 6px;">${estBudget}</div>
       </div>
     </div>
 
     <!-- Executive Summary & Scope -->
     <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; margin-bottom: 20px; page-break-inside: avoid;">
-      <h3 style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.05em;">1. Executive Summary & Strategic Scope</h3>
-      <p style="font-size: 12px; line-height: 1.6; color: #334155; margin: 0 0 10px 0;">${data.executive_summary || "Strategic enterprise roadmap outlining system architecture, automated BPMN workflows, relational database entities, and API specifications."}</p>
+      <h3 style="font-size: 13px; font-weight: 800; color: #1e293b; margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.05em;">1. Executive Summary & Recommended Stack</h3>
+      <p style="font-size: 12px; line-height: 1.6; color: #334155; margin: 0 0 10px 0;">${data.user_problem || "Enterprise solution architecture transforming manual operations into an automated AI-powered platform."}</p>
       
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-        <div>
-          <strong style="font-size: 11px; color: #475569; display: block; margin-bottom: 4px;">Key Objectives:</strong>
-          <ul style="margin: 0; padding-left: 16px; font-size: 11px; color: #475569; line-height: 1.5;">
-            ${(Array.isArray(data?.strategic_objectives)
-              ? data.strategic_objectives
-              : typeof data?.strategic_objectives === "object" && data?.strategic_objectives !== null
-              ? Object.values(data.strategic_objectives)
-              : [
-                  "End-to-end workflow automation",
-                  "AI-enabled predictive analytics",
-                  "Microservices API architecture",
-                ]
-            )
-              .map((obj: any) => `<li>${typeof obj === "string" ? obj : JSON.stringify(obj)}</li>`)
-              .join("")}
-          </ul>
-        </div>
-        <div>
-          <strong style="font-size: 11px; color: #475569; display: block; margin-bottom: 4px;">Recommended Tech Stack:</strong>
-          <div style="display: flex; flex-wrap: wrap; gap: 4px;">
-            ${(Array.isArray(data?.tech_stack)
-              ? data.tech_stack
-              : typeof data?.tech_stack === "object" && data?.tech_stack !== null
-              ? Object.values(data.tech_stack)
-              : ["Next.js 16", "TypeScript", "Tailwind CSS", "Supabase PostgreSQL", "Gemini 2.5 Pro"]
-            )
-              .map(
-                (tech: any) => `
-              <span style="font-size: 10px; background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 4px; font-weight: 600;">${typeof tech === "string" ? tech : JSON.stringify(tech)}</span>
-            `
-              )
-              .join("")}
-          </div>
-        </div>
-      </div>
-    <!-- Deep Business Analysis & PPTD Gap Matrix -->
-    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; margin-bottom: 20px; page-break-inside: avoid;">
-      <h3 style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.05em;">2. Deep Business Analysis & PPTD Gap Assessment</h3>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
-        <div style="background: #fff1f2; border: 1px solid #fecdd3; border-radius: 6px; padding: 10px;">
-          <strong style="font-size: 11px; color: #9f1239; display: block; margin-bottom: 4px;">As-Is: Current State Inefficiencies</strong>
-          <p style="font-size: 10px; color: #881337; margin: 0; line-height: 1.4;">${data.business_analysis?.current_state?.summary || "Manual processes and fragmented tools create operational latency."}</p>
-        </div>
-        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 10px;">
-          <strong style="font-size: 11px; color: #166534; display: block; margin-bottom: 4px;">To-Be: AI-Driven Target Operating Model</strong>
-          <p style="font-size: 10px; color: #14532d; margin: 0; line-height: 1.4;">${data.business_analysis?.future_state?.vision_summary || "Automated workflows and conversational AI copilot."}</p>
-        </div>
-      </div>
-      <table style="width: 100%; border-collapse: collapse; font-size: 10px; text-align: left; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px;">
-        <thead>
-          <tr style="background: #f8fafc; color: #475569; font-size: 9px; text-transform: uppercase;">
-            <th style="padding: 6px 8px; border-bottom: 1px solid #e2e8f0;">Category</th>
-            <th style="padding: 6px 8px; border-bottom: 1px solid #e2e8f0;">Identified Gap</th>
-            <th style="padding: 6px 8px; border-bottom: 1px solid #e2e8f0;">Mitigation Architecture</th>
-            <th style="padding: 6px 8px; border-bottom: 1px solid #e2e8f0;">Severity</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${(data.business_analysis?.gap_analysis || [
-            { category: "Process", gap_description: "Manual order & booking triage", mitigation_strategy: "Automated API workflow", severity: "High" },
-            { category: "Technology", gap_description: "Lack of centralized database", mitigation_strategy: "PostgreSQL with RLS", severity: "Critical" },
-            { category: "Data", gap_description: "Siloed customer logs", mitigation_strategy: "Unified 360 profile", severity: "Medium" }
-          ]).slice(0, 4).map((g: any) => `
-            <tr style="border-bottom: 1px solid #f1f5f9;">
-              <td style="padding: 5px 8px; font-weight: 700; color: #4338ca;">${g.category}</td>
-              <td style="padding: 5px 8px; color: #0f172a;">${g.gap_description}</td>
-              <td style="padding: 5px 8px; color: #047857;">${g.mitigation_strategy}</td>
-              <td style="padding: 5px 8px;"><span style="background: ${g.severity === "Critical" ? "#fee2e2; color: #991b1b" : "#fef3c7; color: #92400e"}; font-size: 8px; font-weight: 700; padding: 2px 5px; border-radius: 4px;">${g.severity}</span></td>
-            </tr>
+      <div>
+        <strong style="font-size: 11px; color: #475569; display: block; margin-bottom: 4px;">Recommended Technology Stack:</strong>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+          ${techStackList.map((tech: any) => `
+            <span style="font-size: 10px; background: #e0e7ff; color: #4338ca; padding: 3px 8px; border-radius: 6px; font-weight: 700;">${typeof tech === "string" ? tech : JSON.stringify(tech)}</span>
           `).join("")}
-        </tbody>
-      </table>
+        </div>
+      </div>
     </div>
 
-    <!-- BPMN Process Map -->
+    <!-- BPMN Process Steps -->
     <div style="margin-bottom: 20px; page-break-inside: avoid;">
-      <h3 style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 0.05em;">3. Core Business Process Architecture (BPMN)</h3>
+      <h3 style="font-size: 13px; font-weight: 800; color: #1e293b; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 0.05em;">2. Step-by-Step Action Guide & BPMN Workflow</h3>
       <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; background: #ffffff;">
         <div style="display: flex; flex-direction: column; gap: 8px;">
-          ${(data.process_map?.steps || [
-            { step: 1, name: "Data Ingestion & Event Trigger", role: "Integration Layer", duration: "Real-time" },
-            { step: 2, name: "Automated Rules & Validation", role: "Business Logic Engine", duration: "< 200ms" },
-            { step: 3, name: "AI Decisioning & Optimization", role: "Gemini Model", duration: "1.2s" },
-            { step: 4, name: "Execution & Record Persistence", role: "PostgreSQL Database", duration: "Transactional" },
-          ])
-            .map(
-              (s: any) => `
-            <div style="display: flex; align-items: center; justify-content: space-between; background: #f8fafc; padding: 8px 12px; border-radius: 6px; border-left: 3px solid #4f46e5; font-size: 11px;">
-              <div>
-                <strong style="color: #0f172a;">Step ${s.step || s.order || 1}: ${s.name || s.title}</strong>
-                <div style="color: #64748b; font-size: 10px;">Assigned Role: ${s.role || "System"}</div>
-              </div>
-              <span style="background: #e2e8f0; color: #334155; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600;">${s.duration || "Automated"}</span>
+          ${(bpmnSteps.length > 0 ? bpmnSteps : [
+            { id: 1, title: "1. Data Ingestion & Registration", desc: "User triggers initial request or registration." },
+            { id: 2, title: "2. Business Logic & Validation", desc: "System validates constraints and updates state." },
+            { id: 3, title: "3. Execution & Telemetry", desc: "Database persists transaction with live audit logs." }
+          ]).map((s: any, idx: number) => `
+            <div style="background: #f8fafc; padding: 8px 12px; border-radius: 6px; border-left: 3px solid #4f46e5; font-size: 11px;">
+              <strong style="color: #0f172a;">${s.title || `Step ${idx + 1}`}</strong>
+              <div style="color: #64748b; font-size: 10px; margin-top: 2px;">${s.desc || "Automated processing step."}</div>
             </div>
-          `
-            )
-            .join("")}
+          `).join("")}
         </div>
       </div>
     </div>
 
-    <!-- Database Entities & Schema -->
+    <!-- Database Schema & Tables -->
     <div style="margin-bottom: 20px; page-break-inside: avoid;">
-      <h3 style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 0.05em;">3. Relational Schema & Data Model (${tablesCount} Entities)</h3>
+      <h3 style="font-size: 13px; font-weight: 800; color: #1e293b; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 0.05em;">3. Relational Schema & Data Model (${tables.length} Tables)</h3>
       <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-        ${(data.database_schema?.tables || [
-          { name: "organizations", description: "Core multi-tenant organization entity", columns: ["id UUID PK", "name TEXT", "created_at TIMESTAMP"] },
-          { name: "users", description: "System user profiles and role assignments", columns: ["id UUID PK", "org_id UUID FK", "email TEXT", "role TEXT"] },
-          { name: "blueprints", description: "Transformation plans and execution state", columns: ["id UUID PK", "title TEXT", "spec JSONB", "updated_at TIMESTAMP"] },
-          { name: "audit_logs", description: "Immutable governance and action logging", columns: ["id UUID PK", "user_id UUID FK", "action TEXT", "timestamp TIMESTAMP"] },
-        ])
-          .slice(0, 6)
-          .map(
-            (tbl: any) => `
-          <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; background: #ffffff; page-break-inside: avoid;">
-            <div style="font-weight: 700; color: #4f46e5; font-size: 12px; margin-bottom: 2px;">📁 ${tbl.name}</div>
-            <div style="font-size: 10px; color: #64748b; margin-bottom: 6px;">${tbl.description || "Database table definition"}</div>
-            <div style="font-family: monospace; font-size: 9px; color: #334155; background: #f8fafc; padding: 4px; border-radius: 4px;">
-              ${(tbl.columns || []).slice(0, 4).join(" | ")}
+        ${tables.slice(0, 6).map((tbl: any) => {
+          const tableName = tbl.table_name || tbl.name || "table";
+          const cols = (tbl.columns || []).map(parseTableColumn);
+          return `
+            <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; background: #ffffff; page-break-inside: avoid;">
+              <div style="font-weight: 800; color: #0284c7; font-size: 11px; margin-bottom: 4px; font-family: monospace;">📁 ${tableName}</div>
+              <div style="display: flex; flex-direction: column; gap: 2px;">
+                ${cols.slice(0, 5).map(c => `
+                  <div style="display: flex; justify-content: space-between; font-size: 9px; font-family: monospace; background: #f8fafc; padding: 2px 4px; border-radius: 3px;">
+                    <span style="font-weight: 700; color: #0f172a;">${c.name}</span>
+                    <span style="color: #4338ca;">${c.type}</span>
+                  </div>
+                `).join("")}
+              </div>
             </div>
-          </div>
-        `
-          )
-          .join("")}
+          `
+        }).join("")}
       </div>
     </div>
 
-    <!-- ${getTranslation(language, "apiEndpoints")} -->
+    <!-- REST API Endpoints -->
     <div style="margin-bottom: 20px; page-break-inside: avoid;">
-      <h3 style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 0.05em;">4. Secure Microservices & REST Endpoints (${apisCount} Endpoints)</h3>
-      <table style="width: 100%; border-collapse: collapse; font-size: 11px; text-align: left; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; overflow: hidden;">
+      <h3 style="font-size: 13px; font-weight: 800; color: #1e293b; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 0.05em;">4. Production REST API Endpoints (${apis.length} Endpoints)</h3>
+      <table style="width: 100%; border-collapse: collapse; font-size: 10px; text-align: left; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px;">
         <thead>
-          <tr style="background: #f1f5f9; color: #475569; font-size: 10px; text-transform: uppercase;">
-            <th style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0;">Method</th>
-            <th style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0;">Endpoint Route</th>
-            <th style="padding: 6px 10px; border-bottom: 1px solid #e2e8f0;">Description & Auth</th>
+          <tr style="background: #f1f5f9; color: #475569; font-size: 9px; text-transform: uppercase;">
+            <th style="padding: 6px 8px; border-bottom: 1px solid #e2e8f0; width: 15%;">Method</th>
+            <th style="padding: 6px 8px; border-bottom: 1px solid #e2e8f0; width: 45%;">Endpoint Route</th>
+            <th style="padding: 6px 8px; border-bottom: 1px solid #e2e8f0; width: 40%;">Description</th>
           </tr>
         </thead>
         <tbody>
-          ${(data.database_schema?.api_endpoints || [
-            { method: "GET", path: "/api/v1/blueprint", description: "Fetch transformation specifications", auth: "Bearer JWT" },
-            { method: "POST", path: "/api/v1/blueprint/generate", description: "Trigger Gemini AI synthesis pipeline", auth: "Bearer JWT" },
-            { method: "POST", path: "/api/v1/export/pdf", description: "Stream high-fidelity printable artifacts", auth: "Bearer JWT" },
-            { method: "GET", path: "/api/v1/audit/logs", description: "Retrieve compliance security logs", auth: "Admin Only" },
-          ])
-            .slice(0, 5)
-            .map(
-              (api: any) => `
-            <tr style="border-bottom: 1px solid #f1f5f9;">
-              <td style="padding: 6px 10px;"><span style="background: ${api.method === "GET" ? "#dcfce7; color: #15803d" : "#dbeafe; color: #1d4ed8"}; font-weight: 700; font-size: 9px; padding: 2px 6px; border-radius: 4px;">${api.method}</span></td>
-              <td style="padding: 6px 10px; font-family: monospace; font-size: 10px; color: #0f172a;">${api.path}</td>
-              <td style="padding: 6px 10px; color: #64748b; font-size: 10px;">${api.description}</td>
-            </tr>
-          `
-            )
-            .join("")}
+          ${apis.slice(0, 6).map((rawApi: any) => {
+            const a = parseApiEndpoint(rawApi)
+            const badgeBg = a.method === "GET" ? "#dcfce7; color: #15803d" : a.method === "POST" ? "#dbeafe; color: #1d4ed8" : a.method === "PUT" ? "#fef3c7; color: #b45309" : "#fee2e2; color: #b91c1c"
+            return `
+              <tr style="border-bottom: 1px solid #f1f5f9;">
+                <td style="padding: 5px 8px;"><span style="background: ${badgeBg}; font-weight: 800; font-size: 8px; padding: 2px 5px; border-radius: 3px;">${a.method}</span></td>
+                <td style="padding: 5px 8px; font-family: monospace; font-size: 9px; font-weight: 700; color: #0f172a;">${a.path}</td>
+                <td style="padding: 5px 8px; color: #64748b; font-size: 9px;">${a.desc}</td>
+              </tr>
+            `
+          }).join("")}
         </tbody>
       </table>
     </div>
 
-    <!-- ${getTranslation(language, "projectRoadmap")} -->
+    <!-- Implementation Roadmap -->
     <div style="margin-bottom: 20px; page-break-inside: avoid;">
-      <h3 style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 0.05em;">5. Phased Delivery Roadmap</h3>
-      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; font-size: 10px;">
-        ${(data.roadmap?.sprints || [
-          { sprint: "Sprint 1-2", focus: "Foundation & Ingestion", deliverable: "Setup DB schema, auth & baseline APIs" },
-          { sprint: "Sprint 3-4", focus: "AI Pipeline & BPMN Engine", deliverable: "Connect Gemini AI engine & automations" },
-          { sprint: "Sprint 5-6", focus: "Production Hardening", deliverable: "Enterprise verification & launch" },
-        ])
-          .map(
-            (sp: any) => `
+      <h3 style="font-size: 13px; font-weight: 800; color: #1e293b; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 0.05em;">5. Phased Delivery Roadmap</h3>
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 10px;">
+        ${(sprints.length > 0 ? sprints : [
+          { timeframe: "Week 1", phase: "UI & Architecture Setup", owner: "Lead Frontend", tasks: ["Setup project structure", "Configure UI layouts"] },
+          { timeframe: "Week 2", phase: "Backend & Database", owner: "Backend Engineer", tasks: ["Provision database tables", "Implement REST APIs"] }
+        ]).slice(0, 4).map((sp: any) => `
           <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px; background: #f8fafc; page-break-inside: avoid;">
-            <div style="font-weight: 800; color: #4f46e5; margin-bottom: 2px;">${sp.sprint}</div>
-            <strong style="color: #0f172a;">${sp.focus}</strong>
-            <p style="margin: 2px 0 0 0; color: #64748b;">${sp.deliverable}</p>
+            <div style="font-weight: 800; color: #4f46e5; margin-bottom: 2px;">${sp.timeframe || "Sprint 1"} — ${sp.phase || "Delivery"}</div>
+            <div style="font-size: 9px; color: #64748b;">Owner: ${sp.owner || "Tech Lead"}</div>
+            <ul style="margin: 4px 0 0 0; padding-left: 14px; font-size: 9px; color: #334155;">
+              ${(sp.tasks || []).slice(0, 3).map((t: string) => `<li>${t}</li>`).join("")}
+            </ul>
           </div>
-        `
-          )
-          .join("")}
+        `).join("")}
       </div>
     </div>
 
     <!-- Footer -->
     <div style="margin-top: 24px; border-top: 1px solid #e2e8f0; padding-top: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 9px; color: #94a3b8; page-break-inside: avoid;">
-      <span>Futurrizon Business Transformation AI</span>
+      <span>BlueprintAI Enterprise Transformation Engine</span>
       <span>Confidential • Implementation Blueprint</span>
     </div>
   `
@@ -433,102 +423,163 @@ export const exportElementToPDF = (elementId: string, customFilename?: string) =
 export const exportExecutiveReportToPDF = exportExecutiveReportPDF
 
 export async function exportGuideRoadmapPDF(data: any, language: string = "English") {
-  if (!data) return;
-  const container = document.createElement("div");
-  container.style.position = "fixed"; container.style.top = "-99999px";
-  container.style.width = "794px"; container.style.padding = "28px"; container.style.backgroundColor = "#fff";
-  container.style.fontFamily = "sans-serif"; container.style.color = "#0f172a";
+  if (!data) return
+  const container = document.createElement("div")
+  container.style.position = "fixed"
+  container.style.top = "-99999px"
+  container.style.width = "794px"
+  container.style.padding = "28px"
+  container.style.backgroundColor = "#fff"
+  container.style.fontFamily = "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+  container.style.color = "#0f172a"
   
+  const steps = data.bpmn_steps || data.process_map?.steps || []
+  const sprints = data.roadmap_sprints || data.roadmap?.sprints || []
+
   container.innerHTML = `
     <h1 style="font-size: 24px; color: #4f46e5; margin-bottom: 20px;">${getTranslation(language, "tabGuide")} & ${getTranslation(language, "tabRoadmap")} - ${data.project_title || "Project"}</h1>
     
-    <h2 style="font-size: 18px; margin-bottom: 12px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px;">${getTranslation(language, "stepByStepGuide")}</h2>
+    <h2 style="font-size: 16px; font-weight: 800; margin-bottom: 12px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px;">${getTranslation(language, "stepByStepGuide")}</h2>
     <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 30px;">
-      ${(data.bpmn_steps || []).map((s: any, i: number) => `
-        <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border-left: 4px solid #4f46e5;">
-          <h3 style="margin: 0 0 4px 0; font-size: 14px;">Step ${i + 1}: ${s.title}</h3>
-          <p style="margin: 0; font-size: 12px; color: #475569;">${s.desc}</p>
+      ${steps.map((s: any, i: number) => `
+        <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border-left: 4px solid #4f46e5; page-break-inside: avoid;">
+          <h3 style="margin: 0 0 4px 0; font-size: 13px; font-weight: 800; color: #0f172a;">Step ${i + 1}: ${s.title}</h3>
+          <p style="margin: 0; font-size: 11px; color: #475569; line-height: 1.5;">${s.desc}</p>
         </div>
       `).join("")}
     </div>
 
-    <h2 style="font-size: 18px; margin-bottom: 12px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px;">${getTranslation(language, "projectRoadmap")}</h2>
+    <h2 style="font-size: 16px; font-weight: 800; margin-bottom: 12px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px;">${getTranslation(language, "projectRoadmap")}</h2>
     <div style="display: flex; flex-direction: column; gap: 12px;">
-      ${(data.roadmap_sprints || []).map((r: any) => `
-        <div style="background: #f0fdf4; padding: 12px; border-radius: 8px; border-left: 4px solid #22c55e;">
-          <h3 style="margin: 0 0 4px 0; font-size: 14px;">${r.timeframe} - ${r.phase}</h3>
-          <p style="margin: 0 0 6px 0; font-size: 12px; color: #475569;">${getTranslation(language, "owner")}: ${r.owner}</p>
-          <ul style="margin: 0; padding-left: 16px; font-size: 11px;">
+      ${sprints.map((r: any) => `
+        <div style="background: #f0fdf4; padding: 12px; border-radius: 8px; border-left: 4px solid #22c55e; page-break-inside: avoid;">
+          <h3 style="margin: 0 0 4px 0; font-size: 13px; font-weight: 800; color: #166534;">${r.timeframe} — ${r.phase}</h3>
+          <p style="margin: 0 0 6px 0; font-size: 11px; color: #475569;"><strong>${getTranslation(language, "owner")}:</strong> ${r.owner}</p>
+          <ul style="margin: 0; padding-left: 16px; font-size: 10px; color: #334155; line-height: 1.5;">
             ${(r.tasks || []).map((t: string) => `<li>${t}</li>`).join("")}
           </ul>
         </div>
       `).join("")}
     </div>
-  `;
-  document.body.appendChild(container);
-  await renderElementToPdf(container, `Guide_Roadmap_${Date.now()}.pdf`);
-  document.body.removeChild(container);
+  `
+  document.body.appendChild(container)
+  await renderElementToPdf(container, `Guide_Roadmap_${Date.now()}.pdf`)
+  document.body.removeChild(container)
 }
 
 export async function exportDatabaseApiPDF(data: any, language: string = "English") {
-  if (!data) return;
-  const container = document.createElement("div");
-  container.style.position = "fixed"; container.style.top = "-99999px";
-  container.style.width = "794px"; container.style.padding = "28px"; container.style.backgroundColor = "#fff";
-  container.style.fontFamily = "sans-serif"; container.style.color = "#0f172a";
+  if (!data) return
+  const container = document.createElement("div")
+  container.style.position = "fixed"
+  container.style.top = "-99999px"
+  container.style.width = "794px"
+  container.style.padding = "28px"
+  container.style.backgroundColor = "#fff"
+  container.style.fontFamily = "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+  container.style.color = "#0f172a"
   
+  const tables = data.database_tables || data.database_schema?.tables || []
+  const apis = data.api_endpoints || data.database_schema?.api_endpoints || []
+
   container.innerHTML = `
-    <h1 style="font-size: 24px; color: #4f46e5; margin-bottom: 20px;">${getTranslation(language, "tabDatabase")} - ${data.project_title || "Project"}</h1>
+    <!-- Header -->
+    <div style="border-bottom: 2px solid #4f46e5; padding-bottom: 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-start; page-break-inside: avoid;">
+      <div>
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+          <div style="width: 14px; height: 14px; background: #4f46e5; border-radius: 4px;"></div>
+          <span style="font-size: 11px; font-weight: 800; letter-spacing: 0.1em; color: #4f46e5; text-transform: uppercase;">Database & REST API Specifications</span>
+        </div>
+        <h1 style="font-size: 24px; font-weight: 800; color: #0f172a; margin: 0 0 4px 0; line-height: 1.2;">${data.project_title || "Project Specification"}</h1>
+        <p style="font-size: 13px; color: #64748b; margin: 0;">PostgreSQL Relational Schemas (${tables.length} Tables) & REST API Gateway (${apis.length} Endpoints)</p>
+      </div>
+      <div style="text-align: right; font-size: 11px; color: #64748b; border-left: 1px solid #e2e8f0; padding-left: 12px;">
+        <div><strong>Date:</strong> ${new Date().toLocaleDateString()}</div>
+        <div><strong>Language:</strong> ${language}</div>
+        <div><strong>Engine:</strong> PostgreSQL / RLS</div>
+      </div>
+    </div>
     
-    <h2 style="font-size: 18px; margin-bottom: 12px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px;">${getTranslation(language, "dbSchema")}</h2>
-    <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px;">
-      ${(data.database_tables || []).map((t: any) => `
-        <div style="background: #f8fafc; padding: 12px; border: 1px solid #e2e8f0; border-radius: 6px;">
-          <h3 style="margin: 0 0 6px 0; font-size: 14px; color: #0284c7;">${getTranslation(language, "tablesCount")}: ${t.table_name}</h3>
-          <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
-            <tr style="background: #e2e8f0;"><th style="padding: 4px; text-align: left;">Column</th><th style="padding: 4px; text-align: left;">Type</th><th style="padding: 4px; text-align: left;">Description</th></tr>
-            ${(t.columns || []).map((c: any) => `<tr><td style="padding: 4px; border-bottom: 1px solid #f1f5f9; font-family: monospace;">${c.name}</td><td style="padding: 4px; border-bottom: 1px solid #f1f5f9;">${c.type}</td><td style="padding: 4px; border-bottom: 1px solid #f1f5f9;">${c.description || ""}</td></tr>`).join("")}
+    <h2 style="font-size: 15px; font-weight: 800; color: #1e293b; margin-bottom: 12px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;">${getTranslation(language, "dbSchema")} (${tables.length} Tables)</h2>
+    <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 30px;">
+      ${tables.map((t: any) => {
+        const tableName = t.table_name || t.name || "tbl_records"
+        const cols = (t.columns || []).map(parseTableColumn)
+        return `
+        <div style="background: #ffffff; padding: 14px; border: 1px solid #e2e8f0; border-radius: 8px; page-break-inside: avoid;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <h3 style="margin: 0; font-size: 13px; font-weight: 800; color: #0284c7; font-family: monospace;">📁 ${tableName}</h3>
+            <span style="font-size: 10px; background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px; font-weight: 700;">${cols.length} Columns</span>
+          </div>
+          <table style="width: 100%; border-collapse: collapse; font-size: 11px; text-align: left;">
+            <thead>
+              <tr style="background: #f1f5f9; color: #475569; font-size: 10px; text-transform: uppercase;">
+                <th style="padding: 6px 8px; border-bottom: 1px solid #e2e8f0; width: 30%;">Column</th>
+                <th style="padding: 6px 8px; border-bottom: 1px solid #e2e8f0; width: 25%;">Data Type</th>
+                <th style="padding: 6px 8px; border-bottom: 1px solid #e2e8f0; width: 45%;">Description / Constraint</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${cols.map((c) => `
+                <tr style="border-bottom: 1px solid #f1f5f9;">
+                  <td style="padding: 6px 8px; font-family: monospace; font-weight: 700; color: #0f172a;">${c.name}</td>
+                  <td style="padding: 6px 8px; color: #4338ca;"><span style="background: #e0e7ff; color: #3730a3; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; font-family: monospace;">${c.type}</span></td>
+                  <td style="padding: 6px 8px; color: #64748b; font-size: 10px;">${c.desc}</td>
+                </tr>
+              `).join("")}
+            </tbody>
           </table>
         </div>
-      `).join("")}
+      `}).join("")}
     </div>
 
-    <h2 style="font-size: 18px; margin-bottom: 12px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px;">REST APIs</h2>
+    <h2 style="font-size: 15px; font-weight: 800; color: #1e293b; margin-bottom: 12px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;">REST API Gateway (${apis.length} Endpoints)</h2>
     <div style="display: flex; flex-direction: column; gap: 10px;">
-      ${(data.api_endpoints || []).map((a: any) => `
-        <div style="background: #fffbeb; padding: 12px; border: 1px solid #fde68a; border-radius: 6px;">
-          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-            <span style="background: #fbbf24; color: #78350f; font-weight: bold; padding: 2px 6px; border-radius: 4px; font-size: 11px;">${a.method}</span>
-            <span style="font-family: monospace; font-size: 13px; font-weight: bold;">${a.endpoint}</span>
+      ${apis.map((rawApi: any) => {
+        const a = parseApiEndpoint(rawApi)
+        const badgeBg = a.method === "GET" ? "#dcfce7; color: #15803d" : a.method === "POST" ? "#dbeafe; color: #1d4ed8" : a.method === "PUT" ? "#fef3c7; color: #b45309" : "#fee2e2; color: #b91c1c"
+        return `
+        <div style="background: #ffffff; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; page-break-inside: avoid;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="background: ${badgeBg}; font-weight: 800; padding: 3px 8px; border-radius: 4px; font-size: 10px;">${a.method}</span>
+              <span style="font-family: monospace; font-size: 12px; font-weight: 800; color: #0f172a;">${a.path}</span>
+            </div>
+            <span style="font-size: 10px; color: #64748b; font-family: monospace;">${a.auth}</span>
           </div>
-          <p style="margin: 0; font-size: 12px; color: #475569;">${a.description}</p>
+          <p style="margin: 0; font-size: 11px; color: #475569; line-height: 1.4;">${a.desc}</p>
         </div>
-      `).join("")}
+      `}).join("")}
     </div>
-  `;
-  document.body.appendChild(container);
-  await renderElementToPdf(container, `Database_APIs_${Date.now()}.pdf`);
-  document.body.removeChild(container);
+  `
+  document.body.appendChild(container)
+  await renderElementToPdf(container, `Database_APIs_${Date.now()}.pdf`)
+  document.body.removeChild(container)
 }
 
 export async function exportWireframePDF(data: any, language: string = "English") {
-  if (!data) return;
-  const container = document.createElement("div");
-  container.style.position = "fixed"; container.style.top = "-99999px";
-  container.style.width = "794px"; container.style.padding = "28px"; container.style.backgroundColor = "#fff";
-  container.style.fontFamily = "sans-serif"; container.style.color = "#0f172a";
+  if (!data) return
+  const container = document.createElement("div")
+  container.style.position = "fixed"
+  container.style.top = "-99999px"
+  container.style.width = "794px"
+  container.style.padding = "28px"
+  container.style.backgroundColor = "#fff"
+  container.style.fontFamily = "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+  container.style.color = "#0f172a"
   
+  const sections = data.wireframe_sections || data.wireframe_specs?.pages || []
+
   container.innerHTML = `
     <h1 style="font-size: 24px; color: #4f46e5; margin-bottom: 20px;">UI Wireframes - ${data.project_title || "Project"}</h1>
     <div style="display: flex; flex-direction: column; gap: 24px;">
-      ${(data.wireframe_sections || []).map((w: any) => `
+      ${sections.map((w: any) => `
         <div style="border: 2px solid #cbd5e1; border-radius: 12px; overflow: hidden; page-break-inside: avoid;">
           <div style="background: #f1f5f9; padding: 12px; border-bottom: 2px solid #cbd5e1;">
-            <h3 style="margin: 0; font-size: 16px; color: #334155;">${w.title}</h3>
+            <h3 style="margin: 0; font-size: 15px; font-weight: 800; color: #334155;">${w.title}</h3>
           </div>
-          <div style="padding: 24px; background: #fff; min-height: 200px; display: flex; flex-direction: column; gap: 16px;">
+          <div style="padding: 20px; background: #fff; min-height: 160px; display: flex; flex-direction: column; gap: 12px;">
             ${(w.components || []).map((c: string) => `
-              <div style="border: 2px dashed #94a3b8; padding: 16px; border-radius: 8px; text-align: center; color: #64748b; font-weight: bold;">
+              <div style="border: 1px dashed #94a3b8; background: #f8fafc; padding: 12px; border-radius: 8px; text-align: center; color: #475569; font-weight: 700; font-size: 11px;">
                 ${c}
               </div>
             `).join("")}
@@ -536,10 +587,10 @@ export async function exportWireframePDF(data: any, language: string = "English"
         </div>
       `).join("")}
     </div>
-  `;
-  document.body.appendChild(container);
-  await renderElementToPdf(container, `Wireframe_${Date.now()}.pdf`);
-  document.body.removeChild(container);
+  `
+  document.body.appendChild(container)
+  await renderElementToPdf(container, `Wireframe_${Date.now()}.pdf`)
+  document.body.removeChild(container)
 }
 
 
