@@ -460,7 +460,7 @@ export function getTransformationDashboardData(data?: any): TransformationDashbo
     minBudget: finEst.min_budget || "$18,000",
     maxBudget: finEst.max_budget || "$32,000",
     developmentCost: `$${Math.round(avgInvestment * 0.75).toLocaleString()}`,
-    cloudInfrastructureMonthly: planning.cloudCost || "$120 / mo",
+    cloudInfrastructureMonthly: planningData?.cloudCost || (planningData?.costModel?.infrastructureMonthly ? `$${planningData.costModel.infrastructureMonthly} / mo` : "$120 / mo"),
     aiApiUsageMonthly: "$45 - $90 / mo",
     ongoingMaintenanceAnnual: `$${Math.round(avgInvestment * 0.15).toLocaleString()} / yr`,
     estimatedHours: finEst.total_hours || "240 Hours",
