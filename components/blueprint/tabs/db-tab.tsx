@@ -3,12 +3,20 @@ import { useState } from "react"
 import { getTranslation } from "@/lib/i18n"
 import { Database, Network, Download, Copy, Check, ArrowRight } from "lucide-react"
 
-export function DbTab({ generated, data }: { generated: boolean; data?: any }) {
+export function DbTab({ generated, data, targetLanguage = "English" }: { generated: boolean; data?: any; targetLanguage?: string }) {
   const [copiedGroup, setCopiedGroup] = useState<string | null>(null)
+  const lang = (targetLanguage || data?.target_language || "English").toLowerCase()
+  const isGuj = lang.includes("gu")
+  const isHindi = lang.includes("hi")
+
   if (!generated) {
     return (
       <div className="p-12 text-center text-slate-500 border border-dashed border-slate-300 rounded-2xl bg-white shadow-sm">
-        Input requirements on the left to generate Database schema and REST APIs.
+        {isGuj
+          ? "ડેટાબેઝ સ્કીમા અને REST APIs બનાવવા માટે ડાબી બાજુ રિક્વાયરમેન્ટ દાખલ કરો."
+          : isHindi
+          ? "डेटाबेस स्कीमा और REST API उत्पन्न करने के लिए बाईं ओर आवश्यकताएं दर्ज करें।"
+          : "Input requirements on the left to generate Database schema and REST APIs."}
       </div>
     )
   }
@@ -93,16 +101,22 @@ export function DbTab({ generated, data }: { generated: boolean; data?: any }) {
       {/* Conversational Intro */}
       <div className="mb-8 flex flex-col md:flex-row md:items-start justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 mb-2">Here is the Database and API Architecture</h2>
+          <h2 className="text-xl font-bold text-slate-900 mb-2">
+            {isGuj ? "ડેટાબેઝ અને API આર્કિટેક્ચર" : isHindi ? "डेटाबेस और API आर्किटेक्चर" : "Here is the Database and API Architecture"}
+          </h2>
           <p className="text-sm text-slate-600 leading-relaxed max-w-2xl">
-            Based on your requirements, I have designed a robust data model and RESTful API layer. We will use <strong>{dbEngine}</strong> for scalable storage. Below is the step-by-step breakdown of how your application's data will be structured and accessed.
+            {isGuj
+              ? `તમારી રિક્વાયરમેન્ટ મુજબ સુરક્ષિત ડેટા મોડલ અને REST API ડિઝાઇન કરવામાં આવી છે. સ્કેલેબલ સ્ટોરેજ માટે ${dbEngine} નો ઉપયોગ થશે.`
+              : isHindi
+              ? `आपकी आवश्यकताओं के आधार पर एक मजबूत डेटा मॉडल और RESTful API परत तैयार की गई है। हम स्केलेबल स्टोरेज के लिए ${dbEngine} का उपयोग करेंगे।`
+              : `Based on your requirements, I have designed a robust data model and RESTful API layer. We will use ${dbEngine} for scalable storage. Below is the step-by-step breakdown of how your application's data will be structured and accessed.`}
           </p>
         </div>
         <button 
           onClick={downloadSQL}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-xs font-semibold rounded-lg hover:bg-slate-800 transition-colors whitespace-nowrap"
+          className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-xs font-semibold rounded-lg hover:bg-slate-800 transition-colors whitespace-nowrap cursor-pointer"
         >
-          <Download className="w-4 h-4" /> Export .SQL Schema
+          <Download className="w-4 h-4" /> {isGuj ? ".SQL સ્કીમા ડાઉનલોડ કરો" : isHindi ? ".SQL स्कीमा डाउनलोड करें" : "Export .SQL Schema"}
         </button>
       </div>
 
@@ -112,9 +126,11 @@ export function DbTab({ generated, data }: { generated: boolean; data?: any }) {
         <div>
           <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2 border-b pb-2">
             <Database className="w-5 h-5 text-emerald-600" /> 
-            1. Database Schema
+            {isGuj ? "1. ડેટાબેઝ સ્કીમા (ટેબલ્સ)" : isHindi ? "1. डेटाबेस स्कीमा (टेबल्स)" : "1. Database Schema"}
           </h3>
-          <p className="text-xs text-slate-500 mb-6">The core tables required for the system to function correctly:</p>
+          <p className="text-xs text-slate-500 mb-6">
+            {isGuj ? "સિસ્ટમ ચલાવવા માટે જરૂરી મુખ્ય ડેટાબેઝ ટેબલ્સ:" : isHindi ? "सिस्टम के सही संचालन के लिए आवश्यक मुख्य टेबल:" : "The core tables required for the system to function correctly:"}
+          </p>
 
           <div className="space-y-6">
             {tables.map((t: any, i: number) => (
@@ -126,8 +142,8 @@ export function DbTab({ generated, data }: { generated: boolean; data?: any }) {
                   <table className="w-full text-left text-xs border-collapse">
                     <thead className="bg-slate-50 border-b border-slate-200 text-slate-600">
                       <tr>
-                        <th className="p-2.5 font-semibold border-r border-slate-200">Column Name</th>
-                        <th className="p-2.5 font-semibold">Data Type & Rules</th>
+                        <th className="p-2.5 font-semibold border-r border-slate-200">{isGuj ? "કોલમ નામ" : isHindi ? "कॉलम का नाम" : "Column Name"}</th>
+                        <th className="p-2.5 font-semibold">{isGuj ? "ડેટા ટાઈપ અને રૂલ્સ" : isHindi ? "डेटा प्रकार और नियम" : "Data Type & Rules"}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -150,7 +166,7 @@ export function DbTab({ generated, data }: { generated: boolean; data?: any }) {
           </div>
 
           <div className="mt-8 pt-6 border-t border-slate-100">
-            <h4 className="font-bold text-sm text-slate-900 mb-4">Entity Relationships</h4>
+            <h4 className="font-bold text-sm text-slate-900 mb-4">{isGuj ? "એન્ટિટી રિલેશનશિપ્સ (જોડાણ)" : isHindi ? "एंटिटी रिलेशनशिप" : "Entity Relationships"}</h4>
             <div className="flex flex-wrap gap-3">
               {relationships.map((rel: string, i: number) => {
                 const parts = rel.split('->').map(p => p.trim());
@@ -177,21 +193,21 @@ export function DbTab({ generated, data }: { generated: boolean; data?: any }) {
         <div>
           <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2 border-b pb-2">
             <Network className="w-5 h-5 text-indigo-600" /> 
-            2. REST API Endpoints
+            {isGuj ? "2. REST API એન્ડપોઈન્ટ્સ" : isHindi ? "2. REST API एंडपॉइंट्स" : "2. REST API Endpoints"}
           </h3>
-          <p className="text-xs text-slate-500 mb-6">These endpoints will allow the frontend to communicate with your database:</p>
+          <p className="text-xs text-slate-500 mb-6">{isGuj ? "આ એન્ડપોઈન્ટ્સ દ્વારા ફ્રન્ટએન્ડ ડેટાબેઝ સાથે વાત કરશે:" : isHindi ? "ये एंडपॉइंट फ्रंटएंड को आपके डेटाबेस से कनेक्ट करने की अनुमति देंगे:" : "These endpoints will allow the frontend to communicate with your database:"}</p>
 
           <div className="space-y-6">
             {Object.entries(groupedEndpoints).map(([groupName, eps]: [string, any], gIdx: number) => (
               <div key={gIdx} className="relative">
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-bold text-sm text-indigo-700">{groupName} Module</h4>
+                  <h4 className="font-bold text-sm text-indigo-700">{groupName} {isGuj ? "મોડ્યુલ" : isHindi ? "मॉड्यूल" : "Module"}</h4>
                   <button 
                     onClick={() => copyGroup(groupName, eps)}
-                    className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-500 hover:text-slate-800 transition-colors"
+                    className="flex items-center gap-1.5 text-[10px] font-semibold text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
                   >
                     {copiedGroup === groupName ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
-                    {copiedGroup === groupName ? "Copied" : "Copy"}
+                    {copiedGroup === groupName ? (isGuj ? "કોપી થઈ ગયું" : isHindi ? "कॉपी हुआ" : "Copied") : (isGuj ? "કોપી કરો" : isHindi ? "कॉपी करें" : "Copy")}
                   </button>
                 </div>
                 <div className="bg-[#0d1117] rounded-xl p-4 overflow-x-auto shadow-inner">

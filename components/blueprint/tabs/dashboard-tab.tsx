@@ -64,17 +64,24 @@ export function DashboardTab({
 
   // Memoized aggregation layer
   const dashboardData: TransformationDashboardData = useMemo(() => {
-    return getTransformationDashboardData(data)
-  }, [data])
+    return getTransformationDashboardData(data, lang)
+  }, [data, lang])
+
+  const isGuj = lang.toLowerCase().includes("gu")
+  const isHindi = lang.toLowerCase().includes("hi")
 
   if (!generated) {
     return (
       <div className="rounded-2xl border border-dashed border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center text-slate-500 shadow-sm space-y-2">
         <p className="font-semibold text-slate-700 dark:text-slate-300">
-          No Transformation Blueprint Generated Yet
+          {isGuj ? "હજુ સુધી કોઈ ટ્રાન્સફોર્મેશન બ્લુપ્રિન્ટ બન્યો નથી" : isHindi ? "अभी तक कोई ट्रांसफॉर्मेशन ब्लूप्रिंट तैयार नहीं हुआ" : "No Transformation Blueprint Generated Yet"}
         </p>
         <p className="text-xs text-slate-400">
-          Enter your business challenge or attach a BRD/SOP document on the left to synthesize the Executive Transformation Command Center.
+          {isGuj
+            ? "એક્ઝિક્યુટિવ કમાન્ડ સેન્ટર જોવા માટે ડાબી બાજુ તમારો બિઝનેસ પ્રશ્ન લખો અથવા ફાઈલ અપલોડ કરો."
+            : isHindi
+            ? "एग्जीक्यूटिव कमांड सेंटर देखने के लिए बाईं ओर अपना बिजनेस आइडिया लिखें या फ़ाइल अपलोड करें।"
+            : "Enter your business challenge or attach a BRD/SOP document on the left to synthesize the Executive Transformation Command Center."}
         </p>
       </div>
     )

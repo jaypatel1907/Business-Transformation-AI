@@ -125,15 +125,23 @@ export function PlanningTab({
     }
   };
 
+  const lang = (targetLanguage || data?.target_language || "English").toLowerCase();
+  const isGuj = lang.includes("gu");
+  const isHindi = lang.includes("hi");
+
   if (!generated && !blueprint) {
     return (
       <div className="p-12 text-center text-slate-500 border border-dashed border-slate-300 rounded-2xl bg-white shadow-sm space-y-3">
         <Calculator className="h-10 w-10 text-indigo-500 mx-auto" />
         <h3 className="text-base font-bold text-slate-800">
-          AI Planning, Cost, ROI & Resource Estimation Engine
+          {isGuj ? "AI પ્લાનિંગ, ખર્ચ, ROI અને રિસોર્સ એસ્ટીમેશન એન્જિન" : isHindi ? "AI प्लानिंग, लागत, ROI और संसाधन अनुमान इंजन" : "AI Planning, Cost, ROI & Resource Estimation Engine"}
         </h3>
         <p className="text-xs text-slate-500 max-w-md mx-auto">
-          Input your business requirement on the left to synthesize the Work Breakdown Structure (WBS), resource allocations, milestone timeline, CapEx/OpEx cost model, and ROI realization projection.
+          {isGuj
+            ? "WBS (વર્ક બ્રેકડાઉન), ટીમ રિસોર્સ ફાળવણી, માઇલસ્ટોન સમયરેખા, CapEx/OpEx ખર્ચ મોડેલ અને ROI અનુમાન જનરેટ કરવા માટે ડાબી બાજુ રિક્વાયરમેન્ટ દાખલ કરો."
+            : isHindi
+            ? "WBS, संसाधन आवंटन, समय सीमा, लागत मॉडल और ROI अनुमान उत्पन्न करने के लिए बाईं ओर आवश्यकताएं दर्ज करें।"
+            : "Input your business requirement on the left to synthesize the Work Breakdown Structure (WBS), resource allocations, milestone timeline, CapEx/OpEx cost model, and ROI realization projection."}
         </p>
       </div>
     );
@@ -142,7 +150,7 @@ export function PlanningTab({
   if (!blueprint) {
     return (
       <div className="p-8 text-center text-slate-500 bg-white rounded-2xl border border-slate-200">
-        Loading Planning Engine models...
+        {isGuj ? "પ્લાનિંગ એન્જિન મોડેલ્સ લોડ થઈ રહ્યા છે..." : isHindi ? "प्लानिंग इंजन मॉडल लोड हो रहे हैं..." : "Loading Planning Engine models..."}
       </div>
     );
   }
@@ -161,14 +169,18 @@ export function PlanningTab({
                 <Calculator className="h-4 w-4" />
               </span>
               <h2 className="text-lg font-bold text-slate-900">
-                Planning, Cost, ROI & Resource Studio
+                {isGuj ? "પ્લાનિંગ, ખર્ચ, ROI અને રિસોર્સ સ્ટુડિયો" : isHindi ? "प्लानिंग, लागत, ROI और संसाधन स्टूडियो" : "Planning, Cost, ROI & Resource Studio"}
               </h2>
               <span className="rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700 border border-indigo-200">
                 Phase 4 Engine · Deterministic TCO
               </span>
             </div>
             <p className="text-xs text-slate-500">
-              Transforming technical architecture into an auditable implementation plan, resource budget, and value realization model.
+              {isGuj
+                ? "તકનીકી આર્કિટેક્ચરને વ્યવહારુ અમલીકરણ યોજના, રિસોર્સ બજેટ અને મૂલ્ય પ્રાપ્તિ મોડેલમાં રૂપાંતરિત કરવું."
+                : isHindi
+                ? "तकनीकी आर्किटेक्चर को एक कार्यान्वयन योजना, संसाधन बजट और मूल्य प्राप्ति मॉडल में बदलना।"
+                : "Transforming technical architecture into an auditable implementation plan, resource budget, and value realization model."}
             </p>
           </div>
 
@@ -194,11 +206,11 @@ export function PlanningTab({
         {/* Selected Scenario Brief Alert */}
         <div className="rounded-xl bg-indigo-50/50 border border-indigo-100 p-3 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="text-indigo-950">
-            <strong>Active Scenario: {activeScenario.label} — </strong>
+            <strong>{isGuj ? "સક્રિય સિનારિયો:" : isHindi ? "सक्रिय परिदृश्य:" : "Active Scenario:"} {activeScenario.label} — </strong>
             <span className="text-slate-600">{activeScenario.description}</span>
           </div>
           <span className="text-[11px] font-bold text-indigo-700 bg-white px-2.5 py-1 rounded-lg border border-indigo-200 shadow-2xs flex-shrink-0">
-            {activeScenario.durationWeeks} Wks Delivery · {blueprint.costModel.currency}{activeScenario.estimatedCost.expected.toLocaleString("en-IN")}
+            {activeScenario.durationWeeks} {isGuj ? "અઠવાડિયા" : isHindi ? "सप्ताह" : "Wks"} Delivery · {blueprint.costModel.currency}{activeScenario.estimatedCost.expected.toLocaleString("en-IN")}
           </span>
         </div>
 
@@ -210,28 +222,28 @@ export function PlanningTab({
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-xl transition cursor-pointer"
             >
               <Sliders className="h-3.5 w-3.5 text-indigo-600" />
-              What-If Analysis
+              {isGuj ? "What-If સિનારિયો વિશ્લેષણ" : isHindi ? "What-If परिदृश्य विश्लेषण" : "What-If Analysis"}
             </button>
 
             <button
               onClick={handleResetToBenchmark}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition cursor-pointer"
-              title="Load Restaurant Ordering & Booking Benchmark Fixture"
+              title="Load Benchmark Fixture"
             >
               <RotateCcw className="h-3.5 w-3.5 text-slate-400" />
-              Reset to Benchmark
+              {isGuj ? "બેંચમાર્ક રીસેટ" : isHindi ? "बेंचमार्क रीसेट" : "Reset to Benchmark"}
             </button>
           </div>
 
           <div className="flex items-center gap-3">
             {isDirty && (
               <span className="text-[11px] font-semibold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
-                Unsaved edits
+                {isGuj ? "અણસેવ કરેલા ફેરફારો" : isHindi ? "असुरक्षित परिवर्तन" : "Unsaved edits"}
               </span>
             )}
             {saveStatus === "saved" && (
               <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 flex items-center gap-1">
-                <CheckCircle2 className="h-3.5 w-3.5" /> Plan Saved
+                <CheckCircle2 className="h-3.5 w-3.5" /> {isGuj ? "પ્લાન સેવ થઈ ગયો" : isHindi ? "योजना सहेजी गई" : "Plan Saved"}
               </span>
             )}
 
@@ -241,7 +253,7 @@ export function PlanningTab({
               className="flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-xs transition cursor-pointer disabled:opacity-50"
             >
               <Save className="h-3.5 w-3.5" />
-              {saveStatus === "saving" ? "Saving..." : "Save Plan"}
+              {saveStatus === "saving" ? (isGuj ? "સેવ થઈ રહ્યું છે..." : isHindi ? "सहेज रहा है..." : "Saving...") : (isGuj ? "પ્લાન સેવ કરો" : isHindi ? "योजना सहेजें" : "Save Plan")}
             </button>
           </div>
         </div>
@@ -264,7 +276,7 @@ export function PlanningTab({
           }`}
         >
           <Layers className="h-3.5 w-3.5" />
-          Work Breakdown (WBS)
+          {isGuj ? "વર્ક બ્રેકડાઉન (WBS)" : isHindi ? "कार्य विभाजन (WBS)" : "Work Breakdown (WBS)"}
           <span className="ml-1 rounded-full bg-slate-100 text-slate-600 px-1.5 py-0.2 text-[10px]">
             {blueprint.workBreakdown.length}
           </span>
@@ -279,9 +291,9 @@ export function PlanningTab({
           }`}
         >
           <Users className="h-3.5 w-3.5" />
-          Resource Allocation
+          {isGuj ? "રિસોર્સ અને ટીમ ફાળવણી" : isHindi ? "संसाधन और टीम आवंटन" : "Resource Allocation"}
           <span className="ml-1 rounded-full bg-slate-100 text-slate-600 px-1.5 py-0.2 text-[10px]">
-            {blueprint.resources.length} Roles
+            {blueprint.resources.length} {isGuj ? "રોલ્સ" : isHindi ? "भूमिकाएं" : "Roles"}
           </span>
         </button>
 
@@ -294,9 +306,9 @@ export function PlanningTab({
           }`}
         >
           <Calendar className="h-3.5 w-3.5" />
-          Gantt & Milestones
+          {isGuj ? "ગેન્ટ અને માઇલસ્ટોન્સ" : isHindi ? "गैंट और मील के पत्थर" : "Gantt & Milestones"}
           <span className="ml-1 rounded-full bg-indigo-50 text-indigo-700 px-1.5 py-0.2 text-[10px]">
-            {blueprint.durationWeeks} Wks
+            {blueprint.durationWeeks} {isGuj ? "અઠ." : isHindi ? "सप्ताह" : "Wks"}
           </span>
         </button>
 
@@ -309,7 +321,7 @@ export function PlanningTab({
           }`}
         >
           <DollarSign className="h-3.5 w-3.5" />
-          TCO & Cost Model
+          {isGuj ? "TCO અને ખર્ચ મોડેલ" : isHindi ? "TCO और लागत मॉडल" : "TCO & Cost Model"}
         </button>
 
         <button
@@ -321,7 +333,7 @@ export function PlanningTab({
           }`}
         >
           <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
-          ROI & Value Model
+          {isGuj ? "ROI અને વેલ્યુ મોડેલ" : isHindi ? "ROI और मूल्य मॉडल" : "ROI & Value Model"}
         </button>
 
         <button
@@ -333,7 +345,7 @@ export function PlanningTab({
           }`}
         >
           <ShieldAlert className="h-3.5 w-3.5 text-amber-600" />
-          Risk Register
+          {isGuj ? "રિસ્ક રજિસ્ટર" : isHindi ? "जोखिम रजिस्टर" : "Risk Register"}
           <span className="ml-1 rounded-full bg-amber-100 text-amber-800 px-1.5 py-0.2 text-[10px]">
             {blueprint.risks.length}
           </span>
