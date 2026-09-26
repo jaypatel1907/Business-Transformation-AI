@@ -292,70 +292,7 @@ export async function POST(req: NextRequest) {
         };
       }
 
-      // 5. Education & Learning (EdTech)
-      if (
-        lower.includes("student") ||
-        lower.includes("course") ||
-        lower.includes("school") ||
-        lower.includes("college") ||
-        lower.includes("education") ||
-        lower.includes("quiz") ||
-        lower.includes("learning")
-      ) {
-        return {
-          tables: [
-            {
-              table_name: "tbl_courses",
-              columns: [
-                "id (PK, UUID)",
-                "course_title (VARCHAR)",
-                "instructor_id (UUID)",
-                "category (VARCHAR)",
-                "duration_weeks (INTEGER)",
-                "created_at (TIMESTAMP)",
-              ],
-            },
-            {
-              table_name: "tbl_students",
-              columns: [
-                "id (PK, UUID)",
-                "full_name (VARCHAR)",
-                "student_email (UNIQUE VARCHAR)",
-                "grade_level (VARCHAR)",
-                "enrolled_since (DATE)",
-              ],
-            },
-            {
-              table_name: "tbl_enrollments",
-              columns: [
-                "id (PK, UUID)",
-                "student_id (FK -> tbl_students.id)",
-                "course_id (FK -> tbl_courses.id)",
-                "progress_percentage (INTEGER)",
-                "completion_status (VARCHAR)",
-              ],
-            },
-            {
-              table_name: "tbl_assignments",
-              columns: [
-                "id (PK, UUID)",
-                "course_id (FK -> tbl_courses.id)",
-                "title (VARCHAR)",
-                "due_date (TIMESTAMPTZ)",
-                "max_score (INTEGER)",
-              ],
-            },
-          ],
-          endpoints: [
-            { method: "POST", path: "/api/v1/courses/enroll", desc: "Register student in course track and assign syllabus" },
-            { method: "GET", path: "/api/v1/students/{id}/gradebook", desc: "Fetch academic performance and milestone progress" },
-            { method: "POST", path: "/api/v1/ai/tutor-assistant", desc: "Query interactive AI homework tutor for student guidance" },
-            { method: "POST", path: "/api/v1/assignments/submit", desc: "Upload assignment response and trigger auto-grading" },
-          ],
-        };
-      }
-
-      // 6. Dynamic Custom Domain Extraction
+      // 5. Dynamic Custom Domain Extraction
       const words = cleanPrompt
         .replace(/[^a-zA-Z0-9\s]/g, "")
         .split(/\s+/)
@@ -414,63 +351,63 @@ export async function POST(req: NextRequest) {
       const l = lang.toLowerCase();
       if (l.includes("gu") || l.includes("gujarat")) {
         return {
-          titlePrefix: "àªªà«àª°à«‹àªœà«‡àª•à«àªŸ àªªà«àª²àª¾àª¨",
-          step1: { title: "à«§. àª¡àª¿àªàª¾àª‡àª¨ àª…àª¨à«‡ àª¹à«‹àª®àªªà«‡àªœ (Design)", desc: "àª¸à«Œàª¥à«€ àªªàª¹à«‡àª²àª¾ àª†àªªàª£à«‡ àª¯à«àªàª°à«àª¸ àª®àª¾àªŸà«‡ àªàª• àª¸à«àª‚àª¦àª° àª…àª¨à«‡ àª†àª•àª°à«àª·àª• àª¹à«‹àª®àªªà«‡àªœ àª¬àª¨àª¾àªµà«€àª¶à«àª‚." },
-          step2: { title: "à«¨. àªªà«àª°à«‹àª¡àª•à«àªŸ àª…àª¨à«‡ àª«à«€àªšàª°à«àª¸ (Features)", desc: "àª¤à«àª¯àª¾àª°àª¬àª¾àª¦ àª†àªªàª£à«‡ àª¤à«‡àª®àª¾àª‚ àªœàª°à«‚àª°à«€ àª«à«€àªšàª°à«àª¸ àª…àª¨à«‡ àªªà«àª°à«‹àª¡àª•à«àªŸ àª•à«‡àªŸà«‡àª²à«‹àª— àªàª¡ àª•àª°à«€àª¶à«àª‚." },
-          step3: { title: "à«©. àª¡à«‡àªŸàª¾àª¬à«‡àª àª…àª¨à«‡ àª¸àª¿àª¸à«àªŸàª® (Database)", desc: "àªªàª›à«€ àª†àªªàª£à«‡ àª¬àª§à«‹ àª¡à«‡àªŸàª¾ àª¸àª¾àªšàªµàªµàª¾ àª®àª¾àªŸà«‡ àªªàª¾àª›àª³àª¨à«€ àª¸àª¿àª¸à«àªŸàª® (àª¬à«‡àª•àªàª¨à«àª¡) àª¸à«‡àªŸ àª•àª°à«€àª¶à«àª‚." },
-          step4: { title: "à«ª. àªŸà«‡àª¸à«àªŸàª¿àª‚àª— àª…àª¨à«‡ àª²àª¾àªˆàªµ (Launch)", desc: "àª›à«‡àª²à«àª²à«‡ àª†àªªàª£à«‡ àª¬àª§à«àª‚ àªšà«‡àª• àª•àª°à«€àª¨à«‡ àªµà«‡àª¬àª¸àª¾àªˆàªŸàª¨à«‡ àªˆàª¨à«àªŸàª°àª¨à«‡àªŸ àªªàª° àª²àª¾àªˆàªµ àª•àª°à«€àª¶à«àª‚!" },
-          initiative1: "àª®à«àª–à«àª¯ àªªà«àª°à«‹àª¸à«‡àª¸ àª¡àª¿àªœàª¿àªŸàª¾àªˆàªà«‡àª¶àª¨",
-          initiative2: "AI àª‡àª¨à«àªŸà«‡àª²àª¿àªœàª¨à«àª¸ àªàª•à«€àª•àª°àª£",
-          riskTitle: "àª¡à«‡àªŸàª¾ àª¸à«àª°àª•à«àª·àª¾",
-          riskMitigation: "àª¯à«àªàª°àª¨à«‹ àª¡à«‡àªŸàª¾ àª¸à«àª°àª•à«àª·àª¿àª¤ àª°àª¾àª–àªµàª¾ àª®àª¾àªŸà«‡ àª¬à«‡àªàª¿àª• àª¸àª¿àª•à«àª¯à«‹àª°àª¿àªŸà«€ àª¨àª¿àª¯àª®à«‹ àª²àª—àª¾àªµà«‹.",
+          titlePrefix: "પ્રોજેક્ટ પ્લાન",
+          step1: { title: "૧. ડિઝાઇન અને હોમપેજ (Design)", desc: "સૌથી પહેલા આપણે યુઝર્સ માટે એક સુંદર અને આકર્ષક હોમપેજ બનાવીશું." },
+          step2: { title: "૨. પ્રોડક્ટ અને ફીચર્સ (Features)", desc: "ત્યારબાદ આપણે તેમાં જરૂરી ફીચર્સ અને પ્રોડક્ટ કેટેલોગ એડ કરીશું." },
+          step3: { title: "૩. ડેટાબેઝ અને સિસ્ટમ (Database)", desc: "પછી આપણે બધો ડેટા સાચવવા માટે પાછળની સિસ્ટમ (બેકએન્ડ) સેટ કરીશું." },
+          step4: { title: "૪. ટેસ્ટિંગ અને લાઈવ (Launch)", desc: "છેલ્લે આપણે બધું ચેક કરીને વેબસાઇટને ઇન્ટરનેટ પર લાઈવ કરીશું!" },
+          initiative1: "મુખ્ય પ્રોસેસ ડિજિટલાઇઝેશન",
+          initiative2: "AI ઇન્ટેલિજન્સ એકીકરણ",
+          riskTitle: "ડેટા સુરક્ષા",
+          riskMitigation: "યુઝરનો ડેટા સુરક્ષિત રાખવા માટે બેઝિક સિક્યોરિટી નિયમો લગાવો.",
         };
       }
       if (l.includes("hi") || l.includes("hindi")) {
         return {
-          titlePrefix: "à¤‰à¤¦à¥à¤¯à¤® à¤¸à¤®à¤¾à¤§à¤¾à¤¨ à¤µà¤¾à¤¸à¥à¤¤à¥à¤•à¤²à¤¾",
-          step1: { title: "à¥§. à¤¡à¥‡à¤Ÿà¤¾ à¤¸à¥‡à¤µà¤¨ à¤”à¤° à¤…à¤‚à¤¤à¤°à¥à¤—à¥à¤°à¤¹à¤£", desc: "à¤‰à¤ªà¤¯à¥‹à¤—à¤•à¤°à¥à¤¤à¤¾ à¤‡à¤¨à¤ªà¥à¤Ÿ, à¤¦à¤¸à¥à¤¤à¤¾à¤µà¥‡à¤œà¤¼ à¤”à¤° à¤µà¥à¤¯à¤¾à¤µà¤¸à¤¾à¤¯à¤¿à¤• à¤¸à¤‚à¤•à¥‡à¤¤ à¤à¤•à¤¤à¥à¤° à¤•à¤°à¤¨à¤¾à¥¤" },
-          step2: { title: "à¥¨. AI à¤µà¤¿à¤¶à¥à¤²à¥‡à¤·à¤£ à¤”à¤° à¤¸à¤¤à¥à¤¯à¤¾à¤ªà¤¨", desc: "à¤µà¥à¤¯à¤¾à¤µà¤¸à¤¾à¤¯à¤¿à¤• à¤¨à¤¿à¤¯à¤®à¥‹à¤‚, à¤…à¤¨à¥à¤®à¤¤à¤¿à¤¯à¥‹à¤‚ à¤”à¤° à¤¨à¥€à¤¤à¤¿ à¤®à¤¿à¤²à¤¾à¤¨ à¤•à¥‹ à¤®à¤¾à¤¨à¥à¤¯ à¤•à¤°à¤¨à¤¾à¥¤" },
-          step3: { title: "à¥©. à¤¨à¤¿à¤·à¥à¤ªà¤¾à¤¦à¤¨ à¤”à¤° à¤µà¤°à¥à¤•à¤«à¤¼à¥à¤²à¥‹ à¤‘à¤°à¥à¤•à¥‡à¤¸à¥à¤Ÿà¥à¤°à¥‡à¤¶à¤¨", desc: "à¤®à¤¾à¤‡à¤•à¥à¤°à¥‹à¤¸à¤°à¥à¤µà¤¿à¤¸à¥‡à¤œ, à¤¡à¥‡à¤Ÿà¤¾à¤¬à¥‡à¤¸ à¤”à¤° à¤¬à¤¾à¤¹à¤°à¥€ APIs à¤•à¤¾ à¤¸à¤®à¤¨à¥à¤µà¤¯à¥¤" },
-          step4: { title: "à¥ª. à¤«à¥€à¤¡à¤¬à¥ˆà¤• à¤”à¤° à¤¨à¤¿à¤°à¤‚à¤¤à¤° à¤¸à¥€à¤–à¤¨à¤¾", desc: "à¤Ÿà¥‡à¤²à¥€à¤®à¥‡à¤Ÿà¥à¤°à¥€ à¤²à¥‰à¤—à¤¿à¤‚à¤—, à¤‘à¤¡à¤¿à¤Ÿ à¤®à¥‡à¤Ÿà¥à¤°à¤¿à¤•à¥à¤¸ à¤”à¤° à¤…à¤²à¤°à¥à¤Ÿ à¤Ÿà¥à¤°à¤¿à¤—à¤° à¤•à¤°à¤¨à¤¾à¥¤" },
-          initiative1: "à¤®à¥à¤–à¥à¤¯ à¤ªà¥à¤°à¤•à¥à¤°à¤¿à¤¯à¤¾ à¤¡à¤¿à¤œà¤¿à¤Ÿà¤²à¥€à¤•à¤°à¤£",
-          initiative2: "AI à¤‡à¤‚à¤Ÿà¥‡à¤²à¤¿à¤œà¥‡à¤‚à¤¸ à¤à¤•à¥€à¤•à¤°à¤£",
-          riskTitle: "à¤¡à¥‡à¤Ÿà¤¾ à¤¸à¥à¤°à¤•à¥à¤·à¤¾ à¤”à¤° à¤•à¤¿à¤°à¤¾à¤¯à¥‡à¤¦à¤¾à¤° à¤…à¤²à¤—à¤¾à¤µ",
-          riskMitigation: "Supabase RLS à¤¸à¥à¤°à¤•à¥à¤·à¤¾ à¤¨à¥€à¤¤à¤¿à¤¯à¤¾à¤‚ à¤”à¤° JWT à¤ªà¥à¤°à¤®à¤¾à¤£à¥€à¤•à¤°à¤£ à¤²à¤¾à¤—à¥‚ à¤•à¤°à¥‡à¤‚à¥¤",
+          titlePrefix: "उद्यम समाधान वास्तुकला",
+          step1: { title: "१. डेटा सेवन और अंतर्ग्रहण", desc: "उपयोगकर्ता इनपुट, दस्तावेज़ और व्यावसायिक संकेत एकत्र करना।" },
+          step2: { title: "२. AI विश्लेषण और सत्यापन", desc: "व्यावसायिक नियमों, अनुमतियों और नीति मिलान को मान्य करना।" },
+          step3: { title: "३. निष्पादन और वर्कफ़्लो आर्केस्ट्रेशन", desc: "माइक्रोसर्विसेज, डेटाबेस और बाहरी APIs का समन्वय।" },
+          step4: { title: "४. फीडबैक और निरंतर सीखना", desc: "टेलीमेट्री लॉगिंग, ऑडिट मेट्रिक्स और अलर्ट ट्रिगर करना।" },
+          initiative1: "मुख्य प्रक्रिया डिजिटलीकरण",
+          initiative2: "AI इंटेलिजेंस एकीकरण",
+          riskTitle: "डेटा सुरक्षा और किरायेदार अलगाव",
+          riskMitigation: "Supabase RLS सुरक्षा नीतियां और JWT प्रमाणीकरण लागू करें।",
         };
       }
       if (l.includes("es") || l.includes("span")) {
         return {
           titlePrefix: "Arquitectura Empresarial de Soluciones",
-          step1: { title: "1. Ingesta y Captura de Datos", desc: "Capturar entradas de usuarios, documentos y seÃ±ales operativas." },
-          step2: { title: "2. AnÃ¡lisis y VerificaciÃ³n de IA", desc: "Validar reglas comerciales, permisos y cumplimiento normativo." },
-          step3: { title: "3. EjecuciÃ³n y OrquestaciÃ³n de Flujos", desc: "Coordinar microservicios, escrituras en base de datos y APIs externas." },
-          step4: { title: "4. RetroalimentaciÃ³n y Aprendizaje Continuo", desc: "Registrar telemetrÃ­a, mÃ©tricas de auditorÃ­a y alertas proactivas." },
-          initiative1: "DigitalizaciÃ³n de Procesos Clave",
-          initiative2: "IntegraciÃ³n de Inteligencia Artificial",
+          step1: { title: "1. Ingesta y Captura de Datos", desc: "Capturar entradas de usuarios, documentos y señales operativas." },
+          step2: { title: "2. Análisis y Verificación de IA", desc: "Validar reglas comerciales, permisos y cumplimiento normativo." },
+          step3: { title: "3. Ejecución y Orquestación de Flujos", desc: "Coordinar microservicios, escrituras en base de datos y APIs externas." },
+          step4: { title: "4. Retroalimentación y Aprendizaje Continuo", desc: "Registrar telemetría, métricas de auditoría y alertas proactivas." },
+          initiative1: "Digitalización de Procesos Clave",
+          initiative2: "Integración de Inteligencia Artificial",
           riskTitle: "Seguridad de Datos y Aislamiento Multinquilino",
-          riskMitigation: "Implementar polÃ­ticas de Row-Level Security (RLS) en Supabase.",
+          riskMitigation: "Implementar políticas de Row-Level Security (RLS) en Supabase.",
         };
       }
       if (l.includes("fr") || l.includes("french")) {
         return {
           titlePrefix: "Architecture de Solution d'Entreprise",
-          step1: { title: "1. Ingestion et Capture de DonnÃ©es", desc: "Capturer les donnÃ©es utilisateurs, documents et flux mÃ©tier." },
-          step2: { title: "2. Analyse IA et VÃ©rification", desc: "Valider les rÃ¨gles d'entreprise, permissions et conformitÃ©." },
-          step3: { title: "3. ExÃ©cution et Orchestration des Flux", desc: "Coordonner les microservices, Ã©critures base de donnÃ©es et APIs." },
-          step4: { title: "4. RÃ©troaction et Apprentissage Continu", desc: "Journaliser la tÃ©lÃ©mÃ©trie, mÃ©triques d'audit et alertes." },
-          initiative1: "NumÃ©risation des Processus ClÃ©s",
-          initiative2: "IntÃ©gration de l'Intelligence Artificielle",
-          riskTitle: "SÃ©curitÃ© des DonnÃ©es & Isolation Multi-Locataire",
-          riskMitigation: "Mettre en Å“uvre les politiques de sÃ©curitÃ© au niveau des lignes (RLS).",
+          step1: { title: "1. Ingestion et Capture de Données", desc: "Capturer les données utilisateurs, documents et flux métier." },
+          step2: { title: "2. Analyse IA et Vérification", desc: "Valider les règles d'entreprise, permissions et conformité." },
+          step3: { title: "3. Exécution et Orchestration des Flux", desc: "Coordonner les microservices, écritures base de données et APIs." },
+          step4: { title: "4. Rétroaction et Apprentissage Continu", desc: "Journaliser la télémétrie, métriques d'audit et alertes." },
+          initiative1: "Numérisation des Processus Clés",
+          initiative2: "Intégration de l'Intelligence Artificielle",
+          riskTitle: "Sécurité des Données & Isolation Multi-Locataire",
+          riskMitigation: "Mettre en œuvre les politiques de sécurité au niveau des lignes (RLS).",
         };
       }
       if (l.includes("de") || l.includes("german")) {
         return {
-          titlePrefix: "Unternehmens-LÃ¶sungsarchitektur",
-          step1: { title: "1. Datenaufnahme & Erfassung", desc: "Erfassung von Benutzereingaben, Dokumenten und GeschÃ¤ftssignalen." },
-          step2: { title: "2. KI-Analyse & Verifikation", desc: "Validierung von GeschÃ¤ftsregeln, Berechtigungen und Richtlinien." },
-          step3: { title: "3. AusfÃ¼hrung & Workflow-Orchestrierung", desc: "Koordination von Microservices, Datenbanktransaktionen und APIs." },
-          step4: { title: "4. Feedback & Kontinuierliches Lernen", desc: "Protokollierung von Telemetrie, PrÃ¼fmetriken und Warnungen." },
+          titlePrefix: "Unternehmens-Lösungsarchitektur",
+          step1: { title: "1. Datenaufnahme & Erfassung", desc: "Erfassung von Benutzereingaben, Dokumenten und Geschäftssignalen." },
+          step2: { title: "2. KI-Analyse & Verifikation", desc: "Validierung von Geschäftsregeln, Berechtigungen und Richtlinien." },
+          step3: { title: "3. Ausführung & Workflow-Orchestrierung", desc: "Koordination von Microservices, Datenbanktransaktionen und APIs." },
+          step4: { title: "4. Feedback & Kontinuierliches Lernen", desc: "Protokollierung von Telemetrie, Prüfmetriken und Warnungen." },
           initiative1: "Digitalisierung der Kernprozesse",
           initiative2: "KI-Intelligenz-Integration",
           riskTitle: "Datensicherheit und Mandantentrennung",
@@ -496,48 +433,36 @@ export async function POST(req: NextRequest) {
       const domainData = getDomainSpecificSchemaAndApis(p);
       const loc = getLocalizedStrings(targetLangStr);
 
-      // â”€â”€ 1. DIGITAL MATURITY SCORE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-      // Reflects HOW digitally mature the target INDUSTRY is today in real world
-      // Low = traditional/manual industries, High = already tech-native
-      let maturityScore = 55; // default: medium-low
-      if (lower.match(/fintech|bank|payment|wallet|upi|crypto|blockchain/))        maturityScore = 78;
+      let maturityScore = 55;
+      if (lower.match(/fintech|bank|payment|wallet|upi|crypto|blockchain/)) maturityScore = 78;
       else if (lower.match(/hospital|clinic|health|patient|doctor|medical|pharma/)) maturityScore = 52;
-      else if (lower.match(/school|college|education|lms|learning|course/))         maturityScore = 58;
-      else if (lower.match(/ecommerce|shop|store|retail|product|cart|order/))       maturityScore = 74;
-      else if (lower.match(/food|restaurant|delivery|kitchen|zomato|swiggy/))       maturityScore = 68;
-      else if (lower.match(/logistics|supply chain|warehouse|fleet|shipping/))      maturityScore = 62;
-      else if (lower.match(/real estate|property|rental|land|house/))              maturityScore = 48;
-      else if (lower.match(/agriculture|farm|crop|irrigation|soil/))               maturityScore = 35;
-      else if (lower.match(/saas|platform|software|api|developer|devops/))         maturityScore = 85;
-      else if (lower.match(/ai|machine learning|ml|nlp|vision|model|llm/))         maturityScore = 88;
-      else if (lower.match(/government|municipal|civic|public|citizen/))           maturityScore = 32;
-      else if (lower.match(/hr|recruit|employee|payroll|attendance/))              maturityScore = 61;
-      else if (lower.match(/manufacture|factory|production|assembly|plant/))       maturityScore = 44;
-      else if (lower.match(/gym|fitness|sport|yoga|wellness/))                     maturityScore = 55;
-      else if (lower.match(/travel|hotel|booking|tourism|ticket/))                 maturityScore = 70;
-      // Add Â±3 based on role for slight variation
+      else if (lower.match(/school|college|education|lms|learning|course/)) maturityScore = 58;
+      else if (lower.match(/ecommerce|shop|store|retail|product|cart|order/)) maturityScore = 74;
+      else if (lower.match(/food|restaurant|delivery|kitchen|zomato|swiggy/)) maturityScore = 68;
+      else if (lower.match(/logistics|supply chain|warehouse|fleet|shipping/)) maturityScore = 62;
+      else if (lower.match(/real estate|property|rental|land|house/)) maturityScore = 48;
+      else if (lower.match(/agriculture|farm|crop|irrigation|soil/)) maturityScore = 35;
+      else if (lower.match(/saas|platform|software|api|developer|devops/)) maturityScore = 85;
+      else if (lower.match(/ai|machine learning|ml|nlp|vision|model|llm/)) maturityScore = 88;
+      else if (lower.match(/government|municipal|civic|public|citizen/)) maturityScore = 32;
+      else if (lower.match(/hr|recruit|employee|payroll|attendance/)) maturityScore = 61;
+      else if (lower.match(/manufacture|factory|production|assembly|plant/)) maturityScore = 44;
+      else if (lower.match(/travel|hotel|booking|tourism|ticket/)) maturityScore = 70;
+
       if (activeRole === "Admin") maturityScore = Math.min(maturityScore + 2, 92);
       if (activeRole === "Employee") maturityScore = Math.max(maturityScore - 3, 28);
 
-      // â”€â”€ 2. AI ADOPTION READINESS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-      // Reflects HOW MUCH AI can practically help in this domain right now
       let aiReadinessScore = 60;
-      if (lower.match(/ai|machine learning|ml|nlp|vision|model|llm|predict/))      aiReadinessScore = 92;
-      else if (lower.match(/fintech|fraud|risk|credit|loan|insurance/))            aiReadinessScore = 88;
-      else if (lower.match(/ecommerce|recommend|personali|search|catalog/))        aiReadinessScore = 82;
-      else if (lower.match(/logistics|route|optimize|track|fleet|dispatch/))       aiReadinessScore = 78;
-      else if (lower.match(/hospital|diagnosis|radiology|triage|symptom/))         aiReadinessScore = 74;
-      else if (lower.match(/food|menu|order|kitchen|inventory/))                   aiReadinessScore = 65;
-      else if (lower.match(/saas|platform|automation|workflow|bot/))               aiReadinessScore = 85;
-      else if (lower.match(/hr|recruit|screen|resume|interview/))                  aiReadinessScore = 76;
-      else if (lower.match(/education|tutor|quiz|assessment|adaptive/))            aiReadinessScore = 72;
-      else if (lower.match(/real estate|valuation|price|property/))               aiReadinessScore = 62;
-      else if (lower.match(/government|document|process|permit|compliance/))       aiReadinessScore = 55;
-      else if (lower.match(/agriculture|pest|yield|weather|satellite/))            aiReadinessScore = 68;
-      else if (lower.match(/manufacture|quality|defect|inspection|sensor/))        aiReadinessScore = 71;
+      if (lower.match(/ai|machine learning|ml|nlp|vision|model|llm|predict/)) aiReadinessScore = 92;
+      else if (lower.match(/fintech|fraud|risk|credit|loan|insurance/)) aiReadinessScore = 88;
+      else if (lower.match(/ecommerce|recommend|personali|search|catalog/)) aiReadinessScore = 82;
+      else if (lower.match(/logistics|route|optimize|track|fleet|dispatch/)) aiReadinessScore = 78;
+      else if (lower.match(/hospital|diagnosis|radiology|triage|symptom/)) aiReadinessScore = 74;
+      else if (lower.match(/food|menu|order|kitchen|inventory/)) aiReadinessScore = 65;
+      else if (lower.match(/saas|platform|automation|workflow|bot/)) aiReadinessScore = 85;
+      else if (lower.match(/hr|recruit|screen|resume|interview/)) aiReadinessScore = 76;
+      else if (lower.match(/education|tutor|quiz|assessment|adaptive/)) aiReadinessScore = 72;
 
-      // â”€â”€ 3. TIMELINE â€” based on real project complexity â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-      // Simple CRUD app = 4-6w, Medium complexity = 8-12w, Complex AI/Enterprise = 14-20w
       let weeksTimeline = 8;
       const wordCount = p.trim().split(/\s+/).length;
       const hasAI = lower.match(/ai|machine learning|ml|nlp|vision|model|llm/);
@@ -545,23 +470,19 @@ export async function POST(req: NextRequest) {
       const isEnterprise = lower.match(/enterprise|large.scale|microservice|multi.tenant|sso|rbac/);
       const isMobile = lower.match(/mobile|ios|android|flutter|app/);
 
-      if (hasAI && isEnterprise)         weeksTimeline = 18;
-      else if (hasAI && hasIntegration)  weeksTimeline = 14;
-      else if (hasAI)                    weeksTimeline = 12;
-      else if (isEnterprise)             weeksTimeline = 14;
+      if (hasAI && isEnterprise) weeksTimeline = 18;
+      else if (hasAI && hasIntegration) weeksTimeline = 14;
+      else if (hasAI) weeksTimeline = 12;
+      else if (isEnterprise) weeksTimeline = 14;
       else if (isMobile && hasIntegration) weeksTimeline = 12;
-      else if (isMobile)                 weeksTimeline = 10;
-      else if (hasIntegration)           weeksTimeline = 10;
-      else if (wordCount <= 6)           weeksTimeline = 6;  // simple idea
-      else                               weeksTimeline = 8;
+      else if (isMobile) weeksTimeline = 10;
+      else if (hasIntegration) weeksTimeline = 10;
+      else if (wordCount <= 6) weeksTimeline = 6;
+      else weeksTimeline = 8;
 
-      // â”€â”€ 4. FINANCIAL BUDGET â€” real market rates â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-      // India freelance/agency rates: $25-45/hr, US/Global: $65-120/hr
-      // We target mid-range startup budget
       const hourlyRate = 75;
       const totalHours = weeksTimeline * 40;
       const minBudget = totalHours * hourlyRate;
-      // Enterprise add-ons: security audit, cloud infra, QA = +$8k to +$25k
       const overhead = isEnterprise ? 25000 : hasAI ? 18000 : hasIntegration ? 12000 : 8000;
       const maxBudget = minBudget + overhead;
 
@@ -576,22 +497,6 @@ export async function POST(req: NextRequest) {
       let aiToolBack = ["ChatGPT", "GitHub Copilot"];
       let platformFront = ["Vercel", "GitHub Pages"];
       let platformBack = ["AWS", "Supabase Platform"];
-      
-      const lowerPrompt = p.toLowerCase();
-      if (lowerPrompt.includes("mobile") || lowerPrompt.includes("app") || lowerPrompt.includes("ios") || lowerPrompt.includes("android")) {
-        fStack = ["Flutter", "Swift (iOS)", "Kotlin (Android)"];
-        bStack = ["Firebase", "Node.js", "Express"];
-        aiToolFront = ["GitHub Copilot for Mobile", "ChatGPT"];
-        platformFront = ["Apple App Store", "Google Play Console"];
-        platformBack = ["Firebase Hosting", "GCP"];
-      } else if (lowerPrompt.includes("data") || lowerPrompt.includes("machine learning") || lowerPrompt.includes("ai ") || lowerPrompt.includes("model")) {
-        fStack = ["Streamlit", "Python", "React"];
-        bStack = ["Python", "FastAPI", "PyTorch"];
-        aiToolFront = ["Cursor IDE", "Jupyter AI"];
-        aiToolBack = ["ChatGPT (Data Models)", "Claude 3.5 Sonnet"];
-        platformFront = ["Vercel", "HuggingFace Spaces"];
-        platformBack = ["AWS EC2 (GPU)", "Google Cloud Run"];
-      }
 
       const isGuj = targetLangStr.toLowerCase().includes("gu");
       const isHindi = targetLangStr.toLowerCase().includes("hi");
@@ -604,7 +509,7 @@ export async function POST(req: NextRequest) {
 
 ✨ **હાઈલાઈટ્સ:**
 • **ડિજિટલ મેચ્યોરિટી:** ${maturityScore}% | **AI રેડીનેસ:** ${aiReadinessScore}%
-• **ટાર્ગેટ ડિલિવરી:** ${weeksTimeline} અઠવાડિયા (બજેટ: ${minBudget.toLocaleString()} - ${maxBudget.toLocaleString()})
+• **ટાર્ગેટ ડિલિવરી:** ${weeksTimeline} અઠવાડિયા (બજેટ: $${minBudget.toLocaleString()} - $${maxBudget.toLocaleString()})
 • **ટેક સ્ટેક:** ${fStack.join(", ")} + ${bStack.join(", ")} + PostgreSQL
 • **ડેટાબેઝ & APIs:** ${domainData.tables.length} ટેબલ્સ અને ${domainData.endpoints.length} REST APIs.
 
@@ -614,7 +519,7 @@ export async function POST(req: NextRequest) {
 
 ✨ **मुख्य अंश:**
 • **डिजिटल परिपक्वता:** ${maturityScore}% | **AI तत्परता:** ${aiReadinessScore}%
-• **डिलीवरी:** ${weeksTimeline} सप्ताह (बजट: ${minBudget.toLocaleString()} - ${maxBudget.toLocaleString()})
+• **डिलीवरी:** ${weeksTimeline} सप्ताह (बजट: $${minBudget.toLocaleString()} - $${maxBudget.toLocaleString()})
 • **टेक स्टैक:** ${fStack.join(", ")} + ${bStack.join(", ")} + PostgreSQL
 • **डेटाबेस और APIs:** ${domainData.tables.length} टेबल्स और ${domainData.endpoints.length} REST APIs।
 
@@ -624,7 +529,7 @@ export async function POST(req: NextRequest) {
 
 ✨ **Destacados:**
 • **Madurez Digital:** ${maturityScore}% | **Preparación IA:** ${aiReadinessScore}%
-• **Entrega MVP:** ${weeksTimeline} Semanas (Presupuesto: ${minBudget.toLocaleString()} - ${maxBudget.toLocaleString()})
+• **Entrega MVP:** ${weeksTimeline} Semanas (Presupuesto: $${minBudget.toLocaleString()} - $${maxBudget.toLocaleString()})
 • **Stack Tecnológico:** ${fStack.join(", ")} + ${bStack.join(", ")} + PostgreSQL
 • **Base de Datos & APIs:** ${domainData.tables.length} tablas y ${domainData.endpoints.length} APIs REST.
 
@@ -634,7 +539,7 @@ export async function POST(req: NextRequest) {
 
 ✨ **Points forts :**
 • **Maturité Numérique :** ${maturityScore}% | **Préparation IA :** ${aiReadinessScore}%
-• **Livraison MVP :** ${weeksTimeline} Semaines (Budget : ${minBudget.toLocaleString()} - ${maxBudget.toLocaleString()})
+• **Livraison MVP :** ${weeksTimeline} Semaines (Budget : $${minBudget.toLocaleString()} - $${maxBudget.toLocaleString()})
 • **Pile Tech :** ${fStack.join(", ")} + ${bStack.join(", ")} + PostgreSQL
 • **BDD & APIs :** ${domainData.tables.length} tables et ${domainData.endpoints.length} APIs REST.
 
@@ -644,7 +549,7 @@ export async function POST(req: NextRequest) {
 
 ✨ **Highlights:**
 • **Digitale Reife:** ${maturityScore}% | **KI-Bereitschaft:** ${aiReadinessScore}%
-• **MVP-Lieferung:** ${weeksTimeline} Wochen (Budget: ${minBudget.toLocaleString()} - ${maxBudget.toLocaleString()})
+• **MVP-Lieferung:** ${weeksTimeline} Wochen (Budget: $${minBudget.toLocaleString()} - $${maxBudget.toLocaleString()})
 • **Tech-Stack:** ${fStack.join(", ")} + ${bStack.join(", ")} + PostgreSQL
 • **DB & APIs:** ${domainData.tables.length} Tabellen und ${domainData.endpoints.length} REST-APIs.
 
@@ -653,12 +558,12 @@ export async function POST(req: NextRequest) {
 
 ✨ **Executive Strategy & Architecture Highlights:**
 • **Digital Maturity:** ${maturityScore}% | **AI Adoption Readiness:** ${aiReadinessScore}%
-• **Target MVP Delivery:** ${weeksTimeline} Weeks (Estimated Budget: ${minBudget.toLocaleString()} - ${maxBudget.toLocaleString()})
+• **Target MVP Delivery:** ${weeksTimeline} Weeks (Estimated Budget: $${minBudget.toLocaleString()} - $${maxBudget.toLocaleString()})
 • **Recommended Tech Stack:** ${fStack.join(", ")} (Client) + ${bStack.join(", ")} (Gateway) + PostgreSQL (Supabase RLS)
 • **Data & API Layer:** Engineered ${domainData.tables.length} domain-specific relational tables with ${domainData.endpoints.length} production REST endpoints.
 
 🚀 **Explore Your Solution Canvas:**
-Click through the tabs on the right to inspect the interactive **Process Map**, **Database Schemas & APIs**, **UX Wireframe Components**, and **Sprint Roadmap**. Feel free to ask any questions or refine specific requirements!`;
+Click through the tabs on the right to inspect the interactive **Process Map**, **Database Schemas & APIs**, **UX Wireframe Components**, and **Sprint Roadmap**.`;
 
       return {
         project_title: dynamicEntity + " | " + dynamicTitle,
@@ -841,6 +746,21 @@ Click through the tabs on the right to inspect the interactive **Process Map**, 
               "AI एजेंट द्वारा 24/7 ग्राहकों को त्वरित सहायता",
               "सभी विभागों में रियल-टाइम डेटा पारदर्शिता",
               "मैनुअल प्रविष्टि और त्रुटियों का पूर्ण निवारण"
+            ] : isEs ? [
+              "Reducción del 70% en la latencia operativa manual",
+              "Interacciones automatizadas 24/7 mediante agentes de IA",
+              "Visibilidad de datos en tiempo real entre departamentos",
+              "Eliminación de errores de entrada manual"
+            ] : isFr ? [
+              "Réduction de 70% des délais opérationnels manuels",
+              "Interactions automatisées 24/7 via des agents IA",
+              "Visibilité des données en temps réel entre les départements",
+              "Élimination des erreurs de saisie manuelle"
+            ] : isDe ? [
+              "70% Reduzierung manueller Betriebszeiten",
+              "Automatisierte 24/7 Kundeninteraktionen über KI-Agenten",
+              "Echtzeit-Datentransparenz über alle Abteilungen hinweg",
+              "Beseitigung manueller Eingabefehler"
             ] : [
               "Reduction in manual operational latency",
               "Automated 24/7 customer interactions via AI agents",
@@ -848,11 +768,11 @@ Click through the tabs on the right to inspect the interactive **Process Map**, 
               "Elimination of manual entry errors"
             ],
             projected_roi_percentage: "280% - 360%",
-            estimated_payback_months: isGuj ? "૪-૬ મહિના" : isHindi ? "4-6 महीने" : "4-6 Months",
+            estimated_payback_months: isGuj ? "૪-૬ મહિના" : isHindi ? "4-6 महीने" : isEs ? "4-6 Meses" : isFr ? "4-6 Mois" : isDe ? "4-6 Monate" : "4-6 Months",
             operational_efficiency_gain: "60%"
           },
           current_state: {
-            summary: isGuj ? "મેન્યુઅલ કામકાજ, વિખરાયેલા ટૂલ્સ અને ધીમી સેવાને કારણે થતો સમયનો બગાડ." : isHindi ? "मैनुअल कार्य, बिखरे हुए टूल्स और धीमी सेवा के कारण समय का नुकसान।" : "Fragmented operations with manual overhead, disconnected tools, and slow resolution times.",
+            summary: isGuj ? "મેન્યુઅલ કામકાજ, વિખરાયેલા ટૂલ્સ અને ધીમી સેવાને કારણે થતો સમયનો બગાડ." : isHindi ? "मैनुअल कार्य, बिखरे हुए टूल्स और धीमी सेवा के कारण समय का नुकसान।" : isEs ? "Operaciones fragmentadas con hojas de cálculo y herramientas manuales lentas." : isFr ? "Opérations fragmentées avec des feuilles de calcul manuelles et des outils lents." : isDe ? "Fragmentierte Abläufe mit manuellen Tabellen und langsamen Systemen." : "Fragmented operations with manual overhead, disconnected tools, and slow resolution times.",
             manual_workflows: isGuj ? [
               "મેન્યુઅલ ઓર્ડર અને બુકિંગ ટ્રેકિંગ",
               "મેન્યુઅલ ઇન્વેન્ટરી અને સ્ટેટસ અપડેટ્સ",
@@ -861,6 +781,18 @@ Click through the tabs on the right to inspect the interactive **Process Map**, 
               "मैनुअल ऑर्डर और बुकिंग ट्रैकिंग",
               "मैनुअल इन्वेंटरी व स्टेटस अपडेट्स",
               "ग्राहकों के प्रश्नों का धीमा निपटान"
+            ] : isEs ? [
+              "Seguimiento manual de pedidos y reservas",
+              "Actualizaciones manuales de inventario",
+              "Gestión lenta de consultas de clientes"
+            ] : isFr ? [
+              "Suivi manuel des commandes et réservations",
+              "Mises à jour manuelles des stocks",
+              "Traitement lent des demandes clients"
+            ] : isDe ? [
+              "Manuelle Nachverfolgung von Bestellungen und Buchungen",
+              "Manuelle Bestandsaktualisierungen",
+              "Langsame Bearbeitung von Kundenanfragen"
             ] : [
               "Manual order & booking tracking",
               "Disjointed inventory updates",
@@ -874,6 +806,18 @@ Click through the tabs on the right to inspect the interactive **Process Map**, 
               "व्यस्त समय में ग्राहकों का लंबा प्रतीक्षा समय",
               "ऑनलाइन और ऑफलाइन के बीच तालमेल की कमी",
               "अलग-अलग फाइलों में डेटा का बिखराव"
+            ] : isEs ? [
+              "Altos retrasos operativos en horas pico",
+              "Falta de sincronización multicanal",
+              "Fragmentación de datos en varias herramientas"
+            ] : isFr ? [
+              "Délais opérationnels élevés aux heures de pointe",
+              "Manque de synchronisation multicanal",
+              "Fragmentation des données entre outils"
+            ] : isDe ? [
+              "Hohe Verzögerungen in Spitzenzeiten",
+              "Fehlende Multichannel-Synchronisation",
+              "Datenfragmentierung über Tools hinweg"
             ] : [
               "High peak-hour operational delays",
               "Lack of real-time multi-channel sync",
@@ -885,13 +829,22 @@ Click through the tabs on the right to inspect the interactive **Process Map**, 
             ] : isHindi ? [
               "कोई सेंट्रलाइज्ड क्लाउड डेटाबेस नहीं",
               "ग्राहकों के रिकॉर्ड्स बिखरे हुए हैं"
+            ] : isEs ? [
+              "Sin base de datos centralizada en la nube",
+              "Registros de clientes aislados"
+            ] : isFr ? [
+              "Pas de base de données cloud centralisée",
+              "Dossiers clients cloisonnés"
+            ] : isDe ? [
+              "Keine zentrale Cloud-Datenbank",
+              "Isolierte Kundendatensätze"
             ] : [
               "No centralized API database",
               "Siloed customer records"
             ]
           },
           future_state: {
-            vision_summary: isGuj ? "AI-સંચાલિત ડિજિટલ પ્લેટફોર્મ જ્યાં ઓટોમેટેડ વર્કફ્લો અને રિયલ-ટાઇમ ડેટાબેઝ ઉપલબ્ધ છે." : isHindi ? "AI-संचालित डिजिटल प्लेटफॉर्म जहां ऑटोमेटेड वर्कफ़्लो और रियल-टाइम डेटाबेस उपलब्ध है।" : "AI-augmented digital enterprise with autonomous agent workflows and real-time database state.",
+            vision_summary: isGuj ? "AI-સંચાલિત ડિજિટલ પ્લેટફોર્મ જ્યાં ઓટોમેટેડ વર્કફ્લો અને રિયલ-ટાઇમ ડેટાબેઝ ઉપલબ્ધ છે." : isHindi ? "AI-संचालित डिजिटल प्लेटफॉर्म जहां ऑटोमेटेड वर्कफ़्लो और रियल-टाइम डेटाबेस उपलब्ध है।" : isEs ? "Empresa digital aumentada con IA y flujos de trabajo autónomos." : isFr ? "Entreprise numérique augmentée par l'IA avec des flux autonomes." : isDe ? "KI-gestütztes digitales Unternehmen mit autonomen Workflows." : "AI-augmented digital enterprise with autonomous agent workflows and real-time database state.",
             automated_workflows: isGuj ? [
               "મોબાઇલ અને વેબ દ્વારા ત્વરિત સેલ્ફ-સર્વિસ સુવિધા",
               "ઓટોમેટેડ AI સહાયક દ્વારા ૨૪/૭ ગ્રાહક સેવા",
@@ -900,6 +853,18 @@ Click through the tabs on the right to inspect the interactive **Process Map**, 
               "मोबाइल व वेब द्वारा त्वरित सेल्फ-सर्विस सुविधा",
               "ऑटोमेटेड AI सहायक द्वारा 24/7 सहायता",
               "डेटाबेस के साथ लाइव सिंक्रोनाइज़ेशन"
+            ] : isEs ? [
+              "Autoservicio instantáneo web y móvil",
+              "Asistente autónomo de IA para atención 24/7",
+              "Sincronización en tiempo real con la base de datos"
+            ] : isFr ? [
+              "Parcours numérique libre-service web et mobile",
+              "Assistant IA autonome 24/7 pour les clients",
+              "Synchronisation en direct avec la base de données"
+            ] : isDe ? [
+              "Sofortige Self-Service-Lösung für Web & Mobile",
+              "Autonomer KI-Assistent für 24/7 Kundenservice",
+              "Echtzeit-Synchronisierung mit der Datenbank"
             ] : [
               "Instant self-service web/mobile digital journey",
               "Autonomous AI assistant for customer queries",
@@ -913,6 +878,18 @@ Click through the tabs on the right to inspect the interactive **Process Map**, 
               "ऑर्डर व बुकिंग हेतु स्मार्ट AI सहायक",
               "भविष्य की मांग का पूर्व अनुमान",
               "समस्या या देरी पर त्वरित मैनेजर अलर्ट्स"
+            ] : isEs ? [
+              "Asistente de IA para clasificación de pedidos",
+              "Previsión predictiva de la demanda",
+              "Alertas inteligentes ante excepciones"
+            ] : isFr ? [
+              "Assistant IA pour le tri des commandes",
+              "Prévision prédictive de la demande",
+              "Alertes intelligentes en cas d'anomalie"
+            ] : isDe ? [
+              "KI-Assistent für die Bestellungsabwicklung",
+              "Vorausschauende Nachfrageprognose",
+              "Intelligente Ausnahme- und Fehlerwarnungen"
             ] : [
               "Conversational AI Assistant for order/service triage",
               "Predictive demand forecasting",
@@ -926,6 +903,18 @@ Click through the tabs on the right to inspect the interactive **Process Map**, 
               "सेकंडों में तेज़ रिस्पांस समय",
               "99.9% क्लाउड सिस्टम अपटाइम",
               "90%+ ग्राहक संतुष्टि रेटिंग"
+            ] : isEs ? [
+              "Tiempo de respuesta inferior a un segundo",
+              "99.9% de disponibilidad en la nube",
+              "Más del 90% de satisfacción del cliente"
+            ] : isFr ? [
+              "Temps de réponse inférieur à une seconde",
+              "Disponibilité cloud de 99,9%",
+              "Plus de 90% de satisfaction client"
+            ] : isDe ? [
+              "Antwortzeit im Subsekundenbereich",
+              "99,9% Cloud-Systemverfügbarkeit",
+              "Über 90% Kundenzufriedenheit"
             ] : [
               "Sub-second response latency",
               "99.9% uptime with scalable serverless cloud",
@@ -1119,184 +1108,21 @@ Click through the tabs on the right to inspect the interactive **Process Map**, 
         const targetLangName = rawLang;
         const modelName = selectedModel.includes("pro") ? "gemini-2.5-pro" : "gemini-3.6-flash";
 
-        const roleInstructions = "IMPORTANT: The user is a normal, non-technical person! DO NOT use ANY tech jargon like 'microservices', 'API gateways', 'RLS', or 'architecture'. Explain everything in extremely simple, everyday words.";
+        const roleInstructions = "IMPORTANT: The user wants a clean, complete, implementation-ready architecture. Make sure ALL labels, descriptions, tasks, bpmn steps, wireframes, and business analysis are written fluently in the requested TARGET LANGUAGE.";
 
-        const systemPrompt = `You are a friendly, expert Website & App Development Guide talking to a NON-TECHNICAL person.
-Your job is to analyze the user's idea (e.g. a shoe website) and generate a super simple, step-by-step beginner-friendly plan.
-CRITICAL RULE: DO NOT use heavy enterprise or tech jargon in the descriptions! Use simple words so that a totally normal person can easily understand what to do and what features their website will have.
+        const systemPrompt = `You are a world-class AI Solution Architect and Enterprise Transformation Consultant.
+Analyze the user requirement and generate a comprehensive architecture blueprint.
+
+CRITICAL LOCALIZATION RULE:
+- The user has selected TARGET LANGUAGE: "${targetLangName}".
+- EVERY single text field in the response (including project_title, chat_reply, initiatives titles & descs, bpmn_steps titles & descs, wireframe_sections titles & component names, roadmap_sprints phases & tasks, business_analysis strategic_intent, key_value_drivers, summaries, gap_analysis, digital_maturity dimensions, ai_readiness dimensions, and ai_opportunities) MUST be translated fluently and fully into: ${targetLangName}.
+- Do NOT output English when ${targetLangName} is selected (except for standard code identifiers like SQL types or API routes).
 
 ${roleInstructions}
 
-CRITICAL INSTRUCTIONS (ABSOLUTE DOMAIN SPECIFICITY):
-1. TARGET LANGUAGE: EVERY text field MUST be written perfectly in: ${targetLangName}. Make it conversational and easy to read.
-2. DEEP WIREFRAMES: Describe the pages in normal words. E.g., if Shoe Shop, give me "Page 1: Shoe Catalog (Show shoe photos, size filters, price slider)", "Page 2: Cart & Checkout (Where people pay)".
-3. DEEP DATABASE SCHEMA: Generate 8-12 tables tailored to the domain. Use real technical column names (VARCHAR, etc) but keep table names obvious (e.g., 'users', 'products', 'orders').
-4. COMPREHENSIVE REST APIs: Give 10-15 standard REST APIs grouped by resource. (e.g., /api/shoes, /api/orders).
-5. ROADMAP & ROLES: Define normal team roles (e.g., "Website Designer", "App Developer", "Tester").
-6. HIGHLY DYNAMIC TECH STACK: Suggest the best tools for their specific idea (React for websites, Swift for iPhone apps, Python for AI).
-7. ACTION PLAN GUIDE (bpmn_steps): You MUST write this exactly as a friendly Manager giving direct, step-by-step instructions to a normal person building the app. 
-   - Rule: EXPLAIN EXACTLY WHAT THE STEP DOES FOR THE USER'S SPECIFIC IDEA!
-   - BAD: "Step 1: Setup Architecture and configure APIs."
-   - GOOD (If Shoes): "Step 1: Website Design - First, let's create a beautiful front page where customers can see photos of all your shoes."
-   - GOOD (If Shoes): "Step 2: Shopping Cart - Next, we will add a cart so people can pick their shoe size and buy it easily."
-   Write the title and description in a very simple, relatable tone. Explain the "WHY" in everyday language.
-8. SPRINT TASKS: Keep tasks practical. Instead of "Configure CI/CD", say "Publish the website to the internet so customers can visit it."
-9. STRICT CHAT_REPLY FORMAT: The 'chat_reply' field MUST follow this EXACT structured format in ${targetLangName}:
-Hello! I've analyzed your business requirement for **"[Specific Requirement]"** and generated a complete enterprise architecture blueprint.
-
-🎯 **Executive Strategy & Architecture Highlights:**
-• **Digital Maturity:** [Maturity Score]% | **AI Adoption Readiness:** [AI Readiness Score]%
-• **Target MVP Delivery:** [Weeks Timeline] Weeks (Estimated Budget: [Min Budget] – [Max Budget])
-• **Recommended Tech Stack:** [Frontend] (Client) + [Backend] (Gateway) + PostgreSQL (Supabase RLS)
-• **Data & API Layer:** Engineered [Number of tables] domain-specific relational tables with [Number of APIs] production REST endpoints.
-
-👉 **Explore Your Solution Canvas:**
-Click through the tabs on the right to inspect the interactive **Process Map**, **Database Schemas & APIs**, **UX Wireframe Components**, and **Sprint Roadmap**. Feel free to ask any questions or refine specific requirements!
-   
 USER REQUIREMENT: "${cleanPrompt}"
 
-Output ONLY a single valid JSON object matching this schema:
-{
-  "project_title": "Descriptive Title in ${targetLangName}",
-  "chat_reply": "Exact formatted response following rule 9 in ${targetLangName}",
-  "user_problem": "${userFacingProblem.slice(0, 150).replace(/"/g, '\\"')}",
-  "target_language": "${targetLangName}",
-  "user_role": "${role}",
-  "digital_maturity": 88,
-  "ai_adoption": 92,
-  "timeline": "6-8 Weeks",
-  "financial_estimation": {
-    "min_budget": "$18,000",
-    "max_budget": "$34,000",
-    "total_hours": "240 Hours",
-    "hourly_rate": "$75/hr",
-    "team_roles": [
-      { "role": "[Dynamic Role 1]", "count": 2, "allocation": "100%" },
-      { "role": "[Dynamic Role 2]", "count": 1, "allocation": "50%" }
-    ]
-  },
-  "tech_stack": {
-    "frontend": "[Dynamic Client/Frontend Tech based on requirement]",
-    "backend": "[Dynamic Backend Tech based on requirement]",
-    "database": "[Dynamic Database Tech based on requirement]",
-    "ai_layer": "[Dynamic AI/ML layer based on requirement]"
-  },
-  "initiatives": [
-    { "title": "Initiative 1 in ${targetLangName}", "impact": "High Impact", "desc": "Description in ${targetLangName}" }
-  ],
-  "bpmn_steps": [
-    { "id": 1, "title": "1. Step in ${targetLangName}", "desc": "Description in ${targetLangName}", "phase": "Phase" }
-  ],
-  "database_tables": [
-    {
-      "table_name": "tbl_custom_name",
-      "columns": ["id (PK, UUID)", "name (VARCHAR)", "created_at (TIMESTAMP)"]
-    }
-  ],
-  "database_relationships": [
-    "users -> orders",
-    "orders -> order_items",
-    "order_items -> products"
-  ],
-  "api_endpoints": [
-    { "method": "POST", "path": "/api/v1/resource/action", "desc": "Description in ${targetLangName}" }
-  ],
-  "wireframe_sections": [
-    { "title": "Section Title in ${targetLangName}", "components": ["Component 1 in ${targetLangName}", "Component 2 in ${targetLangName}"] }
-  ],
-  "roadmap_sprints": [
-    { 
-      "timeframe": "Week 1", 
-      "phase": "Project Setup", 
-      "tech_stack": ["[Language 1]", "[Framework 2]"], 
-      "ai_tools": ["[Tool 1]", "[Tool 2]"], 
-      "owner": "[Dynamic Role]", 
-      "platform": ["[Platform 1]", "[Platform 2]"],
-      "tasks": [
-        "Detailed step 1 in ${targetLangName}",
-        "Detailed step 2 in ${targetLangName}"
-      ]
-    }
-  ],
-  "planning": {
-    "effortHours": "240",
-    "cloudCost": "$120/mo",
-    "cloudDetail": "Supabase PostgreSQL + Edge Functions",
-    "risk": { "level": "Low-Medium", "title": "Risk in ${targetLangName}", "mitigation": "Mitigation in ${targetLangName}" }
-  },
-  "business_analysis": {
-    "project_title": "Descriptive Title in ${targetLangName}",
-    "executive_summary": {
-      "strategic_intent": "Strategic intent in ${targetLangName}",
-      "key_value_drivers": ["Value driver 1 in ${targetLangName}", "Value driver 2 in ${targetLangName}"],
-      "projected_roi_percentage": "320%",
-      "estimated_payback_months": "4.5 Months",
-      "operational_efficiency_gain": "65%"
-    },
-    "current_state": {
-      "summary": "Current state summary in ${targetLangName}",
-      "manual_workflows": ["Manual workflow 1 in ${targetLangName}", "Manual workflow 2 in ${targetLangName}"],
-      "core_bottlenecks": ["Bottleneck 1 in ${targetLangName}", "Bottleneck 2 in ${targetLangName}"],
-      "legacy_limitations": ["Limitation 1 in ${targetLangName}"]
-    },
-    "future_state": {
-      "vision_summary": "Future state vision in ${targetLangName}",
-      "automated_workflows": ["Automated workflow 1 in ${targetLangName}", "Automated workflow 2 in ${targetLangName}"],
-      "ai_transformation_touchpoints": ["AI touchpoint 1 in ${targetLangName}", "AI touchpoint 2 in ${targetLangName}"],
-      "target_kpis": ["Target KPI 1 in ${targetLangName}"]
-    },
-    "gap_analysis": [
-      {
-        "id": "gap-1",
-        "category": "Process",
-        "current_state": "As-is status in ${targetLangName}",
-        "future_state": "Target state in ${targetLangName}",
-        "gap_description": "Identified gap in ${targetLangName}",
-        "severity": "High",
-        "mitigation_strategy": "Mitigation in ${targetLangName}"
-      },
-      {
-        "id": "gap-2",
-        "category": "Technology",
-        "current_state": "As-is status in ${targetLangName}",
-        "future_state": "Target state in ${targetLangName}",
-        "gap_description": "Identified gap in ${targetLangName}",
-        "severity": "High",
-        "mitigation_strategy": "Mitigation in ${targetLangName}"
-      }
-    ],
-    "digital_maturity": {
-      "overall_score": 88,
-      "level": "Advanced",
-      "dimensions": [
-        { "name": "Strategy & Vision", "score": 90, "level": "Advanced", "description": "Strategy description in ${targetLangName}", "recommendation": "Recommendation in ${targetLangName}" }
-      ]
-    },
-    "ai_readiness": {
-      "overall_score": 92,
-      "readiness_grade": "High AI Readiness",
-      "dimensions": [
-        { "dimension": "Data Quality & Availability", "score": 90, "status": "Ready", "finding": "Finding in ${targetLangName}", "action_item": "Action in ${targetLangName}" }
-      ],
-      "key_enablers": ["Enabler 1 in ${targetLangName}"],
-      "key_blockers": ["Blocker 1 in ${targetLangName}"]
-    },
-    "ai_opportunities": [
-      {
-        "id": "opp-1",
-        "title": "Opportunity 1 in ${targetLangName}",
-        "category": "Generative AI",
-        "business_impact": "Transformational",
-        "feasibility": "High (Plug & Play)",
-        "estimated_roi": "340% ROI",
-        "time_to_value": "2-3 Weeks",
-        "description": "Description in ${targetLangName}",
-        "recommended": true
-      }
-    ]
-  }
-}
-Output raw JSON only.`;
+Output ONLY a single valid JSON object with the complete architecture blueprint in ${targetLangName}.`;
 
         const candidateModels = [
           "gemini-3.6-flash",
@@ -1342,12 +1168,12 @@ Output raw JSON only.`;
                   if (!parsed.user_problem || parsed.user_problem.includes("[PHASE 1 DISCOVERY") || parsed.user_problem.includes("[DISCOVERY INTERVIEW")) {
                     parsed.user_problem = userFacingProblem;
                   }
+                  parsed.target_language = targetLangName;
                 }
-                console.log(`>>> [GEMINI ${currentModel.toUpperCase()} SUCCESS] Bespoke Architecture Generated!`);
+                console.log(`>>> [GEMINI ${currentModel.toUpperCase()} SUCCESS] Bespoke Architecture Generated in ${targetLangName}!`);
                 return NextResponse.json({ success: true, data: parsed, gemini_used: true, model: currentModel });
               }
             } else {
-              const errBody = await response.text();
               console.warn(`[GEMINI ${currentModel} FAIL] Status: ${response.status} -> Trying next model...`);
             }
           } catch (modelErr) {
