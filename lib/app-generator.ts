@@ -140,11 +140,36 @@ function generateDynamicExecutableHtml(
   blueprint: any
 ): string {
   const initiatives = blueprint.initiatives || [];
-  const tables = blueprint.database_tables || [];
-  const apis = blueprint.api_endpoints || [];
 
   // Classify business domain & extract rich context
   const domainCtx = classifyApplicationDomain(prompt, title);
+
+  const rawTables = blueprint.database_tables || [];
+  const tables = (rawTables.length > 0 ? rawTables : [
+    { table_name: "records", columns: ["id (UUID)", "name (VARCHAR)", "status (VARCHAR)", "created_at (TIMESTAMP)"] }
+  ]).map((t: any) => {
+    if (typeof t === "string") {
+      return { table_name: t, columns: ["id (UUID)", "name (VARCHAR)", "status (VARCHAR)", "created_at (TIMESTAMP)"] };
+    }
+    const name = t.table_name || t.name || t.tableName || "records";
+    const cols = Array.isArray(t.columns) ? t.columns : ["id (UUID)", "name (VARCHAR)", "status (VARCHAR)", "created_at (TIMESTAMP)"];
+    return { table_name: String(name), columns: cols };
+  });
+
+  const rawApis = blueprint.api_endpoints || [];
+  const apis = (rawApis.length > 0 ? rawApis : [
+    { method: "GET", path: "/api/records", desc: "Retrieve active records" },
+    { method: "POST", path: "/api/records", desc: "Create new record" }
+  ]).map((a: any) => {
+    if (typeof a === "string") {
+      return { method: "GET", path: a, desc: "REST endpoint handler" };
+    }
+    return {
+      method: a.method || "GET",
+      path: a.path || a.endpoint || "/api/v1/resource",
+      desc: a.desc || a.description || "Production REST endpoint handler"
+    };
+  });
 
   // Build items from domain intelligence and blueprint initiatives
   const items: any[] = [];
@@ -618,30 +643,31 @@ function generateDynamicExecutableHtml(
     // Database Mock Storage
     function parseColName(raw) {
       if (!raw) return "field";
-      let name = raw.split(/\s+|\(/)[0].trim();
-      return name.replace(/[^a-zA-Z0-9_]/g, '');
+      let name = String(raw).split(/\s+|\(/)[0].trim();
+      return name.replace(/[^a-zA-Z0-9_]/g, '') || "field";
     }
 
     function generateSampleRow(table, rowIndex) {
       const row = {};
-      const cols = table.columns && table.columns.length ? table.columns : ["id", "name", "status", "created_at"];
+      const tableName = (table && (table.table_name || table.name || (typeof table === 'string' ? table : ''))) || 'record';
+      const cols = table && table.columns && table.columns.length ? table.columns : ["id", "name", "status", "created_at"];
       cols.forEach(rawCol => {
         const colName = parseColName(rawCol);
         const lower = colName.toLowerCase();
         if (lower === 'id' || lower.endsWith('_id')) {
           row[colName] = (colName.includes('id') ? colName : 'id') + "-" + (1000 + rowIndex);
         } else if (lower.includes('name') || lower.includes('title')) {
-          row[colName] = table.table_name.charAt(0).toUpperCase() + table.table_name.slice(1) + " Record #" + (rowIndex + 1);
+          row[colName] = tableName.charAt(0).toUpperCase() + tableName.slice(1) + " #" + (rowIndex + 1);
         } else if (lower.includes('status') || lower.includes('state')) {
           row[colName] = rowIndex % 2 === 0 ? "active" : "verified";
         } else if (lower.includes('email')) {
-          row[colName] = "user" + (rowIndex + 1) + "@" + table.table_name.toLowerCase() + ".org";
+          row[colName] = "user" + (rowIndex + 1) + "@" + tableName.toLowerCase() + ".org";
         } else if (lower.includes('amount') || lower.includes('price') || lower.includes('cost') || lower.includes('fee')) {
           row[colName] = "$" + (120 * (rowIndex + 1)).toFixed(2);
         } else if (lower.includes('date') || lower.includes('time') || lower.includes('created') || lower.includes('updated')) {
           row[colName] = new Date(Date.now() - rowIndex * 86400000).toISOString().split('T')[0];
         } else if (lower.includes('desc') || lower.includes('notes') || lower.includes('detail')) {
-          row[colName] = "Managed entry for " + table.table_name;
+          row[colName] = "Managed entry for " + tableName;
         } else {
           row[colName] = "Value-" + (rowIndex + 1);
         }
@@ -649,10 +675,15 @@ function generateDynamicExecutableHtml(
       return row;
     }
 
-    let dbData = JSON.parse(localStorage.getItem("${title}_db_data") || "{}");
-    dbTables.forEach((t) => {
-      if (!dbData[t.table_name] || dbData[t.table_name].length === 0) {
-        dbData[t.table_name] = [
+    let dbData = {};
+    try {
+      dbData = JSON.parse(localStorage.getItem("${title}_db_data") || "{}");
+    } catch (e) { dbData = {}; }
+
+    (dbTables || []).forEach((t) => {
+      const tName = (t && (t.table_name || t.name || (typeof t === 'string' ? t : ''))) || 'records';
+      if (!dbData[tName] || dbData[tName].length === 0) {
+        dbData[tName] = [
           generateSampleRow(t, 0),
           generateSampleRow(t, 1),
           generateSampleRow(t, 2)
@@ -695,9 +726,10 @@ function generateDynamicExecutableHtml(
     function renderCategoryFilters() {
       const container = document.getElementById("categoryFilterContainer");
       if (!container) return;
-      const categories = ["All", ...(domainContext.categories || [])];
+      const rawCategories = domainContext.categories || [];
+      const categories = rawCategories.length > 0 ? ["All", ...rawCategories.filter(c => !c.toLowerCase().startsWith("all"))] : ["All"];
       container.innerHTML = categories.map(cat => \`
-        <button onclick="selectCategory('\${cat}')" class="px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap \${selectedCategory === cat ? 'bg-indigo-600 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
+        <button onclick="selectCategory('\${cat}')" class="px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap \${(selectedCategory === cat || (selectedCategory === 'All' && cat.toLowerCase().startsWith('all'))) ? 'bg-indigo-600 text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
           \${cat}
         </button>
       \`).join('');
@@ -711,16 +743,22 @@ function generateDynamicExecutableHtml(
 
     function renderCatalog() {
       const grid = document.getElementById("catalogGrid");
-      const search = (document.getElementById("searchInput")?.value || "").toLowerCase();
+      if (!grid) return;
+      const search = (document.getElementById("searchInput")?.value || "").toLowerCase().trim();
 
-      const filtered = allItems.filter(item => {
-        const matchesCat = selectedCategory === "All" || item.category === selectedCategory || selectedCategory.includes(item.category);
-        const matchesSearch = item.name.toLowerCase().includes(search) || item.desc.toLowerCase().includes(search);
+      const filtered = (allItems || []).filter(item => {
+        if (!item) return false;
+        const itemName = String(item.name || "").toLowerCase();
+        const itemDesc = String(item.desc || "").toLowerCase();
+        const itemCat = String(item.category || "");
+        const isAll = selectedCategory === "All" || selectedCategory.toLowerCase().startsWith("all");
+        const matchesCat = isAll || itemCat === selectedCategory || itemCat.toLowerCase().includes(selectedCategory.toLowerCase()) || selectedCategory.toLowerCase().includes(itemCat.toLowerCase());
+        const matchesSearch = !search || itemName.includes(search) || itemDesc.includes(search);
         return matchesCat && matchesSearch;
       });
 
       if (filtered.length === 0) {
-        grid.innerHTML = '<div class="col-span-full py-12 text-center text-slate-400">No items found matching criteria. Click "Edit Web" above to add items!</div>';
+        grid.innerHTML = '<div class="col-span-full py-12 text-center text-slate-400 font-medium">No items found matching criteria. Click "Edit Web" above to add items!</div>';
         return;
       }
 
@@ -1199,10 +1237,10 @@ function generateDynamicExecutableHtml(
       setTimeout(() => { t.remove(); }, 3500);
     }
 
-    // Initialization
-    renderCategoryFilters();
-    renderCatalog();
-    renderAdminDashboard();
+    // Safe Initialization
+    try { renderCategoryFilters(); } catch (e) { console.error("renderCategoryFilters error:", e); }
+    try { renderCatalog(); } catch (e) { console.error("renderCatalog error:", e); }
+    try { renderAdminDashboard(); } catch (e) { console.error("renderAdminDashboard error:", e); }
   </script>
 </body>
 </html>`;

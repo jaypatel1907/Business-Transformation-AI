@@ -831,52 +831,145 @@ Click through the tabs on the right to inspect the interactive **Process Map**, 
           project_title: dynamicTitle,
           executive_summary: {
             strategic_intent: p,
-            key_value_drivers: [
+            key_value_drivers: isGuj ? [
+              "મેન્યુઅલ કામકાજના સમયમાં ૭૦% થી ૮૦% સુધીનો ઘટાડો",
+              "AI એજન્ટ દ્વારા ૨૪/૭ ગ્રાહકોને તાત્કાલિક સેવા",
+              "તમામ વિભાગોમાં રિયલ-ટાઇમ લાઇવ ડેટા પારદર્શિતા",
+              "મેન્યુઅલ એન્ટ્રી અને ભૂલોનું સંપૂર્ણ નિવારણ"
+            ] : isHindi ? [
+              "मैनुअल कार्य समय में 70% से 80% तक की कमी",
+              "AI एजेंट द्वारा 24/7 ग्राहकों को त्वरित सहायता",
+              "सभी विभागों में रियल-टाइम डेटा पारदर्शिता",
+              "मैनुअल प्रविष्टि और त्रुटियों का पूर्ण निवारण"
+            ] : [
               "Reduction in manual operational latency",
               "Automated 24/7 customer interactions via AI agents",
               "Unified real-time data visibility across departments",
               "Elimination of manual entry errors"
             ],
             projected_roi_percentage: "280% - 360%",
-            estimated_payback_months: "4-6 Months",
+            estimated_payback_months: isGuj ? "૪-૬ મહિના" : isHindi ? "4-6 महीने" : "4-6 Months",
             operational_efficiency_gain: "60%"
           },
           current_state: {
-            summary: "Fragmented operations with manual overhead, disconnected tools, and slow resolution times.",
-            manual_workflows: [
+            summary: isGuj ? "મેન્યુઅલ કામકાજ, વિખરાયેલા ટૂલ્સ અને ધીમી સેવાને કારણે થતો સમયનો બગાડ." : isHindi ? "मैनुअल कार्य, बिखरे हुए टूल्स और धीमी सेवा के कारण समय का नुकसान।" : "Fragmented operations with manual overhead, disconnected tools, and slow resolution times.",
+            manual_workflows: isGuj ? [
+              "મેન્યુઅલ ઓર્ડર અને બુકિંગ ટ્રેકિંગ",
+              "મેન્યુઅલ ઇન્વેન્ટરી અને સ્ટેટસ અપડેટ્સ",
+              "ગ્રાહકોની પૂછપરછનો ધીમો મેન્યુઅલ નિકાલ"
+            ] : isHindi ? [
+              "मैनुअल ऑर्डर और बुकिंग ट्रैकिंग",
+              "मैनुअल इन्वेंटरी व स्टेटस अपडेट्स",
+              "ग्राहकों के प्रश्नों का धीमा निपटान"
+            ] : [
               "Manual order & booking tracking",
               "Disjointed inventory updates",
               "Manual customer query triage"
             ],
-            core_bottlenecks: [
+            core_bottlenecks: isGuj ? [
+              "પીક સમયમાં ગ્રાહકોને લાંબો વેઇટિંગ ટાઇમ",
+              "ઓનલાઇન અને ઓફલાઇન ચેનલો વચ્ચે તાલમેલનો અભાવ",
+              "અલગ-અલગ ફાઇલોમાં ડેટા વેરવિખેર હોવો"
+            ] : isHindi ? [
+              "व्यस्त समय में ग्राहकों का लंबा प्रतीक्षा समय",
+              "ऑनलाइन और ऑफलाइन के बीच तालमेल की कमी",
+              "अलग-अलग फाइलों में डेटा का बिखराव"
+            ] : [
               "High peak-hour operational delays",
               "Lack of real-time multi-channel sync",
               "Data fragmentation across tools"
             ],
-            legacy_limitations: [
+            legacy_limitations: isGuj ? [
+              "કોઈ સેન્ટ્રલાઇઝ્ડ ક્લાઉડ ડેટાબેઝ નથી",
+              "ગ્રાહકોના રેકોર્ડ્સ અલગ-અલગ પડેલા છે"
+            ] : isHindi ? [
+              "कोई सेंट्रलाइज्ड क्लाउड डेटाबेस नहीं",
+              "ग्राहकों के रिकॉर्ड्स बिखरे हुए हैं"
+            ] : [
               "No centralized API database",
               "Siloed customer records"
             ]
           },
           future_state: {
-            vision_summary: "AI-augmented digital enterprise with autonomous agent workflows and real-time database state.",
-            automated_workflows: [
+            vision_summary: isGuj ? "AI-સંચાલિત ડિજિટલ પ્લેટફોર્મ જ્યાં ઓટોમેટેડ વર્કફ્લો અને રિયલ-ટાઇમ ડેટાબેઝ ઉપલબ્ધ છે." : isHindi ? "AI-संचालित डिजिटल प्लेटफॉर्म जहां ऑटोमेटेड वर्कफ़्लो और रियल-टाइम डेटाबेस उपलब्ध है।" : "AI-augmented digital enterprise with autonomous agent workflows and real-time database state.",
+            automated_workflows: isGuj ? [
+              "મોબાઇલ અને વેબ દ્વારા ત્વરિત સેલ્ફ-સર્વિસ સુવિધા",
+              "ઓટોમેટેડ AI સહાયક દ્વારા ૨૪/૭ ગ્રાહક સેવા",
+              "ડેટાબેઝ સાથે લાઇવ સિંક્રોનાઇઝેશન"
+            ] : isHindi ? [
+              "मोबाइल व वेब द्वारा त्वरित सेल्फ-सर्विस सुविधा",
+              "ऑटोमेटेड AI सहायक द्वारा 24/7 सहायता",
+              "डेटाबेस के साथ लाइव सिंक्रोनाइज़ेशन"
+            ] : [
               "Instant self-service web/mobile digital journey",
               "Autonomous AI assistant for customer queries",
               "Real-time database state with instant webhook sync"
             ],
-            ai_transformation_touchpoints: [
+            ai_transformation_touchpoints: isGuj ? [
+              "ઓર્ડર અને બુકિંગ માટે સ્માર્ટ AI આસિસ્ટન્ટ",
+              "ભવિષ્યની ડિમાન્ડનું અગાઉથી અનુમાન",
+              "વિલંબ કે સમસ્યા સમયે ત્વરિત મેનેજર એલર્ટ્સ"
+            ] : isHindi ? [
+              "ऑर्डर व बुकिंग हेतु स्मार्ट AI सहायक",
+              "भविष्य की मांग का पूर्व अनुमान",
+              "समस्या या देरी पर त्वरित मैनेजर अलर्ट्स"
+            ] : [
               "Conversational AI Assistant for order/service triage",
               "Predictive demand forecasting",
               "Intelligent exception alerts"
             ],
-            target_kpis: [
+            target_kpis: isGuj ? [
+              "સેકન્ડોમાં ઝડપી રિસ્પોન્સ સમય",
+              "૯૯.૯% ક્લાઉડ સિસ્ટમ અપટાઇમ",
+              "૯૦%+ સંતોષકારક ગ્રાહક રેટિંગ"
+            ] : isHindi ? [
+              "सेकंडों में तेज़ रिस्पांस समय",
+              "99.9% क्लाउड सिस्टम अपटाइम",
+              "90%+ ग्राहक संतुष्टि रेटिंग"
+            ] : [
               "Sub-second response latency",
               "99.9% uptime with scalable serverless cloud",
               "90%+ positive customer satisfaction"
             ]
           },
-          gap_analysis: [
+          gap_analysis: isGuj ? [
+            {
+              id: "gap-1",
+              category: "પ્રોસેસ (Process)",
+              current_state: "મેન્યુઅલ કામકાજ અને માહિતીની આપ-લે",
+              future_state: "ઓટોમેટેડ એન્ડ-ટુ-એન્ડ ડિજિટલ વર્કફ્લો",
+              gap_description: "સ્વચાલિત શેડ્યુલિંગ અને સ્ટેટસ ટ્રેકિંગનો અભાવ",
+              severity: "Critical",
+              mitigation_strategy: "ઇવેન્ટ-ડ્રાઇવન REST APIs અને વેબહૂક્સ અમલમાં મૂકવા"
+            },
+            {
+              id: "gap-2",
+              category: "ટેકનોલોજી (Technology)",
+              current_state: "અલગ-અલગ સોફ્ટવેર જેમાં સેન્ટ્રલ API નથી",
+              future_state: "સુરક્ષિત ક્લાઉડ-નેટિવ PostgreSQL ડેટાબેઝ",
+              gap_description: "સંયુક્ત રિલેશનલ સ્કીમા અને APIs ની ગેરહાજરી",
+              severity: "High",
+              mitigation_strategy: "સ્ટ્રક્ચર્ડ ડેટાબેઝ ટેબલ્સ અને રોલ-બેઝ્ડ એક્સેસ લાગુ કરવું"
+            },
+            {
+              id: "gap-3",
+              category: "ડેટા (Data)",
+              current_state: "ગ્રાહક અને બુકિંગ હિસ્ટ્રી ઑફલાઇન નોંધાયેલ છે",
+              future_state: "સંપૂર્ણ ૩૬૦° ગ્રાહક પ્રોફાઇલ અને લાઇવ ટેલિમેટ્રી",
+              gap_description: "વ્યક્તિગત ભલામણો કે સ્માર્ટ ઓફર્સ આપી શકાતી નથી",
+              severity: "Medium",
+              mitigation_strategy: "સુરક્ષિત એન્ક્રિપ્ટેડ ક્લાઉડ ડેટાબેઝમાં ડેટા એકત્રિત કરવો"
+            },
+            {
+              id: "gap-4",
+              category: "ટીમ (People)",
+              current_state: "કર્મચારીઓ ૬૦% સમય સામાન્ય સવાલોના જવાબોમાં વિતાવે છે",
+              future_state: "AI કોપાયલટ દ્વારા સામાન્ય સવાલોનો આપમેળે નિકાલ",
+              gap_description: "મહત્વના બિઝનેસ ગ્રોથ માટે સ્ટાફ પાસે સમયનો અભાવ",
+              severity: "High",
+              mitigation_strategy: "ગ્રાહકો માટે સ્માર્ટ AI ચેટ સહાયક તૈનાત કરવો"
+            }
+          ] : [
             {
               id: "gap-1",
               category: "Process",
@@ -917,7 +1010,12 @@ Click through the tabs on the right to inspect the interactive **Process Map**, 
           digital_maturity: {
             overall_score: maturityScore,
             level: maturityScore >= 80 ? "Advanced" : maturityScore >= 60 ? "Defined" : "Developing",
-            dimensions: [
+            dimensions: isGuj ? [
+              { name: "વ્યુહરચના અને વિઝન", score: Math.min(maturityScore + 5, 95), level: "Advanced", description: "ડિજિટલ રોડમેપ અને લક્ષ્યો.", recommendation: "દર ત્રિમાસિક ગાળે KPI રિવ્યુ કરો." },
+              { name: "ટેકનોલોજી આર્કિટેક્ચર", score: maturityScore, level: "Defined", description: "આધુનિક ક્લાઉડ અને API સ્તર.", recommendation: "માઇક્રોસર્વિસ સ્કેલેબિલિટી જાળવો." },
+              { name: "ડેટા અને એનાલિટિક્સ", score: Math.max(maturityScore - 5, 50), level: "Defined", description: "રિલેશનલ ડેટાબેઝ સ્કીમા.", recommendation: "રિયલ-ટાઇમ એનાલિટિક્સ સક્ષમ કરો." },
+              { name: "ઓપરેશન્સ અને ઓટોમેશન", score: Math.min(maturityScore + 2, 95), level: "Advanced", description: "સ્વચાલિત ટાસ્ક વર્કફ્લો.", recommendation: "પ્રેડિક્ટિવ શેડ્યુલિંગ લાગુ કરો." }
+            ] : [
               { name: "Strategy & Vision", score: Math.min(maturityScore + 5, 95), level: "Advanced", description: "Strategic digital roadmap.", recommendation: "Maintain quarterly KPI cycles." },
               { name: "Technology Architecture", score: maturityScore, level: "Defined", description: "Modern cloud and API tier.", recommendation: "Enforce microservice scalability." },
               { name: "Data & Analytics", score: Math.max(maturityScore - 5, 50), level: "Defined", description: "Relational database schema.", recommendation: "Enable real-time telemetry." },
@@ -926,17 +1024,56 @@ Click through the tabs on the right to inspect the interactive **Process Map**, 
           },
           ai_readiness: {
             overall_score: aiReadinessScore,
-            readiness_grade: aiReadinessScore >= 80 ? "High AI Readiness" : "Moderate AI Readiness",
-            dimensions: [
+            readiness_grade: isGuj ? (aiReadinessScore >= 80 ? "ઉચ્ચ AI તૈયારી" : "મધ્યમ AI તૈયારી") : (aiReadinessScore >= 80 ? "High AI Readiness" : "Moderate AI Readiness"),
+            dimensions: isGuj ? [
+              { dimension: "ડેટા ગુણવત્તા અને ઉપલબ્ધતા", score: Math.min(aiReadinessScore, 90), status: "Ready", finding: "સ્વચ્છ રિલેશનલ સ્કીમા ઉપલબ્ધ છે.", action_item: "ડેટા વેલિડેશન ચાલુ રાખો." },
+              { dimension: "ઇન્ફ્રાસ્ટ્રક્ચર અને API ચપળતા", score: Math.min(aiReadinessScore + 6, 96), status: "Ready", finding: "આધુનિક Next.js / Node.js આર્કિટેક્ચર.", action_item: "રેટ લિમિટિંગ સેટ કરો." },
+              { dimension: "ટીમ અને સંસ્થાકીય સ્વીકૃતિ", score: Math.max(aiReadinessScore - 8, 60), status: "Ready", finding: "સ્ટાફ નવી સિસ્ટમ શીખવા તૈયાર છે.", action_item: "AI કોપાયલટ તાલીમ આપો." },
+              { dimension: "સુરક્ષા અને ગવર્નન્સ", score: 88, status: "Ready", finding: "રોલ-બેઝ્ડ સુરક્ષા ગોઠવેલ છે.", action_item: "ઓડિટ લોગિંગ જાળવો." }
+            ] : [
               { dimension: "Data Quality & Availability", score: Math.min(aiReadinessScore, 90), status: "Ready", finding: "Clean relational schemas ready for LLM context.", action_item: "Maintain data validation." },
               { dimension: "Infrastructure & API Agility", score: Math.min(aiReadinessScore + 6, 96), status: "Ready", finding: "Modern Next.js / Node.js architecture.", action_item: "Configure rate limiting." },
               { dimension: "Team & Organizational Adoption", score: Math.max(aiReadinessScore - 8, 60), status: "Ready", finding: "Staff receptive to workflow automation.", action_item: "Conduct copilot training." },
               { dimension: "Governance, Security & Ethics", score: 88, status: "Ready", finding: "Role-based authentication & data isolation configured.", action_item: "Enforce audit logging." }
             ],
-            key_enablers: ["Modern cloud API readiness", "Clean relational database schema", "Multi-model Gemini fallback architecture"],
-            key_blockers: ["Legacy manual habit", "User onboarding friction"]
+            key_enablers: isGuj ? ["આધુનિક ક્લાઉડ API તૈયારી", "ક્લીન રિલેશનલ ડેટાબેઝ સ્કીમા", "મલ્ટી-મોડેલ AI આર્કિટેક્ચર"] : ["Modern cloud API readiness", "Clean relational database schema", "Multi-model Gemini fallback architecture"],
+            key_blockers: isGuj ? ["મેન્યુઅલ કામની જૂની ટેવ", "યુઝર ઓનબોર્ડિંગ ઘર્ષણ"] : ["Legacy manual habit", "User onboarding friction"]
           },
-          ai_opportunities: [
+          ai_opportunities: isGuj ? [
+            {
+              id: "opp-1",
+              title: "સ્માર્ટ AI કન્વર્સેશનલ આસિસ્ટન્ટ",
+              category: "જનરેટિવ AI",
+              business_impact: "રૂપાંતરણકારી (Transformational)",
+              feasibility: "ઉચ્ચ (પ્લગ એન્ડ પ્લે)",
+              estimated_roi: "૩૪૦% ROI",
+              time_to_value: "૨-૩ અઠવાડિયા",
+              description: "ગ્રાહકોની પૂછપરછ, બુકિંગ, ઓર્ડર અને સામાન્ય સવાલો માટે ૨૪/૭ ઓટોમેટેડ સહાય.",
+              recommended: true
+            },
+            {
+              id: "opp-2",
+              title: "ડાઇનેમિક સ્માર્ટ ભલામણ એન્જિન",
+              category: "પ્રેડિક્ટિવ એનાલિટિક્સ",
+              business_impact: "ઉચ્ચ (High)",
+              feasibility: "મધ્યમ (કસ્ટમ ઇન્ટીગ્રેશન)",
+              estimated_roi: "૨૧૦% ROI",
+              time_to_value: "૪ અઠવાડિયા",
+              description: "ગ્રાહકની પસંદગી અને અગાઉના ઓર્ડર મુજબ સંબંધિત પ્રોડક્ટ્સ/સેવાઓની ભલામણ.",
+              recommended: true
+            },
+            {
+              id: "opp-3",
+              title: "ઓટોમેટેડ વર્કફ્લો અને એલર્ટ સિસ્ટમ",
+              category: "ઇન્ટેલિજન્ટ ઓટોમેશન",
+              business_impact: "ઉચ્ચ (High)",
+              feasibility: "ઉચ્ચ (પ્લગ એન્ડ પ્લે)",
+              estimated_roi: "૧૮૦% ROI",
+              time_to_value: "૧-૨ અઠવાડિયા",
+              description: "નવા ઓર્ડર/બુકિંગ પર આપમેળે ટાસ્ક શરૂ કરવા અને વિલંબ પર મેનેજર એલર્ટ આપવા.",
+              recommended: true
+            }
+          ] : [
             {
               id: "opp-1",
               title: "Conversational Customer AI Assistant",
