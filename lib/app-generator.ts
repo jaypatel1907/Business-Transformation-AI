@@ -622,6 +622,35 @@ function generateDynamicExecutableHtml(
   </div>
 
   <script>
+    // In-memory fallback storage for iframe sandbox security
+    const inMemStore = {};
+    function safeGetItem(key, fallback) {
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          const val = window.localStorage.getItem(key);
+          if (val !== null && val !== undefined) return val;
+        }
+      } catch (e) {}
+      return inMemStore[key] !== undefined ? inMemStore[key] : fallback;
+    }
+    function safeSetItem(key, val) {
+      const str = typeof val === 'string' ? val : JSON.stringify(val);
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          window.localStorage.setItem(key, str);
+        }
+      } catch (e) {}
+      inMemStore[key] = str;
+    }
+    function safeRemoveItem(key) {
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          window.localStorage.removeItem(key);
+        }
+      } catch (e) {}
+      delete inMemStore[key];
+    }
+
     // Domain Intelligence Context & State
     const domainContext = ${serializedDomainCtx};
     let allItems = ${serializedItems};
@@ -633,17 +662,23 @@ function generateDynamicExecutableHtml(
     let selectedHeroGradient = "indigo";
     let activeTableIndex = 0;
 
-    // Load LocalStorage persisted ledger rows
-    const storageKey = "${title}_domain_ledger";
-    let ledgerRows = JSON.parse(localStorage.getItem(storageKey) || "null");
-    if (!ledgerRows) {
+    // Load persisted ledger rows safely
+    const storageKey = "${title.replace(/[^a-zA-Z0-9_]/g, '_')}_domain_ledger";
+    let ledgerRows = [];
+    try {
+      const rawLedger = safeGetItem(storageKey, null);
+      ledgerRows = rawLedger ? JSON.parse(rawLedger) : null;
+    } catch (e) {
+      ledgerRows = null;
+    }
+    if (!ledgerRows || !Array.isArray(ledgerRows) || ledgerRows.length === 0) {
       ledgerRows = domainContext.managementTableRows || [];
     }
 
     // Database Mock Storage
     function parseColName(raw) {
       if (!raw) return "field";
-      let name = String(raw).split(/\s+|\(/)[0].trim();
+      let name = String(raw).split(/\\s+|\\(/)[0].trim();
       return name.replace(/[^a-zA-Z0-9_]/g, '') || "field";
     }
 
@@ -677,7 +712,8 @@ function generateDynamicExecutableHtml(
 
     let dbData = {};
     try {
-      dbData = JSON.parse(localStorage.getItem("${title}_db_data") || "{}");
+      const rawDb = safeGetItem("${title.replace(/[^a-zA-Z0-9_]/g, '_')}_db_data", "{}");
+      dbData = JSON.parse(rawDb || "{}");
     } catch (e) { dbData = {}; }
 
     (dbTables || []).forEach((t) => {
@@ -693,32 +729,45 @@ function generateDynamicExecutableHtml(
 
     // 1. Navigation Switcher
     function switchView(viewName) {
-      document.getElementById('mainPortalView').classList.add('hidden');
-      document.getElementById('databaseView').classList.add('hidden');
-      document.getElementById('apisView').classList.add('hidden');
-      document.getElementById('adminView').classList.add('hidden');
+      try {
+        const portal = document.getElementById('mainPortalView');
+        const dbV = document.getElementById('databaseView');
+        const apiV = document.getElementById('apisView');
+        const admV = document.getElementById('adminView');
 
-      ['navMainBtn', 'navDatabaseBtn', 'navApisBtn', 'navAdminBtn'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.className = "px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition";
-      });
+        if (portal) portal.classList.add('hidden');
+        if (dbV) dbV.classList.add('hidden');
+        if (apiV) apiV.classList.add('hidden');
+        if (admV) admV.classList.add('hidden');
 
-      if (viewName === 'main') {
-        document.getElementById('mainPortalView').classList.remove('hidden');
-        document.getElementById('navMainBtn').className = "px-3 py-1.5 rounded-xl text-xs font-bold transition bg-indigo-600 text-white shadow-xs";
-        renderCatalog();
-      } else if (viewName === 'database') {
-        document.getElementById('databaseView').classList.remove('hidden');
-        document.getElementById('navDatabaseBtn').className = "px-3 py-1.5 rounded-xl text-xs font-bold transition bg-blue-600 text-white shadow-xs";
-        renderDatabaseView();
-      } else if (viewName === 'apis') {
-        document.getElementById('apisView').classList.remove('hidden');
-        document.getElementById('navApisBtn').className = "px-3 py-1.5 rounded-xl text-xs font-bold transition bg-purple-600 text-white shadow-xs";
-        renderApisView();
-      } else if (viewName === 'admin') {
-        document.getElementById('adminView').classList.remove('hidden');
-        document.getElementById('navAdminBtn').className = "px-3 py-1.5 rounded-xl text-xs font-bold transition bg-rose-600 text-white shadow-xs";
-        renderAdminDashboard();
+        ['navMainBtn', 'navDatabaseBtn', 'navApisBtn', 'navAdminBtn'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.className = "px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition";
+        });
+
+        if (viewName === 'main') {
+          if (portal) portal.classList.remove('hidden');
+          const btn = document.getElementById('navMainBtn');
+          if (btn) btn.className = "px-3 py-1.5 rounded-xl text-xs font-bold transition bg-indigo-600 text-white shadow-xs";
+          renderCatalog();
+        } else if (viewName === 'database') {
+          if (dbV) dbV.classList.remove('hidden');
+          const btn = document.getElementById('navDatabaseBtn');
+          if (btn) btn.className = "px-3 py-1.5 rounded-xl text-xs font-bold transition bg-blue-600 text-white shadow-xs";
+          renderDatabaseView();
+        } else if (viewName === 'apis') {
+          if (apiV) apiV.classList.remove('hidden');
+          const btn = document.getElementById('navApisBtn');
+          if (btn) btn.className = "px-3 py-1.5 rounded-xl text-xs font-bold transition bg-purple-600 text-white shadow-xs";
+          renderApisView();
+        } else if (viewName === 'admin') {
+          if (admV) admV.classList.remove('hidden');
+          const btn = document.getElementById('navAdminBtn');
+          if (btn) btn.className = "px-3 py-1.5 rounded-xl text-xs font-bold transition bg-rose-600 text-white shadow-xs";
+          renderAdminDashboard();
+        }
+      } catch (err) {
+        console.error("switchView error:", err);
       }
     }
 
@@ -768,7 +817,9 @@ function generateDynamicExecutableHtml(
       const descColor = isDarkTheme ? "text-slate-400" : "text-slate-500";
       const metaValColor = isDarkTheme ? "text-emerald-400" : "text-slate-900";
 
-      grid.innerHTML = filtered.map(item => \`
+      grid.innerHTML = filtered.map((item, idx) => {
+        const safeName = String(item.name || '').replace(/['"\\\\]/g, ' ');
+        return \`
         <div class="\${cardBg} rounded-2xl border p-5 flex flex-col justify-between hover:shadow-xl transition-all duration-200 hover:border-indigo-400">
           <div>
             <div class="flex items-start justify-between">
@@ -784,12 +835,13 @@ function generateDynamicExecutableHtml(
               <div class="text-[10px] text-slate-400 uppercase font-semibold">\${item.metaLabel || 'Specification'}</div>
               <span class="text-sm font-extrabold \${metaValColor}">\${item.metaValue || 'Active'}</span>
             </div>
-            <button onclick="openActionModalWithPrefill('\${item.name.replace(/'/g, "\\\\'")}')" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition shadow-xs cursor-pointer">
+            <button onclick="openActionModalWithPrefill('\${safeName}')" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition shadow-xs cursor-pointer">
               \${item.actionLabel || domainContext.primaryAction.label}
             </button>
           </div>
         </div>
-      \`).join('');
+      \`;
+      }).join('');
     }
 
     // 3. Primary Action Modal Form
@@ -809,15 +861,17 @@ function generateDynamicExecutableHtml(
 
     function renderPrimaryActionFields(prefillValue) {
       const container = document.getElementById("dynamicFormFieldsContainer");
+      if (!container) return;
       const fields = domainContext.primaryAction.fields || [];
 
-      container.innerHTML = fields.map(f => {
+      container.innerHTML = fields.map((f, idx) => {
+        const valToSet = (idx === 0 && prefillValue) ? prefillValue : '';
         if (f.type === "select") {
           return \`
             <div>
               <label class="font-bold text-slate-700 text-xs block mb-1">\${f.label}:</label>
               <select name="\${f.name}" id="field_\${f.name}" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:ring-2 focus:ring-indigo-500/30">
-                \${(f.options || []).map(opt => \`<option value="\${opt}">\${opt}</option>\`).join('')}
+                \${(f.options || []).map(opt => \`<option value="\${opt}" \${opt === valToSet ? 'selected' : ''}>\${opt}</option>\`).join('')}
               </select>
             </div>
           \`;
@@ -825,14 +879,14 @@ function generateDynamicExecutableHtml(
           return \`
             <div>
               <label class="font-bold text-slate-700 text-xs block mb-1">\${f.label}:</label>
-              <textarea name="\${f.name}" id="field_\${f.name}" rows="2" placeholder="\${f.placeholder}" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:ring-2 focus:ring-indigo-500/30"></textarea>
+              <textarea name="\${f.name}" id="field_\${f.name}" rows="2" placeholder="\${f.placeholder}" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:ring-2 focus:ring-indigo-500/30">\${valToSet}</textarea>
             </div>
           \`;
         } else {
           return \`
             <div>
               <label class="font-bold text-slate-700 text-xs block mb-1">\${f.label}:</label>
-              <input type="\${f.type}" name="\${f.name}" id="field_\${f.name}" placeholder="\${f.placeholder}" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:ring-2 focus:ring-indigo-500/30">
+              <input type="\${f.type}" name="\${f.name}" id="field_\${f.name}" value="\${valToSet}" placeholder="\${f.placeholder}" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:ring-2 focus:ring-indigo-500/30">
             </div>
           \`;
         }
@@ -840,8 +894,9 @@ function generateDynamicExecutableHtml(
     }
 
     function handlePrimaryActionSubmit(e) {
-      e.preventDefault();
+      if (e && e.preventDefault) e.preventDefault();
       const form = document.getElementById("primaryActionForm");
+      if (!form) return;
       const formData = new FormData(form);
       const values = [];
 
@@ -857,10 +912,10 @@ function generateDynamicExecutableHtml(
 
       const newRow = [firstVal, secondVal, thirdVal, fourthVal, "Confirmed"];
       ledgerRows.unshift(newRow);
-      localStorage.setItem(storageKey, JSON.stringify(ledgerRows));
+      safeSetItem(storageKey, ledgerRows);
 
       closeActionModal();
-      showToast(domainContext.primaryAction.successMessage, "success");
+      showToast(domainContext.primaryAction.successMessage || "Action successfully completed!", "success");
       renderAdminDashboard();
     }
 
@@ -868,44 +923,50 @@ function generateDynamicExecutableHtml(
     function renderAdminDashboard() {
       // KPI Cards
       const kpiContainer = document.getElementById("adminKpiCardsContainer");
-      const stats = domainContext.managementStats || [];
-      kpiContainer.innerHTML = stats.map(s => \`
-        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
-          <div class="flex items-center justify-between">
-            <span class="text-[11px] font-bold text-slate-500 uppercase">\${s.label}</span>
-            <span class="text-base">\${s.icon || '📊'}</span>
+      if (kpiContainer) {
+        const stats = domainContext.managementStats || [];
+        kpiContainer.innerHTML = stats.map(s => \`
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold text-slate-500 uppercase">\${s.label}</span>
+              <span class="text-base">\${s.icon || '📊'}</span>
+            </div>
+            <p class="text-2xl font-extrabold text-slate-900 mt-1">\${s.value}</p>
+            <span class="text-[10px] font-semibold text-emerald-600 mt-1 block">\${s.change}</span>
           </div>
-          <p class="text-2xl font-extrabold text-slate-900 mt-1">\${s.value}</p>
-          <span class="text-[10px] font-semibold text-emerald-600 mt-1 block">\${s.change}</span>
-        </div>
-      \`).join('');
+        \`).join('');
+      }
 
       // Ledger Table Header
       const headerEl = document.getElementById("adminTableHeader");
       const cols = domainContext.managementTableColumns || ["Entity", "Details", "Timestamp", "Status"];
-      headerEl.innerHTML = \`<tr>\${cols.map(c => \`<th class="p-3.5">\${c}</th>\`).join('')}</tr>\`;
+      if (headerEl) {
+        headerEl.innerHTML = \`<tr>\${cols.map(c => \`<th class="p-3.5">\${c}</th>\`).join('')}</tr>\`;
+      }
 
       // Ledger Table Body
       const bodyEl = document.getElementById("adminTableBody");
-      if (ledgerRows.length === 0) {
-        bodyEl.innerHTML = \`<tr><td colspan="\${cols.length}" class="p-8 text-center text-slate-400">No records logged yet. Trigger an action from the portal!</td></tr>\`;
-        return;
-      }
+      if (bodyEl) {
+        if (!ledgerRows || ledgerRows.length === 0) {
+          bodyEl.innerHTML = \`<tr><td colspan="\${cols.length}" class="p-8 text-center text-slate-400">No records logged yet. Trigger an action from the portal!</td></tr>\`;
+          return;
+        }
 
-      bodyEl.innerHTML = ledgerRows.map((row, idx) => \`
-        <tr class="hover:bg-slate-50">
-          \${row.map((cell, cIdx) => {
-            if (cIdx === 0) return \`<td class="p-3.5 font-bold text-slate-900">\${cell}</td>\`;
-            if (cIdx === row.length - 1) return \`<td class="p-3.5"><span class="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded font-bold text-[10px] border border-emerald-200">\${cell}</span></td>\`;
-            return \`<td class="p-3.5 text-slate-600">\${cell}</td>\`;
-          }).join('')}
-        </tr>
-      \`).join('');
+        bodyEl.innerHTML = ledgerRows.map((row) => \`
+          <tr class="hover:bg-slate-50">
+            \${row.map((cell, cIdx) => {
+              if (cIdx === 0) return \`<td class="p-3.5 font-bold text-slate-900">\${cell}</td>\`;
+              if (cIdx === row.length - 1) return \`<td class="p-3.5"><span class="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded font-bold text-[10px] border border-emerald-200">\${cell}</span></td>\`;
+              return \`<td class="p-3.5 text-slate-600">\${cell}</td>\`;
+            }).join('')}
+          </tr>
+        \`).join('');
+      }
     }
 
     function clearActivityLedger() {
       ledgerRows = domainContext.managementTableRows || [];
-      localStorage.removeItem(storageKey);
+      safeRemoveItem(storageKey);
       renderAdminDashboard();
       showToast("Activity ledger reset to defaults", "info");
     }
@@ -913,46 +974,52 @@ function generateDynamicExecutableHtml(
     // 5. Database View Rendering
     function renderDatabaseView() {
       const selector = document.getElementById("dbTableSelector");
-      if (dbTables.length === 0) {
+      if (!selector) return;
+      if (!dbTables || dbTables.length === 0) {
         selector.innerHTML = '<span class="text-xs text-slate-400">No tables defined</span>';
         return;
       }
 
       selector.innerHTML = dbTables.map((t, idx) => \`
         <button onclick="selectDbTable(\${idx})" class="font-mono text-xs px-3.5 py-1.5 rounded-xl font-bold transition \${idx === activeTableIndex ? 'bg-blue-600 text-white' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'}">
-          \${t.table_name}
+          \${t.table_name || 'table_' + idx}
         </button>
       \`).join('');
 
-      const curTable = dbTables[activeTableIndex] || dbTables[0];
-      document.getElementById("activeTableName").innerText = "table: " + curTable.table_name;
+      const curTable = dbTables[activeTableIndex] || dbTables[0] || { table_name: "records" };
+      const activeTNameEl = document.getElementById("activeTableName");
+      if (activeTNameEl) activeTNameEl.innerText = "table: " + (curTable.table_name || 'records');
 
       const thead = document.getElementById("dbTableHeader");
       const tbody = document.getElementById("dbTableBody");
 
       const cols = curTable.columns || ["id (UUID)", "name (VARCHAR)", "status (VARCHAR)", "created_at (TIMESTAMP)"];
-      thead.innerHTML = \`<tr>\${cols.map(c => \`<th class="p-3.5 text-left font-mono font-semibold text-slate-700 bg-slate-100/80">\${c}</th>\`).join('')}</tr>\`;
+      if (thead) {
+        thead.innerHTML = \`<tr>\${cols.map(c => \`<th class="p-3.5 text-left font-mono font-semibold text-slate-700 bg-slate-100/80">\${c}</th>\`).join('')}</tr>\`;
+      }
 
-      const rows = dbData[curTable.table_name] || [];
-      if (rows.length === 0) {
-        tbody.innerHTML = \`<tr><td colspan="\${cols.length}" class="p-8 text-center text-slate-400">No rows in table \${curTable.table_name}. Click Insert Record above!</td></tr>\`;
-      } else {
-        tbody.innerHTML = rows.map(r => \`
-          <tr class="hover:bg-slate-50 border-b border-slate-100">
-            \${cols.map((rawCol, idx) => {
-              const key = parseColName(rawCol);
-              const val = r[key] !== undefined ? r[key] : (r[rawCol] !== undefined ? r[rawCol] : (idx === 0 ? r.id || 'N/A' : (idx === 1 ? r.name || 'Sample entity' : (idx === 2 ? r.status || 'active' : r.created_at || 'Just now'))));
-              const isStatus = key.toLowerCase().includes('status') || String(val).toLowerCase() === 'active' || String(val).toLowerCase() === 'verified' || String(val).toLowerCase() === 'completed';
-              if (isStatus) {
-                return \`<td class="p-3.5"><span class="bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-md text-xs font-bold font-mono border border-emerald-200">\${val}</span></td>\`;
-              }
-              if (idx === 0 || key.toLowerCase().includes('id')) {
-                return \`<td class="p-3.5 font-bold font-mono text-blue-600 text-xs">\${val}</td>\`;
-              }
-              return \`<td class="p-3.5 text-slate-700 text-xs">\${val}</td>\`;
-            }).join('')}
-          </tr>
-        \`).join('');
+      if (tbody) {
+        const rows = (dbData && dbData[curTable.table_name]) || [];
+        if (rows.length === 0) {
+          tbody.innerHTML = \`<tr><td colspan="\${cols.length}" class="p-8 text-center text-slate-400">No rows in table \${curTable.table_name}. Click Insert Record above!</td></tr>\`;
+        } else {
+          tbody.innerHTML = rows.map(r => \`
+            <tr class="hover:bg-slate-50 border-b border-slate-100">
+              \${cols.map((rawCol, idx) => {
+                const key = parseColName(rawCol);
+                const val = r[key] !== undefined ? r[key] : (r[rawCol] !== undefined ? r[rawCol] : (idx === 0 ? r.id || 'N/A' : (idx === 1 ? r.name || 'Sample entity' : (idx === 2 ? r.status || 'active' : r.created_at || 'Just now'))));
+                const isStatus = key.toLowerCase().includes('status') || String(val).toLowerCase() === 'active' || String(val).toLowerCase() === 'verified' || String(val).toLowerCase() === 'completed';
+                if (isStatus) {
+                  return \`<td class="p-3.5"><span class="bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-md text-xs font-bold font-mono border border-emerald-200">\${val}</span></td>\`;
+                }
+                if (idx === 0 || key.toLowerCase().includes('id')) {
+                  return \`<td class="p-3.5 font-bold font-mono text-blue-600 text-xs">\${val}</td>\`;
+                }
+                return \`<td class="p-3.5 text-slate-700 text-xs">\${val}</td>\`;
+              }).join('')}
+            </tr>
+          \`).join('');
+        }
       }
     }
 
@@ -962,9 +1029,10 @@ function generateDynamicExecutableHtml(
     }
 
     function openAddRecordModal() {
-      const curTable = dbTables[activeTableIndex] || dbTables[0];
+      const curTable = (dbTables && dbTables[activeTableIndex]) || { table_name: "records" };
       const cols = curTable.columns || ["id (UUID)", "name (VARCHAR)", "status (VARCHAR)", "created_at (TIMESTAMP)"];
       const container = document.getElementById("addRecordFormFields");
+      if (!container) return;
       const editableCols = cols.filter(c => !parseColName(c).toLowerCase().includes('id') && !parseColName(c).toLowerCase().includes('created_at'));
       
       container.innerHTML = (editableCols.length > 0 ? editableCols : cols).map(c => {
@@ -975,13 +1043,13 @@ function generateDynamicExecutableHtml(
         }
         return \`<div><label class="font-bold text-xs text-slate-700">\${c}:</label><input type="text" id="field_\${colKey}" placeholder="Enter \${colKey}..." class="w-full mt-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"></div>\`;
       }).join('');
-      document.getElementById("addRecordModal").classList.remove("hidden");
+      document.getElementById("addRecordModal")?.classList.remove("hidden");
     }
 
-    function closeAddRecordModal() { document.getElementById("addRecordModal").classList.add("hidden"); }
+    function closeAddRecordModal() { document.getElementById("addRecordModal")?.classList.add("hidden"); }
 
     function saveNewDbRecord() {
-      const curTable = dbTables[activeTableIndex] || dbTables[0];
+      const curTable = (dbTables && dbTables[activeTableIndex]) || { table_name: "records" };
       const cols = curTable.columns || ["id (UUID)", "name (VARCHAR)", "status (VARCHAR)", "created_at (TIMESTAMP)"];
       const newRow = {};
 
@@ -999,7 +1067,7 @@ function generateDynamicExecutableHtml(
 
       if (!dbData[curTable.table_name]) dbData[curTable.table_name] = [];
       dbData[curTable.table_name].unshift(newRow);
-      localStorage.setItem("${title}_db_data", JSON.stringify(dbData));
+      safeSetItem("${title.replace(/[^a-zA-Z0-9_]/g, '_')}_db_data", dbData);
 
       closeAddRecordModal();
       renderDatabaseView();
@@ -1009,7 +1077,8 @@ function generateDynamicExecutableHtml(
     // 6. REST API Testing
     function renderApisView() {
       const container = document.getElementById("apisListContainer");
-      if (restApis.length === 0) {
+      if (!container) return;
+      if (!restApis || restApis.length === 0) {
         container.innerHTML = '<div class="p-8 text-center bg-white rounded-2xl border border-slate-200 text-slate-400">No APIs specified in blueprint</div>';
         return;
       }
@@ -1034,6 +1103,7 @@ function generateDynamicExecutableHtml(
     function testApiEndpoint(idx) {
       const api = restApis[idx];
       const resultEl = document.getElementById(\`apiResult_\${idx}\`);
+      if (!resultEl) return;
       resultEl.classList.remove('hidden');
       resultEl.innerHTML = \`<span class="text-slate-400 animate-pulse">&gt; Executing \${api.method} \${api.path}...</span>\`;
 
@@ -1073,8 +1143,8 @@ function generateDynamicExecutableHtml(
     }
 
     // 7. AI Assistant
-    function openAIChatModal() { document.getElementById("aiModal").classList.remove("hidden"); }
-    function closeAIChatModal() { document.getElementById("aiModal").classList.add("hidden"); }
+    function openAIChatModal() { document.getElementById("aiModal")?.classList.remove("hidden"); }
+    function closeAIChatModal() { document.getElementById("aiModal")?.classList.add("hidden"); }
 
     function askAI() {
       const inp = document.getElementById("aiInput");
@@ -1088,7 +1158,7 @@ function generateDynamicExecutableHtml(
       if (inp) inp.value = "";
       setTimeout(() => {
         if (hist) {
-          hist.innerHTML += \`<div class="p-2.5 bg-indigo-50 text-indigo-900 rounded-lg">🤖 Based on your requirement for <strong>${title}</strong> (${domainCtx.domainLabel}), you can trigger the primary action "${domainCtx.primaryAction.label}" or explore live database tables!</div>\`;
+          hist.innerHTML += \`<div class="p-2.5 bg-indigo-50 text-indigo-900 rounded-lg">🤖 Based on your requirement for <strong>${title.replace(/['"\\]/g, '')}</strong> (${domainCtx.domainLabel}), you can trigger the primary action "${domainCtx.primaryAction.label}" or explore live database tables!</div>\`;
           hist.scrollTop = hist.scrollHeight;
         }
       }, 400);
@@ -1097,7 +1167,7 @@ function generateDynamicExecutableHtml(
     // 8. Customizer Engine
     function openLiveCustomizer() {
       const titleEl = document.getElementById("custAppTitle");
-      if (titleEl) titleEl.value = document.getElementById("appNavTitle")?.innerText || "${title}";
+      if (titleEl) titleEl.value = document.getElementById("appNavTitle")?.innerText || "${title.replace(/['"\\]/g, '')}";
       const annEl = document.getElementById("custAnnouncement");
       if (annEl) annEl.value = document.getElementById("announcementText")?.innerText || "";
       const headEl = document.getElementById("custHeroHeadline");
@@ -1108,10 +1178,10 @@ function generateDynamicExecutableHtml(
       if (badgeEl) badgeEl.innerText = allItems.length;
 
       renderCustomizerItemsList();
-      document.getElementById("liveCustomizerModal").classList.remove("hidden");
+      document.getElementById("liveCustomizerModal")?.classList.remove("hidden");
     }
 
-    function closeLiveCustomizer() { document.getElementById("liveCustomizerModal").classList.add("hidden"); }
+    function closeLiveCustomizer() { document.getElementById("liveCustomizerModal")?.classList.add("hidden"); }
 
     function switchCustomizerTab(tab) {
       ['branding', 'items', 'toggles'].forEach(t => {
@@ -1129,7 +1199,9 @@ function generateDynamicExecutableHtml(
 
     function renderCustomizerItemsList() {
       const container = document.getElementById("customizerItemsList");
-      document.getElementById("custItemBadge").innerText = allItems.length;
+      if (!container) return;
+      const badgeEl = document.getElementById("custItemBadge");
+      if (badgeEl) badgeEl.innerText = allItems.length;
       if (allItems.length === 0) {
         container.innerHTML = '<p class="text-center py-6 text-slate-400">No items configured yet.</p>';
         return;
@@ -1159,7 +1231,7 @@ function generateDynamicExecutableHtml(
     }
 
     function addNewCustomItem() {
-      const newId = allItems.length > 0 ? Math.max(...allItems.map(i => i.id)) + 1 : 1;
+      const newId = allItems.length > 0 ? Math.max(...allItems.map(i => i.id || 0)) + 1 : 1;
       allItems.unshift({
         id: newId,
         name: "New Service / Offering",
@@ -1199,7 +1271,7 @@ function generateDynamicExecutableHtml(
     }
 
     function saveAndApplyLiveCustomization() {
-      const newTitle = document.getElementById("custAppTitle")?.value.trim() || "${title}";
+      const newTitle = document.getElementById("custAppTitle")?.value.trim() || "${title.replace(/['"\\]/g, '')}";
       const newAnn = document.getElementById("custAnnouncement")?.value.trim() || "";
       const newHeroHead = document.getElementById("custHeroHeadline")?.value.trim() || newTitle;
       const newHeroSub = document.getElementById("custHeroSubtext")?.value.trim() || "";
@@ -1237,7 +1309,39 @@ function generateDynamicExecutableHtml(
       setTimeout(() => { t.remove(); }, 3500);
     }
 
-    // Safe Initialization
+    // Attach all handlers to window for sandbox iframe compatibility
+    window.switchView = switchView;
+    window.selectCategory = selectCategory;
+    window.renderCatalog = renderCatalog;
+    window.openActionModal = openActionModal;
+    window.openActionModalWithPrefill = openActionModalWithPrefill;
+    window.closeActionModal = closeActionModal;
+    window.handlePrimaryActionSubmit = handlePrimaryActionSubmit;
+    window.renderAdminDashboard = renderAdminDashboard;
+    window.clearActivityLedger = clearActivityLedger;
+    window.renderDatabaseView = renderDatabaseView;
+    window.selectDbTable = selectDbTable;
+    window.openAddRecordModal = openAddRecordModal;
+    window.closeAddRecordModal = closeAddRecordModal;
+    window.saveNewDbRecord = saveNewDbRecord;
+    window.renderApisView = renderApisView;
+    window.testApiEndpoint = testApiEndpoint;
+    window.openAIChatModal = openAIChatModal;
+    window.closeAIChatModal = closeAIChatModal;
+    window.askAI = askAI;
+    window.openLiveCustomizer = openLiveCustomizer;
+    window.closeLiveCustomizer = closeLiveCustomizer;
+    window.switchCustomizerTab = switchCustomizerTab;
+    window.renderCustomizerItemsList = renderCustomizerItemsList;
+    window.updateCustomItemField = updateCustomItemField;
+    window.addNewCustomItem = addNewCustomItem;
+    window.deleteCustomItem = deleteCustomItem;
+    window.selectPageBgTheme = selectPageBgTheme;
+    window.saveAndApplyLiveCustomization = saveAndApplyLiveCustomization;
+    window.resetCustomizerToDefault = resetCustomizerToDefault;
+    window.showToast = showToast;
+
+    // Safe Immediate Initialization
     try { renderCategoryFilters(); } catch (e) { console.error("renderCategoryFilters error:", e); }
     try { renderCatalog(); } catch (e) { console.error("renderCatalog error:", e); }
     try { renderAdminDashboard(); } catch (e) { console.error("renderAdminDashboard error:", e); }

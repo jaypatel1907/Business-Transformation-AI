@@ -16,9 +16,14 @@ export default function LiveAppPage({ params }: { params: Promise<{ id: string }
   useEffect(() => {
     if (typeof window !== "undefined") {
       const found = getProjectById(projectId);
-      if (found && found.app_code) {
+      if (found) {
         setProject(found);
-        setHtmlContent(found.app_code);
+        if (found.blueprint_data) {
+          const generated = generateApplicationFromBlueprint(found.blueprint_data, projectId);
+          setHtmlContent(generated.standalone_html);
+        } else if (found.app_code) {
+          setHtmlContent(found.app_code);
+        }
         setLoading(false);
       } else {
         // Check saved blueprints in localStorage to generate on-the-fly
